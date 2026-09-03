@@ -35,4 +35,6 @@ The application is not connected to a backend yet. When a Supabase project is re
 5. Add the production Netlify URL and local callback URL to Supabase Authentication URL configuration before enabling login.
 6. Keep secret/service-role keys server-side only. Never place them in a `NEXT_PUBLIC_` variable or commit them.
 
-Backend implementation should add pinned Supabase client packages, migrations, generated database types, Row Level Security policies and verification tests. Every exposed table must have an intentional access policy.
+The pinned Supabase packages are installed and the browser client is available from `lib/supabase/client.ts`.
+
+This site currently deploys as a static export. Do not add Next.js server clients, route handlers, or request middleware unless the deployment is intentionally changed to an SSR runtime. Backend implementation should add migrations, generated database types, Row Level Security policies and verification tests. Every exposed table must have an intentional access policy.
