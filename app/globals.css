@@ -5374,6 +5374,8 @@ html[data-app-mode='true'] .marketing {
     gap: 14px;
   }
   .locked-learning .banner-action {
+    position: static;
+    inset: auto;
     width: 100%;
     margin-left: 0;
     justify-content: center;
