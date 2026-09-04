@@ -104,6 +104,10 @@ type Phrase = {
   audio_url?: string | null;
 };
 
+function phraseMeaning(phrase: Phrase, locale: Locale) {
+  return locale === 'ru' ? phrase.ru : phrase.en;
+}
+
 const categories: {
   name: CategoryName;
   count: number;
@@ -1132,7 +1136,7 @@ function Marketing({
             <div className="mini-phrase">
               <strong>გამარჯობა</strong>
               <em>gamarjoba</em>
-              <p>Hello · Привет</p>
+              <p>{locale === 'ru' ? 'Привет' : 'Hello'}</p>
               <AudioButton
                 id="hero-phone"
                 playing={playing}
@@ -1262,7 +1266,7 @@ function Marketing({
             <div>
               <strong>მადლობა</strong>
               <em>madloba</em>
-              <p>Thank you · Спасибо</p>
+              <p>{locale === 'ru' ? 'Спасибо' : 'Thank you'}</p>
             </div>
             <AudioButton id="demo" playing={playing} onPlay={play} large />
           </div>
@@ -1835,9 +1839,7 @@ function AppShell({
           <div>
             <strong>{p.ka}</strong>
             <em>{p.tr}</em>
-            <p>
-              {p.en} · {p.ru}
-            </p>
+            <p>{phraseMeaning(p, locale)}</p>
           </div>
           <div className="phrase-actions">
             <button
@@ -2332,7 +2334,7 @@ function AppShell({
                 <span className="lesson-tag">Essentials</span>
                 <strong>გამარჯობა</strong>
                 <em>gamarjoba</em>
-                <p>Hello · Привет</p>
+                <p>{locale === 'ru' ? 'Привет' : 'Hello'}</p>
                 <div className="wave-row">
                   <i />
                   <i />
@@ -2379,11 +2381,11 @@ function AppShell({
                 <h1>What does this mean?</h1>
                 <strong>მადლობა</strong>
                 <div className="answers">
-                  <button>Hello</button>
+                  <button>{locale === 'ru' ? 'Привет' : 'Hello'}</button>
                   <button className="correct">
-                    Thank you <CheckCircle2 />
+                    {locale === 'ru' ? 'Спасибо' : 'Thank you'} <CheckCircle2 />
                   </button>
-                  <button>Goodbye</button>
+                  <button>{locale === 'ru' ? 'До свидания' : 'Goodbye'}</button>
                 </div>
                 <p className="correct-note">
                   <CheckCircle2 /> Correct! <b>+10 XP</b>
@@ -2824,6 +2826,7 @@ export default function HomePage() {
   const [siteUser, setSiteUser] = useState<User | null>(null);
   const [siteDisplayName, setSiteDisplayName] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('en');
+  const [languageChoiceOpen, setLanguageChoiceOpen] = useState(false);
   const [modal, setModal] = useState<'install' | 'pricing' | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] =
@@ -2835,20 +2838,24 @@ export default function HomePage() {
   }, []);
   useEffect(() => {
     const savedLocale = localStorage.getItem('geo-interface-language');
-    const browserLocale = navigator.language.toLowerCase().startsWith('ru')
-      ? 'ru'
-      : navigator.language.toLowerCase().startsWith('ka')
-        ? 'ka'
-        : 'en';
-    window.setTimeout(
-      () =>
-        changeLocale(
-          savedLocale === 'ru' || savedLocale === 'ka' || savedLocale === 'en'
-            ? savedLocale
-            : browserLocale,
-        ),
-      0,
-    );
+    const preferredLocale = (navigator.languages?.[0] ?? navigator.language)
+      .toLowerCase()
+      .split('-')[0];
+    const browserLocale: Locale =
+      preferredLocale === 'ru' ? 'ru' : preferredLocale === 'ka' ? 'ka' : 'en';
+    window.setTimeout(() => {
+      if (
+        savedLocale === 'ru' ||
+        savedLocale === 'ka' ||
+        savedLocale === 'en'
+      ) {
+        changeLocale(savedLocale);
+      } else {
+        setLocale(browserLocale);
+        document.documentElement.lang = browserLocale;
+        setLanguageChoiceOpen(true);
+      }
+    }, 0);
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
       location.hash === '#app'
@@ -3010,6 +3017,55 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
       <AuthDialog open={authOpen} onOpenChange={setAuthOpen} locale={locale} />
+      <Dialog open={languageChoiceOpen}>
+        <DialogContent
+          className="language-choice-dialog"
+          showCloseButton={false}
+        >
+          <DialogHeader>
+            <span className="dialog-icon">
+              <Globe2 />
+            </span>
+            <DialogTitle>Choose your language</DialogTitle>
+            <DialogDescription>
+              Select the translation you want to see under Georgian phrases.
+              We’ll remember it on this device.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="language-choice-grid">
+            <button
+              className={locale === 'en' ? 'selected' : ''}
+              onClick={() => {
+                changeLocale('en');
+                setLanguageChoiceOpen(false);
+              }}
+            >
+              <b>English</b>
+              <span>Hello</span>
+            </button>
+            <button
+              className={locale === 'ru' ? 'selected' : ''}
+              onClick={() => {
+                changeLocale('ru');
+                setLanguageChoiceOpen(false);
+              }}
+            >
+              <b>Русский</b>
+              <span>Привет</span>
+            </button>
+            <button
+              className={locale === 'ka' ? 'selected' : ''}
+              onClick={() => {
+                changeLocale('ka');
+                setLanguageChoiceOpen(false);
+              }}
+            >
+              <b>ქართული</b>
+              <span>ინტერფეისი ქართულად</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

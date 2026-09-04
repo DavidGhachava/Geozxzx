@@ -497,7 +497,17 @@ export function InfoPage({
   const [locale, setLocale] = useState<InterfaceLocale>(() => {
     if (typeof window === 'undefined') return 'en';
     const stored = window.localStorage.getItem('geo-interface-language');
-    return stored === 'ru' || stored === 'ka' ? stored : 'en';
+    if (stored === 'ru' || stored === 'ka' || stored === 'en') return stored;
+    const browserLanguage = (
+      window.navigator.languages?.[0] ?? window.navigator.language
+    )
+      .toLowerCase()
+      .split('-')[0];
+    return browserLanguage === 'ru'
+      ? 'ru'
+      : browserLanguage === 'ka'
+        ? 'ka'
+        : 'en';
   });
   const [pathname] = useState(() =>
     typeof window === 'undefined'
@@ -506,6 +516,7 @@ export function InfoPage({
   );
   const changeLocale = (next: InterfaceLocale) => {
     setLocale(next);
+    document.documentElement.lang = next;
     window.localStorage.setItem('geo-interface-language', next);
   };
   const translated =

@@ -4946,3 +4946,89 @@ button:active {
     height: 490px;
   }
 }
+
+.language-choice-dialog {
+  width: min(440px, calc(100vw - 28px));
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid rgba(190, 18, 60, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 250, 249, 0.97);
+  box-shadow: 0 28px 80px rgba(72, 8, 24, 0.24);
+}
+
+.language-choice-dialog [data-slot='dialog-title'] {
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.language-choice-dialog [data-slot='dialog-description'] {
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.language-choice-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.language-choice-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 66px;
+  padding: 14px 18px;
+  border: 1px solid rgba(190, 18, 60, 0.16);
+  border-radius: 18px;
+  background: white;
+  color: #24171a;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.language-choice-grid button:hover,
+.language-choice-grid button.selected {
+  border-color: #be123c;
+  box-shadow: 0 10px 26px rgba(190, 18, 60, 0.12);
+  transform: translateY(-1px);
+}
+
+.language-choice-grid button.selected::after {
+  content: '✓';
+  display: grid;
+  width: 28px;
+  height: 28px;
+  margin-left: 12px;
+  place-items: center;
+  border-radius: 50%;
+  background: #be123c;
+  color: white;
+  font-weight: 800;
+}
+
+.language-choice-grid button b {
+  font-size: 1.05rem;
+}
+
+.language-choice-grid button span {
+  margin-left: auto;
+  color: #77676b;
+}
+
+.language-choice-grid button.selected span {
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .language-choice-dialog {
+    padding: 22px;
+    border-radius: 24px;
+  }
+  .language-choice-grid button {
+    min-height: 62px;
+    padding-inline: 15px;
+  }
+}
