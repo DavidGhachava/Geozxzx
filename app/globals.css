@@ -3817,6 +3817,130 @@ button:active {
   color: #704600;
   background: #fff8e5;
 }
+.teacher-section {
+  max-width: 1220px;
+  margin: 88px auto;
+  padding: 34px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 34px;
+  align-items: stretch;
+  border: 1px solid rgba(178, 13, 47, 0.2);
+  border-radius: 30px;
+  background:
+    radial-gradient(
+      circle at 8% 15%,
+      rgba(255, 255, 255, 0.9),
+      transparent 32%
+    ),
+    linear-gradient(135deg, #fff7f5, #f7dadd);
+  box-shadow: 0 30px 80px rgba(102, 4, 30, 0.12);
+}
+.teacher-copy {
+  padding: 22px 12px;
+}
+.teacher-copy h2 {
+  max-width: 670px;
+  margin: 14px 0 14px;
+  font-size: clamp(2.25rem, 4.5vw, 4.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.teacher-copy > p {
+  max-width: 690px;
+  color: var(--muted-foreground);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+.teacher-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 24px 0;
+}
+.teacher-facts span {
+  min-height: 42px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(178, 13, 47, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+.teacher-facts svg {
+  width: 17px;
+  color: var(--primary);
+}
+.teacher-cta {
+  min-height: 52px;
+  width: fit-content;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 14px;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), #d62748);
+  box-shadow: 0 14px 30px rgba(153, 7, 39, 0.2);
+  font-weight: 900;
+  transition:
+    transform 0.25s,
+    box-shadow 0.25s;
+}
+.teacher-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 42px rgba(153, 7, 39, 0.3);
+}
+.teacher-cta svg {
+  width: 19px;
+}
+.teacher-card {
+  min-height: 330px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 24px;
+  color: white;
+  background:
+    radial-gradient(
+      circle at 82% 12%,
+      rgba(255, 91, 119, 0.45),
+      transparent 34%
+    ),
+    linear-gradient(145deg, #610718, #a40c2e);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.teacher-monogram {
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.13);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+.teacher-card small {
+  color: #ffd9df;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.teacher-card h3 {
+  margin: 8px 0;
+  font-size: 2rem;
+  letter-spacing: -0.035em;
+}
+.teacher-card p {
+  margin: 0;
+  color: #fbe8eb;
+  line-height: 1.55;
+}
 .install-nav {
   min-height: 42px;
   padding: 0 15px;
@@ -4020,6 +4144,10 @@ button:active {
   .local-section {
     grid-template-columns: 1fr;
   }
+  .teacher-section {
+    margin: 60px 20px;
+    grid-template-columns: 1fr;
+  }
   .local-section > div:first-child {
     position: static;
   }
@@ -4031,6 +4159,18 @@ button:active {
   }
   .local-section {
     padding: 72px 20px;
+  }
+  .teacher-section {
+    margin: 42px 14px;
+    padding: 20px;
+    border-radius: 24px;
+  }
+  .teacher-copy {
+    padding: 12px 2px;
+  }
+  .teacher-card {
+    min-height: 280px;
+    padding: 24px;
   }
   .sticky-install > div {
     display: none;

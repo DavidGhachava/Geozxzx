@@ -654,6 +654,50 @@ function Marketing({
           </article>
         </div>
       </section>
+      <section className="teacher-section" id="teacher">
+        <div className="teacher-copy">
+          <span className="section-kicker">Learn with a real teacher</span>
+          <h2>Want personal help speaking Georgian?</h2>
+          <p>
+            Kristina Beridze teaches Georgian to Russian-speaking students with
+            calm explanations, conversation practice, and lessons shaped around
+            everyday life in Georgia.
+          </p>
+          <div className="teacher-facts" aria-label="Lesson options">
+            <span>
+              <Users /> Children and adults
+            </span>
+            <span>
+              <Globe2 /> Online or in Batumi
+            </span>
+            <span>
+              <CheckCircle2 /> From 20 ₾ per lesson
+            </span>
+          </div>
+          <a
+            className="teacher-cta"
+            href="https://www.kristinalanguages.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Meet Kristina and check availability <ChevronRight />
+          </a>
+        </div>
+        <aside className="teacher-card" aria-label="About Kristina Beridze">
+          <span className="teacher-monogram" aria-hidden="true">
+            კბ
+          </span>
+          <div>
+            <small>ქართული · Русский</small>
+            <h3>Kristina Beridze</h3>
+            <p>
+              Georgian for Russian speakers, taught in Russian and Georgian.
+              Individual, mini-group, and online formats depend on current
+              availability.
+            </p>
+          </div>
+        </aside>
+      </section>
       <section className="demo-pricing" id="phrases">
         <div className="phrase-demo">
           <span className="section-kicker">Four-way phrasebook</span>
