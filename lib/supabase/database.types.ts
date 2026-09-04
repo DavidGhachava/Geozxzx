@@ -157,6 +157,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      product_entitlements: {
+        Row: {
+          user_id: string;
+          product: string;
+          status: string;
+          granted_at: string;
+          expires_at: string | null;
+          source_reference: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          product: string;
+          status?: string;
+          granted_at?: string;
+          expires_at?: string | null;
+          source_reference?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          product?: string;
+          status?: string;
+          granted_at?: string;
+          expires_at?: string | null;
+          source_reference?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       saved_phrases: {
         Row: { user_id: string; phrase_id: string; created_at: string };
         Insert: { user_id: string; phrase_id: string; created_at?: string };
@@ -263,6 +296,10 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       has_guided_learning_access: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      has_phrasebook_pro_access: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };

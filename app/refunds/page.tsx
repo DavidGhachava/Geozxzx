@@ -14,11 +14,12 @@ export default function RefundsPage() {
           refund eligibility, statutory withdrawal rights, failed-payment
           handling, and purchase-restoration process.
         </p>
-        <h2>Intended product</h2>
+        <h2>Intended products</h2>
         <p>
-          Guided Learning is listed at $6.99 per month. The 50-phrase practical
-          phrasebook remains free. These terms will be confirmed before checkout
-          launches.
+          Phrasebook Pro is listed at $20 as a one-time lifetime-access
+          purchase. Guided Learning is listed at $6.99 per month. The 50-phrase
+          practical phrasebook remains free. These terms will be confirmed
+          before checkout launches.
         </p>
         <h2>Consumer rights</h2>
         <p>

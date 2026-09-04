@@ -4,7 +4,7 @@ export default function TermsPage() {
     <InfoPage
       eyebrow="Legal · Effective 4 September 2026"
       title="Terms of Service"
-      intro="These beta terms govern use of GEO’s free 50-phrase phrasebook and subscription-gated Guided Learning features. Operator identity, jurisdiction, and formal contact details must be completed before commercial launch."
+      intro="These beta terms govern use of GEO’s free 50-phrase phrasebook and access-gated paid features. Operator identity, jurisdiction, and formal contact details must be completed before commercial launch."
     >
       <section>
         <h2>Using GEO</h2>
@@ -26,10 +26,11 @@ export default function TermsPage() {
         <h2>Accounts</h2>
         <p>
           Guest access is available for the free phrasebook. Saved-phrase
-          synchronization requires an account. Lessons, quizzes, progress, XP,
-          activity, and streaks additionally require an active Guided Learning
-          subscription. GEO may suspend access needed to protect users,
-          investigate abuse, comply with law, or maintain the service.
+          synchronization requires an account. Phrasebook Pro content requires
+          its lifetime entitlement. Lessons, quizzes, progress, XP, activity,
+          and streaks require an active Guided Learning subscription. GEO may
+          suspend access needed to protect users, investigate abuse, comply with
+          law, or maintain the service.
         </p>
         <h2>Content and intellectual property</h2>
         <p>
@@ -48,10 +49,11 @@ export default function TermsPage() {
         </p>
         <h2>Paid services</h2>
         <p>
-          Guided Learning is listed at $6.99 per month, but checkout is not
-          active and the beta does not accept payments. Subscription terms,
-          billing entity, taxes, cancellation controls, and purchase restoration
-          will be presented before paid activation.
+          Phrasebook Pro is listed at $20 once and Guided Learning at $6.99 per
+          month, but checkout is not active and the beta does not accept
+          payments. Product scope, billing entity, taxes, cancellation controls,
+          refunds, and purchase restoration will be presented before paid
+          activation.
         </p>
         <h2>Changes and termination</h2>
         <p>

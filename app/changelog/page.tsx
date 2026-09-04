@@ -32,6 +32,14 @@ export default function ChangelogPage() {
             Added secure $6.99/month Guided Learning entitlement checks for
             lessons, quizzes, progress, XP, daily activity, and streaks.
           </li>
+          <li>
+            Added the $20 one-time Phrasebook Pro tier and a separate secure
+            lifetime entitlement for its future 1,000+ lookup catalog.
+          </li>
+          <li>
+            Improved four-way phrase search and added real browser pronunciation
+            playback when native audio is not yet available.
+          </li>
         </ul>
         <h2>Public beta</h2>
         <p>

@@ -19,6 +19,14 @@ export default function HelpPage() {
           synchronize saved favorites. If email confirmation is enabled, confirm
           the message before signing in.
         </p>
+        <h2>Phrasebook Pro</h2>
+        <p>
+          Phrasebook Pro is the $20 one-time lookup upgrade. It is designed for
+          a growing 1,000+ word and practical-sentence catalog, examples, richer
+          context, pronunciation, and downloadable offline packs. The current
+          beta has 50 searchable entries while the expanded catalog and checkout
+          are completed.
+        </p>
         <h2>Guided Learning</h2>
         <p>
           Lessons, quizzes, progress, XP, daily activity, and streaks require an
@@ -45,9 +53,10 @@ export default function HelpPage() {
         </p>
         <h2 id="status">System status</h2>
         <p>
-          The website, 50-phrase API, account sync, subscription enforcement,
-          and installable PWA are online. Payments, a complete native-audio
-          library, social sign-in, and the editorial CMS are not yet launched.
+          The website, 50-phrase search, account sync, product entitlement
+          enforcement, and installable PWA are online. Payments, the 1,000+ Pro
+          catalog, a complete native-audio library, social sign-in, and the
+          editorial CMS are not yet launched.
         </p>
       </section>
     </InfoPage>

@@ -3,18 +3,18 @@ import { InfoPage } from '@/components/public-shell';
 export const metadata = {
   title: 'Georgian Learning App Pricing',
   description:
-    'Use GEO’s 50-phrase Georgian phrasebook free, or unlock lessons, quizzes, progress, XP, and streaks with Guided Learning for $6.99 a month.',
+    'Search 50 Georgian phrases free, get a growing 1,000+ word and sentence Phrasebook Pro catalog for $20 once, or choose Guided Learning for $6.99 a month.',
   alternates: { canonical: '/pricing' },
 };
 export default function PricingPage() {
   return (
     <InfoPage
       eyebrow="Simple pricing"
-      title="The phrasebook is free. Guided learning is $6.99/month."
-      intro="Learn useful Georgian immediately, then subscribe when you want a structured daily learning habit."
+      title="Start free. Pay once for lookup power—or monthly for a course."
+      intro="Phrasebook Pro and Guided Learning solve different needs: instant real-world answers versus a structured learning habit."
     >
       <section>
-        <div className="legal-plans">
+        <div className="legal-plans three-plans">
           <article>
             <span>Free forever</span>
             <h2>Phrasebook</h2>
@@ -25,6 +25,17 @@ export default function PricingPage() {
               favorites with a free account.
             </p>
             <a href="/#app">Open the free phrasebook</a>
+          </article>
+          <article className="phrasebook-plan">
+            <span>One-time purchase</span>
+            <h2>Phrasebook Pro</h2>
+            <strong>$20 once</strong>
+            <p>
+              Lifetime access to a growing catalog of 1,000+ useful Georgian
+              words and practical sentences, with four-way search, real-life
+              examples, richer usage notes, pronunciation, and downloadable
+              offline packs.
+            </p>
           </article>
           <article>
             <span>Subscription</span>
@@ -39,10 +50,12 @@ export default function PricingPage() {
         </div>
         <h2>No surprise charges</h2>
         <p>
-          The subscription gate is active, but checkout is still being
-          connected, so GEO does not currently collect payment details or
-          process purchases. Renewal, cancellation, taxes, invoices, refunds,
-          and purchase restoration will be shown clearly before payments launch.
+          Both access gates are active, but checkout is still being connected,
+          so GEO does not currently collect payment details or process
+          purchases. The beta currently contains 50 searchable entries; the
+          expanded 1,000+ Pro catalog, purchase restoration, renewal,
+          cancellation, taxes, invoices, and refunds will be shown clearly
+          before payments launch.
         </p>
       </section>
     </InfoPage>

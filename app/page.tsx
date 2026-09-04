@@ -208,11 +208,38 @@ const structuredData = {
         { '@type': 'City', name: 'Tbilisi' },
         { '@type': 'Country', name: 'Georgia' },
       ],
-      offers: { '@type': 'Offer', price: 0, priceCurrency: 'USD' },
+      offers: [
+        {
+          '@type': 'Offer',
+          name: 'Free Phrasebook',
+          price: 0,
+          priceCurrency: 'USD',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Phrasebook Pro Lifetime Access',
+          price: 20,
+          priceCurrency: 'USD',
+        },
+        {
+          '@type': 'Offer',
+          name: 'Guided Learning Monthly Subscription',
+          price: 6.99,
+          priceCurrency: 'USD',
+        },
+      ],
     },
     {
       '@type': 'FAQPage',
       mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is Phrasebook Pro?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Phrasebook Pro is a $20 one-time upgrade designed to provide lifetime access to a growing catalog of 1,000+ Georgian words and practical sentences with richer lookup tools.',
+          },
+        },
         {
           '@type': 'Question',
           name: 'Do I need an account to use GEO?',
@@ -258,18 +285,22 @@ function AudioButton({
   id,
   playing,
   onPlay,
+  text,
+  audioUrl,
   large = false,
 }: {
   id: string;
   playing: string | null;
-  onPlay: (id: string) => void;
+  onPlay: (id: string, text?: string, audioUrl?: string | null) => void;
+  text?: string;
+  audioUrl?: string | null;
   large?: boolean;
 }) {
   const active = playing === id;
   return (
     <button
       className={`audio-button ${large ? 'audio-large' : ''} ${active ? 'is-playing' : ''}`}
-      onClick={() => onPlay(id)}
+      onClick={() => onPlay(id, text, audioUrl)}
       aria-label="Play pronunciation"
     >
       {active ? (
@@ -734,13 +765,13 @@ function Marketing({
       <section className="pricing-section" id="pricing">
         <div className="pricing-heading">
           <span className="section-kicker">Simple pricing</span>
-          <h2>A useful free phrasebook. One clear learning plan.</h2>
+          <h2>Start free. Choose lookup power or guided learning.</h2>
           <p>
-            Use all 50 practical phrases for free. Guided Learning unlocks only
-            after an active $6.99/month subscription.
+            Search 50 essentials for free. Phrasebook Pro is a $20 lifetime
+            lookup pack; Guided Learning is a separate $6.99/month course.
           </p>
         </div>
-        <div className="pricing-grid redesigned two-plans">
+        <div className="pricing-grid redesigned three-plans">
           <article>
             <span className="plan-state live">Free forever</span>
             <h3>Practical phrasebook</h3>
@@ -750,6 +781,17 @@ function Marketing({
               search, and saved phrases.
             </p>
             <Button onClick={openApp}>Open phrasebook</Button>
+          </article>
+          <article className="phrasebook-plan">
+            <span className="plan-state pro">Lifetime access</span>
+            <h3>Phrasebook Pro</h3>
+            <b>$20</b>
+            <p>
+              A growing 1,000+ word and sentence catalog, real-life examples,
+              richer context, pronunciation, and downloadable offline packs. Pay
+              once and keep access.
+            </p>
+            <a href="/pricing">Explore Phrasebook Pro</a>
           </article>
           <article className="popular">
             <span className="plan-state">Premium</span>
@@ -800,6 +842,16 @@ function Marketing({
             </p>
           </details>
           <details>
+            <summary>What is included with Phrasebook Pro?</summary>
+            <p>
+              The $20 one-time pack is designed for fast real-world lookup: a
+              growing catalog of 1,000+ words and practical sentences, examples,
+              richer context, pronunciation, and offline packs. The current beta
+              contains 50 searchable entries while the expanded catalog and
+              checkout are prepared.
+            </p>
+          </details>
+          <details>
             <summary>What requires $6.99/month?</summary>
             <p>
               Daily lessons, quizzes, smart review, XP, progress, and streaks
@@ -835,8 +887,8 @@ function Marketing({
         <span className="section-kicker light">50 phrases · free</span>
         <h2>Your next Georgian phrase is one tap away.</h2>
         <p>
-          Open the free phrasebook now. Subscribe only when you want the guided
-          learning system.
+          Open the free phrasebook now. Upgrade once for the expanded lookup
+          library, or subscribe when you want guided learning.
         </p>
         <Button onClick={openApp}>
           Open free phrasebook <ChevronRight />
@@ -882,6 +934,7 @@ function AppShell({
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [hasLearningAccess, setHasLearningAccess] = useState(false);
+  const [hasPhrasebookProAccess, setHasPhrasebookProAccess] = useState(false);
   const [stats, setStats] = useState({
     streak: 0,
     longest: 0,
@@ -900,18 +953,31 @@ function AppShell({
       active = false;
     };
   }, []);
-  const play = (id: string) => {
+  const play = (id: string, text?: string, audioUrl?: string | null) => {
     setPlaying(id);
-    window.setTimeout(() => setPlaying(null), 1100);
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      void audio.play().catch(() => undefined);
+    } else if (text && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ka-GE';
+      utterance.rate = 0.82;
+      window.speechSynthesis.speak(utterance);
+    }
+    window.setTimeout(() => setPlaying(null), 1400);
   };
   const phraseKey = (phrase: Phrase) => phrase.id ?? phrase.ka;
   const allPhrases = useMemo(() => Object.values(library).flat(), [library]);
-  const filtered = search
-    ? allPhrases.filter((p) =>
-        `${p.ka} ${p.tr} ${p.en} ${p.ru}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-      )
+  const normalizedSearch = search.trim().normalize('NFKC').toLocaleLowerCase();
+  const searchTerms = normalizedSearch.split(/\s+/).filter(Boolean);
+  const filtered = normalizedSearch
+    ? allPhrases.filter((p) => {
+        const searchable = `${p.ka} ${p.tr} ${p.en} ${p.ru}`
+          .normalize('NFKC')
+          .toLocaleLowerCase();
+        return searchTerms.every((term) => searchable.includes(term));
+      })
     : [];
   const openCategory = (name: CategoryName) => {
     setCategory(name);
@@ -944,6 +1010,7 @@ function AppShell({
         setSaved([]);
         setDisplayName(null);
         setHasLearningAccess(false);
+        setHasPhrasebookProAccess(false);
         setStats({ streak: 0, longest: 0, xp: 0, practiced: 0, activity: [] });
         return;
       }
@@ -954,6 +1021,7 @@ function AppShell({
         activityResult,
         progressResult,
         accessResult,
+        phrasebookAccessResult,
       ] = await Promise.all([
         supabase.from('saved_phrases').select('phrase_id'),
         supabase.from('profiles').select('display_name').maybeSingle(),
@@ -968,10 +1036,12 @@ function AppShell({
           .limit(30),
         supabase.from('learning_progress').select('phrase_id'),
         supabase.rpc('has_guided_learning_access'),
+        supabase.rpc('has_phrasebook_pro_access'),
       ]);
       setSaved((savedResult.data ?? []).map((item) => item.phrase_id));
       setDisplayName(profileResult.data?.display_name ?? null);
       setHasLearningAccess(accessResult.data === true);
+      setHasPhrasebookProAccess(phrasebookAccessResult.data === true);
       const activity = activityResult.data ?? [];
       setStats({
         streak: streakResult.data?.current_streak ?? 0,
@@ -1205,7 +1275,13 @@ function AppShell({
             >
               <Bookmark />
             </button>
-            <AudioButton id={`${p.ka}-${i}`} playing={playing} onPlay={play} />
+            <AudioButton
+              id={`${p.ka}-${i}`}
+              playing={playing}
+              onPlay={play}
+              text={p.ka}
+              audioUrl={p.audio_url}
+            />
           </div>
         </article>
       ))}
@@ -1301,19 +1377,33 @@ function AppShell({
                   <LockKeyhole /> Guided progress
                 </button>
               </div>
-              <label className="search-box">
+              <search className="search-box">
                 <Search />
                 <input
+                  type="search"
+                  aria-label="Search the Georgian phrasebook"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search Georgian, transliteration, English or Russian"
                 />
-              </label>
-              {search ? (
+                {search && (
+                  <button
+                    type="button"
+                    className="search-clear"
+                    onClick={() => setSearch('')}
+                    aria-label="Clear search"
+                  >
+                    <X />
+                  </button>
+                )}
+              </search>
+              {normalizedSearch ? (
                 <>
                   <div className="section-title">
                     <h2>Search results</h2>
-                    <span>{filtered.length} found</span>
+                    <span>
+                      {filtered.length} found for “{search.trim()}”
+                    </span>
                   </div>
                   {filtered.length ? (
                     renderPhrases(filtered)
@@ -1464,84 +1554,119 @@ function AppShell({
                   <LockKeyhole />
                 </span>
                 <h1>
-                  Guided Learning
+                  Choose how
                   <br />
-                  is a premium plan
+                  you want to learn
                 </h1>
                 <p>
-                  The 50-phrase book is free. Structured learning unlocks after
-                  an active subscription.
+                  Keep the 50-phrase book free, unlock a deep lookup library
+                  once, or subscribe for a structured daily course.
                 </p>
               </div>
               <div className="premium-layout">
                 <div className="feature-list">
                   <div>
+                    <Search />
+                    <span>
+                      <b>1,000+ instant lookups with Pro</b>
+                      <small>
+                        Find words and sentences in four writing forms
+                      </small>
+                    </span>
+                  </div>
+                  <div>
+                    <Globe2 />
+                    <span>
+                      <b>Sentence examples and context</b>
+                      <small>
+                        Know what to say, when to say it, and how it sounds
+                      </small>
+                    </span>
+                  </div>
+                  <div>
+                    <Download />
+                    <span>
+                      <b>Lifetime and offline value</b>
+                      <small>
+                        Pro is a one-time purchase with downloadable packs
+                      </small>
+                    </span>
+                  </div>
+                  <div>
                     <CalendarDays />
                     <span>
-                      <b>Daily 5-minute learning plan</b>
-                      <small>Small lessons that fit your day</small>
+                      <b>Daily lessons with Guided Learning</b>
+                      <small>Short, structured practice for $6.99/month</small>
                     </span>
                   </div>
                   <div>
                     <Brain />
                     <span>
-                      <b>Quizzes and smart review</b>
-                      <small>Remember what you learn</small>
-                    </span>
-                  </div>
-                  <div>
-                    <BarChart3 />
-                    <span>
-                      <b>Progress, XP, and streaks</b>
-                      <small>Your private learning record across devices</small>
-                    </span>
-                  </div>
-                  <div>
-                    <Volume2 />
-                    <span>
-                      <b>Pronunciation practice</b>
+                      <b>Quizzes, progress, XP, and streaks</b>
                       <small>
-                        Normal and slow listening modes as audio launches
-                      </small>
-                    </span>
-                  </div>
-                  <div>
-                    <ShieldCheck />
-                    <span>
-                      <b>Secure entitlement checks</b>
-                      <small>
-                        Lessons unlock only for an active account plan
+                        Guided Learning helps you build a lasting habit
                       </small>
                     </span>
                   </div>
                 </div>
-                <div className="premium-price-card">
-                  <span>
-                    {hasLearningAccess ? 'Active subscription' : 'Premium'}
-                  </span>
-                  <h2>
-                    $6.99 <small>/ month</small>
-                  </h2>
-                  <p>
-                    {hasLearningAccess
-                      ? 'Guided Learning is unlocked.'
-                      : 'The free phrasebook remains free.'}
-                  </p>
-                  <Button
-                    onClick={
-                      hasLearningAccess
-                        ? openLearning
+                <div className="premium-plan-stack">
+                  <div className="premium-price-card phrasebook-pro-card">
+                    <span>
+                      {hasPhrasebookProAccess
+                        ? 'Lifetime access active'
+                        : 'Pay once · Keep forever'}
+                    </span>
+                    <h2>$20</h2>
+                    <h3>Phrasebook Pro</h3>
+                    <p>
+                      1,000+ searchable words and practical sentences, examples,
+                      context, pronunciation, and offline packs as the expanded
+                      catalog launches.
+                    </p>
+                    <Button
+                      onClick={
+                        hasPhrasebookProAccess
+                          ? () => setScreen('explore')
+                          : user
+                            ? () => openModal('pricing')
+                            : openAuth
+                      }
+                    >
+                      {hasPhrasebookProAccess
+                        ? 'Search Phrasebook Pro'
                         : user
-                          ? () => openModal('pricing')
-                          : openAuth
-                    }
-                  >
-                    {hasLearningAccess
-                      ? 'Open today’s lesson'
-                      : user
-                        ? 'Subscribe for $6.99'
-                        : 'Sign in to subscribe'}
-                  </Button>
+                          ? 'Get lifetime access'
+                          : 'Sign in to get Pro'}
+                    </Button>
+                  </div>
+                  <div className="premium-price-card">
+                    <span>
+                      {hasLearningAccess ? 'Active subscription' : 'Premium'}
+                    </span>
+                    <h2>
+                      $6.99 <small>/ month</small>
+                    </h2>
+                    <h3>Guided Learning</h3>
+                    <p>
+                      Daily lessons, quizzes, smart review, progress, XP, and
+                      streaks for learners who want structure.
+                    </p>
+                    <Button
+                      onClick={
+                        hasLearningAccess
+                          ? openLearning
+                          : user
+                            ? () => openModal('pricing')
+                            : openAuth
+                      }
+                    >
+                      {hasLearningAccess
+                        ? 'Open today’s lesson'
+                        : user
+                          ? 'Subscribe for $6.99'
+                          : 'Sign in to subscribe'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </section>
@@ -1983,18 +2108,23 @@ export default function HomePage() {
               {modal === 'install' ? <Download /> : <Star />}
             </span>
             <DialogTitle>
-              {modal === 'install'
-                ? 'Install GEO'
-                : 'Guided Learning is locked'}
+              {modal === 'install' ? 'Install GEO' : 'Choose your GEO upgrade'}
             </DialogTitle>
             <DialogDescription>
               {modal === 'install'
                 ? 'On iPhone or iPad, tap Share, then “Add to Home Screen.” On Chrome or Edge, use “Install app” in the browser menu if the install prompt is not shown. GEO’s core interface is cached for quick launch and essential offline access.'
-                : 'Lessons, quizzes, progress, XP, and streaks require an active subscription. Secure checkout is being connected, so this beta does not collect payment details yet.'}
+                : 'Phrasebook Pro is a lifetime lookup pack. Guided Learning is the monthly course. Secure checkout is being connected, so this beta does not collect payment details yet.'}
             </DialogDescription>
           </DialogHeader>
           {modal === 'pricing' && (
             <div className="modal-plans">
+              <div className="phrasebook-choice">
+                <span>
+                  <b>Phrasebook Pro</b>
+                  <small>1,000+ lookups · Lifetime access</small>
+                </span>
+                <strong>$20</strong>
+              </div>
               <div className="recommended">
                 <span>
                   <b>Guided Learning</b>

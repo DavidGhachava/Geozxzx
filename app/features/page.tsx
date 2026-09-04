@@ -10,7 +10,7 @@ export default function FeaturesPage() {
     <InfoPage
       eyebrow="Product"
       title="Useful Georgian, built around real moments."
-      intro="GEO starts with a free 50-phrase Georgian phrasebook and adds structured learning for Guided Learning subscribers."
+      intro="GEO starts with a free 50-phrase Georgian phrasebook, adds a powerful lifetime lookup pack, and offers structured learning as a separate subscription."
     >
       <section>
         <h2>50 phrases, free</h2>
@@ -23,6 +23,12 @@ export default function FeaturesPage() {
         <p>
           Use GEO immediately as a guest. Create a free account when you want
           saved favorites synchronized securely across devices.
+        </p>
+        <h2>Phrasebook Pro · $20 once</h2>
+        <p>
+          Built for instant real-world answers: a growing 1,000+ word and
+          sentence catalog, examples, richer context, pronunciation, and
+          downloadable offline packs with lifetime access.
         </p>
         <h2>Guided Learning · $6.99/month</h2>
         <p>
