@@ -83,18 +83,20 @@ type Phrase = {
   audio_url?: string | null;
 };
 
+type Locale = 'en' | 'ru' | 'ka';
+
 const categories: {
   name: CategoryName;
   count: number;
   icon: typeof Heart;
   tone: string;
 }[] = [
-  { name: 'Essentials', count: 12, icon: Heart, tone: 'wine' },
-  { name: 'Food & Cafés', count: 10, icon: Coffee, tone: 'coral' },
-  { name: 'Transport', count: 8, icon: Bus, tone: 'sage' },
-  { name: 'Shopping', count: 8, icon: ShoppingBag, tone: 'gold' },
+  { name: 'Essentials', count: 14, icon: Heart, tone: 'wine' },
+  { name: 'Food & Cafés', count: 9, icon: Coffee, tone: 'coral' },
+  { name: 'Transport', count: 9, icon: Bus, tone: 'sage' },
+  { name: 'Shopping', count: 7, icon: ShoppingBag, tone: 'gold' },
   { name: 'Emergencies', count: 6, icon: ShieldPlus, tone: 'red' },
-  { name: 'Meeting People', count: 6, icon: Users, tone: 'green' },
+  { name: 'Meeting People', count: 5, icon: Users, tone: 'green' },
 ];
 
 const phrases: Record<CategoryName, Phrase[]> = {
@@ -105,6 +107,49 @@ const phrases: Record<CategoryName, Phrase[]> = {
     { ka: 'გთხოვთ', tr: 'gtkhovt', en: 'Please', ru: 'Пожалуйста' },
     { ka: 'დიახ', tr: 'diakh', en: 'Yes', ru: 'Да' },
     { ka: 'არა', tr: 'ara', en: 'No', ru: 'Нет' },
+    { ka: 'ბოდიში', tr: 'bodishi', en: 'Excuse me / Sorry', ru: 'Извините' },
+    {
+      ka: 'დილა მშვიდობისა',
+      tr: 'dila mshvidobisa',
+      en: 'Good morning',
+      ru: 'Доброе утро',
+    },
+    {
+      ka: 'საღამო მშვიდობისა',
+      tr: 'saghamo mshvidobisa',
+      en: 'Good evening',
+      ru: 'Добрый вечер',
+    },
+    {
+      ka: 'არ მესმის',
+      tr: 'ar mesmis',
+      en: 'I do not understand',
+      ru: 'Я не понимаю',
+    },
+    {
+      ka: 'ინგლისურად საუბრობთ?',
+      tr: 'inglisurad saubrobt?',
+      en: 'Do you speak English?',
+      ru: 'Вы говорите по-английски?',
+    },
+    {
+      ka: 'რუსულად საუბრობთ?',
+      tr: 'rusulad saubrobt?',
+      en: 'Do you speak Russian?',
+      ru: 'Вы говорите по-русски?',
+    },
+    {
+      ka: 'შეგიძლიათ გაიმეოროთ?',
+      tr: 'shegidzliat gaimeorot?',
+      en: 'Can you repeat?',
+      ru: 'Можете повторить?',
+    },
+    {
+      ka: 'უფრო ნელა, გთხოვთ',
+      tr: 'upro nela, gtkhovt',
+      en: 'More slowly, please',
+      ru: 'Помедленнее, пожалуйста',
+    },
   ],
   'Food & Cafés': [
     {
@@ -124,6 +169,42 @@ const phrases: Record<CategoryName, Phrase[]> = {
       tr: 'ugemrielesia',
       en: 'It is delicious',
       ru: 'Это очень вкусно',
+    },
+    {
+      ka: 'წყალი, გთხოვთ',
+      tr: 'tsqali, gtkhovt',
+      en: 'Water, please',
+      ru: 'Воду, пожалуйста',
+    },
+    {
+      ka: 'ანგარიში, გთხოვთ',
+      tr: 'angarishi, gtkhovt',
+      en: 'The bill, please',
+      ru: 'Счёт, пожалуйста',
+    },
+    {
+      ka: 'ვეგეტარიანული კერძი გაქვთ?',
+      tr: 'vegetarianuli kerzi gakvt?',
+      en: 'Do you have a vegetarian dish?',
+      ru: 'У вас есть вегетарианское блюдо?',
+    },
+    {
+      ka: 'უშაქროდ, გთხოვთ',
+      tr: 'ushakrod, gtkhovt',
+      en: 'Without sugar, please',
+      ru: 'Без сахара, пожалуйста',
+    },
+    {
+      ka: 'ალერგია მაქვს',
+      tr: 'alergia makvs',
+      en: 'I have an allergy',
+      ru: 'У меня аллергия',
+    },
+    {
+      ka: 'ცხარე არ მინდა',
+      tr: 'tskhare ar minda',
+      en: 'I do not want it spicy',
+      ru: 'Я не хочу острое',
     },
   ],
   Transport: [
@@ -145,6 +226,42 @@ const phrases: Record<CategoryName, Phrase[]> = {
       en: 'Stop here',
       ru: 'Остановите здесь',
     },
+    {
+      ka: 'ავტობუსის გაჩერება სად არის?',
+      tr: 'avtobusis gachereba sad aris?',
+      en: 'Where is the bus stop?',
+      ru: 'Где автобусная остановка?',
+    },
+    {
+      ka: 'სადგური სად არის?',
+      tr: 'sadguri sad aris?',
+      en: 'Where is the station?',
+      ru: 'Где вокзал?',
+    },
+    {
+      ka: 'აეროპორტში, გთხოვთ',
+      tr: 'aeroportshi, gtkhovt',
+      en: 'To the airport, please',
+      ru: 'В аэропорт, пожалуйста',
+    },
+    {
+      ka: 'როდის გადის?',
+      tr: 'rodis gadis?',
+      en: 'When does it leave?',
+      ru: 'Когда отправляется?',
+    },
+    {
+      ka: 'ეს ავტობუსი ცენტრში მიდის?',
+      tr: 'es avtobusi tsentrshi midis?',
+      en: 'Does this bus go to the center?',
+      ru: 'Этот автобус идёт в центр?',
+    },
+    {
+      ka: 'მარჯვნივ თუ მარცხნივ?',
+      tr: 'marjvniv tu martskhniv?',
+      en: 'Right or left?',
+      ru: 'Направо или налево?',
+    },
   ],
   Shopping: [
     {
@@ -159,6 +276,31 @@ const phrases: Record<CategoryName, Phrase[]> = {
       en: 'Can I pay by card?',
       ru: 'Можно оплатить картой?',
     },
+    { ka: 'ეს მინდა', tr: 'es minda', en: 'I want this', ru: 'Я хочу это' },
+    {
+      ka: 'სხვა ზომა გაქვთ?',
+      tr: 'skhva zoma gakvt?',
+      en: 'Do you have another size?',
+      ru: 'У вас есть другой размер?',
+    },
+    {
+      ka: 'ნაღდი ფულით შეიძლება?',
+      tr: 'naghdi pulit sheidzleba?',
+      en: 'Can I pay in cash?',
+      ru: 'Можно наличными?',
+    },
+    {
+      ka: 'ქვითარი, გთხოვთ',
+      tr: 'kvitari, gtkhovt',
+      en: 'A receipt, please',
+      ru: 'Чек, пожалуйста',
+    },
+    {
+      ka: 'ძალიან ძვირია',
+      tr: 'dzalian dzviria',
+      en: 'It is very expensive',
+      ru: 'Это очень дорого',
+    },
   ],
   Emergencies: [
     { ka: 'დამეხმარეთ!', tr: 'damekhmaret!', en: 'Help me!', ru: 'Помогите!' },
@@ -167,6 +309,30 @@ const phrases: Record<CategoryName, Phrase[]> = {
       tr: 'ekimi mchirdeba',
       en: 'I need a doctor',
       ru: 'Мне нужен врач',
+    },
+    {
+      ka: 'პოლიცია გამოიძახეთ',
+      tr: 'politsia gamoidzakhet',
+      en: 'Call the police',
+      ru: 'Вызовите полицию',
+    },
+    {
+      ka: 'სასწრაფო დახმარება გამოიძახეთ',
+      tr: 'sastsrapo dakhmareba gamoidzakhet',
+      en: 'Call an ambulance',
+      ru: 'Вызовите скорую помощь',
+    },
+    {
+      ka: 'დავიკარგე',
+      tr: 'davikarge',
+      en: 'I am lost',
+      ru: 'Я заблудился / заблудилась',
+    },
+    {
+      ka: 'აფთიაქი სად არის?',
+      tr: 'aptiaki sad aris?',
+      en: 'Where is the pharmacy?',
+      ru: 'Где аптека?',
     },
   ],
   'Meeting People': [
@@ -182,8 +348,526 @@ const phrases: Record<CategoryName, Phrase[]> = {
       en: 'Nice to meet you',
       ru: 'Приятно познакомиться',
     },
+    { ka: 'მე მქვია…', tr: 'me mkvia…', en: 'My name is…', ru: 'Меня зовут…' },
+    {
+      ka: 'საიდან ხართ?',
+      tr: 'saidan khart?',
+      en: 'Where are you from?',
+      ru: 'Откуда вы?',
+    },
+    {
+      ka: 'ქართულს ვსწავლობ',
+      tr: 'kartuls vstsavlob',
+      en: 'I am learning Georgian',
+      ru: 'Я учу грузинский',
+    },
   ],
 };
+
+const categoryLabels: Record<Locale, Record<CategoryName, string>> = {
+  en: {
+    Essentials: 'Essentials',
+    'Food & Cafés': 'Food & Cafés',
+    Transport: 'Transport',
+    Shopping: 'Shopping',
+    Emergencies: 'Emergencies',
+    'Meeting People': 'Meeting People',
+  },
+  ru: {
+    Essentials: 'Основы',
+    'Food & Cafés': 'Еда и кафе',
+    Transport: 'Транспорт',
+    Shopping: 'Покупки',
+    Emergencies: 'Экстренные ситуации',
+    'Meeting People': 'Знакомства',
+  },
+  ka: {
+    Essentials: 'ძირითადი ფრაზები',
+    'Food & Cafés': 'საკვები და კაფე',
+    Transport: 'ტრანსპორტი',
+    Shopping: 'შოპინგი',
+    Emergencies: 'გადაუდებელი შემთხვევები',
+    'Meeting People': 'გაცნობა',
+  },
+};
+
+const localeCopy: Record<Locale, Record<string, string>> = {
+  en: {
+    language: 'Language',
+    menu: 'Toggle navigation',
+    why: 'Why GEO',
+    locations: 'Batumi & Tbilisi',
+    phrasebook: 'Phrasebook',
+    pricing: 'Pricing',
+    install: 'Install',
+    useWeb: 'Use on web',
+    heroEyebrow: 'Learn Georgian in Batumi & Tbilisi',
+    heroTitle: 'Speak Georgian for real life.',
+    heroBody:
+      'Find the phrase you need, hear it, and save it. Built for international residents, Russian speakers, and visitors in Georgia.',
+    openFree: 'Open 50 free phrases',
+    installApp: 'Install the app',
+    freeAccess: '50 phrases free',
+    secureSync: 'Secure saved phrases',
+    threeLanguages: 'English · Русский · ქართული',
+    whyKicker: 'Made for real life',
+    whyTitle: 'Useful Georgian, without the clutter.',
+    visiting: 'Visiting Georgia',
+    visitingBody: 'Handle cafés, transport, shopping, and directions.',
+    living: 'Living here',
+    livingBody: 'Keep everyday language ready when you need it.',
+    connecting: 'Meeting people',
+    connectingBody: 'Start conversations with clear, practical phrases.',
+    localKicker: 'Learn where you live',
+    localTitle: 'Made for Batumi, Tbilisi, and everyday Georgia.',
+    localBody:
+      'Search in English or Russian while learning Georgian script and pronunciation.',
+    batumiTitle: 'Georgian for life by the Black Sea',
+    batumiBody: 'Cafés, transport, shopping, directions, and neighbors.',
+    batumiLink: 'Georgian in Batumi',
+    tbilisiTitle: 'Speak through the capital',
+    tbilisiBody: 'Metro trips, restaurants, markets, services, and workdays.',
+    tbilisiLink: 'Georgian in Tbilisi',
+    russianTitle: 'Made approachable for Russian speakers',
+    russianBody:
+      'Use Russian meanings while learning Georgian script and sound.',
+    russianLink: 'For Russian speakers',
+    teacherKicker: 'Learn with a real teacher',
+    teacherTitle: 'Want personal help speaking Georgian?',
+    teacherBody:
+      'Kristina Beridze teaches Georgian to Russian-speaking students with calm explanations and practical conversation.',
+    children: 'Children and adults',
+    online: 'Online or in Batumi',
+    fromPrice: 'From 20 ₾ per lesson',
+    meetTeacher: 'Meet Kristina and check availability',
+    teacherCard:
+      'Georgian for Russian speakers, taught in Russian and Georgian. Individual, mini-group, and online formats.',
+    searchKicker: 'Four-way phrasebook',
+    searchTitle: 'Search the way you think.',
+    searchBody:
+      'Type Georgian, transliteration, English, or Russian. Every form stays together.',
+    audioNote: 'Tap the speaker to hear Georgian pronunciation.',
+    explorePhrasebook: 'Explore the phrasebook',
+    situations: 'Six useful situations',
+    situationsTitle: 'From your first hello to finding your way.',
+    howKicker: 'How GEO works',
+    howTitle: 'Useful from the first minute.',
+    stepFree: 'Use 50 phrases free',
+    stepFreeBody: 'Search all four forms without an account or payment.',
+    stepSave: 'Save what matters',
+    stepSaveBody: 'Sign in only when you want your saved list on every device.',
+    stepLearn: 'Add guided practice',
+    stepLearnBody: 'Subscribe for lessons, quizzes, progress, and streaks.',
+    pricingKicker: 'Simple pricing',
+    pricingTitle: 'Start free. Upgrade only for what you need.',
+    pricingBody:
+      'The practical phrasebook is free. Lookup power and guided lessons are separate upgrades.',
+    freeForever: 'Free forever',
+    practicalPhrasebook: 'Practical phrasebook',
+    freePlanBody: '50 phrases, four-way search, pronunciation, and saves.',
+    openPhrasebook: 'Open phrasebook',
+    lifetime: 'Lifetime access',
+    proBody:
+      'A growing 1,000+ word and sentence catalog with examples, context, and offline packs.',
+    explorePro: 'Explore Phrasebook Pro',
+    premium: 'Premium',
+    guidedBody: 'Daily lessons, quizzes, review, progress, XP, and streaks.',
+    viewDetails: 'View subscription details',
+    trustKicker: 'Private by design',
+    trustTitle: 'Your learning belongs to you.',
+    trustBody:
+      'Guest browsing stays open. Signed-in profiles, saves, progress, and streaks are isolated per account.',
+    faqKicker: 'Quick answers',
+    faqTitle: 'Before you begin.',
+    faqFreeQ: 'What can I use for free?',
+    faqFreeA:
+      'All 50 phrases, four-way search, browsing, and pronunciation. Sign in only to sync saved phrases.',
+    faqProQ: 'What is Phrasebook Pro?',
+    faqProA:
+      'A $20 one-time upgrade for the growing 1,000+ word and sentence lookup library.',
+    faqGuidedQ: 'What requires $6.99/month?',
+    faqGuidedA:
+      'Daily lessons, quizzes, smart review, XP, progress, and streaks.',
+    faqInstallQ: 'Can I install GEO?',
+    faqInstallA:
+      'Yes. GEO is an installable web app with a cached core interface and offline fallback.',
+    finalTitle: 'Your next Georgian phrase is one tap away.',
+    finalBody: 'Open the full free starter phrasebook now—no account required.',
+    explore: 'Explore',
+    learn: 'Learn',
+    saved: 'Saved',
+    progress: 'Progress',
+    website: 'Website',
+    signIn: 'Sign in',
+    signOut: 'Sign out',
+    planActive: 'Your plan is active',
+    perMonth: '$6.99 per month',
+    learnGeorgian: 'Learn Georgian',
+    guestIntro: 'All 50 free phrases are ready. Sign in only to save them.',
+    welcomeBack: 'Welcome back',
+    guidedProgress: 'Guided progress',
+    searchPlaceholder: 'Search Georgian, transliteration, English or Russian',
+    searchResults: 'Search results',
+    found: 'found',
+    noPhrase: 'No phrase found',
+    searchHint: 'Try “coffee”, “morning” or “ticket”.',
+    freeReady: '50 free phrases ready',
+    browseSituation: 'Browse by situation',
+    sixCategories: '6 categories',
+    freePhrases: 'free phrases',
+    allCategories: 'All categories',
+    practicalGeorgian: 'Practical Georgian',
+    moreComing: 'More words and phrases are coming',
+    moreComingBody:
+      'The free starter set is complete. Pro expands the catalog.',
+    viewPlans: 'View plans',
+    savedPhrases: 'Saved phrases',
+    savedSync: 'Synced securely across your devices.',
+    signToSave: 'Sign in to save and sync phrases.',
+    noSaved: 'No saved phrases yet',
+    removeSaved: 'Remove saved phrase',
+    savePhrase: 'Save phrase',
+    createAccount: 'Create account',
+    authTitleIn: 'Sign in to GEO',
+    authTitleUp: 'Create your GEO account',
+    authBody:
+      'Save phrases across devices. Guided Learning history requires an active subscription.',
+    displayName: 'Display name',
+    email: 'Email',
+    password: 'Password',
+    pleaseWait: 'Please wait…',
+    newAccount: 'New to GEO? Create an account',
+    existingAccount: 'Already have an account? Sign in',
+  },
+  ru: {
+    language: 'Язык',
+    menu: 'Открыть навигацию',
+    why: 'Почему GEO',
+    locations: 'Батуми и Тбилиси',
+    phrasebook: 'Разговорник',
+    pricing: 'Цены',
+    install: 'Установить',
+    useWeb: 'Открыть в браузере',
+    heroEyebrow: 'Грузинский для жизни в Батуми и Тбилиси',
+    heroTitle: 'Говорите по-грузински в реальной жизни.',
+    heroBody:
+      'Найдите нужную фразу, послушайте произношение и сохраните её. Для русскоязычных жителей и гостей Грузии.',
+    openFree: 'Открыть 50 бесплатных фраз',
+    installApp: 'Установить приложение',
+    freeAccess: '50 фраз бесплатно',
+    secureSync: 'Безопасная синхронизация',
+    threeLanguages: 'English · Русский · ქართული',
+    whyKicker: 'Для реальной жизни',
+    whyTitle: 'Полезный грузинский — без лишнего.',
+    visiting: 'В поездке по Грузии',
+    visitingBody: 'Кафе, транспорт, покупки и дорога.',
+    living: 'Для жизни здесь',
+    livingBody: 'Нужные слова всегда под рукой.',
+    connecting: 'Для общения',
+    connectingBody: 'Начните разговор с понятных практических фраз.',
+    localKicker: 'Учитесь там, где живёте',
+    localTitle: 'Для Батуми, Тбилиси и повседневной жизни в Грузии.',
+    localBody:
+      'Ищите на русском или английском и осваивайте грузинское письмо и произношение.',
+    batumiTitle: 'Грузинский для жизни у Чёрного моря',
+    batumiBody: 'Кафе, транспорт, покупки, дорога и соседи.',
+    batumiLink: 'Грузинский в Батуми',
+    tbilisiTitle: 'Говорите в столице',
+    tbilisiBody: 'Метро, рестораны, рынки, услуги и рабочие будни.',
+    tbilisiLink: 'Грузинский в Тбилиси',
+    russianTitle: 'Понятно для русскоязычных',
+    russianBody:
+      'Русские значения помогают освоить грузинское письмо и звучание.',
+    russianLink: 'Для русскоязычных',
+    teacherKicker: 'Занятия с преподавателем',
+    teacherTitle: 'Нужна личная помощь с грузинским?',
+    teacherBody:
+      'Кристина Беридзе обучает русскоязычных учеников: спокойные объяснения и живая разговорная практика.',
+    children: 'Дети и взрослые',
+    online: 'Онлайн или в Батуми',
+    fromPrice: 'От 20 ₾ за урок',
+    meetTeacher: 'Познакомиться с Кристиной',
+    teacherCard:
+      'Грузинский для русскоязычных. Индивидуальные, мини-групповые и онлайн-занятия на русском и грузинском.',
+    searchKicker: 'Разговорник в четырёх формах',
+    searchTitle: 'Ищите так, как думаете.',
+    searchBody:
+      'Введите грузинский текст, транслитерацию, английское или русское значение.',
+    audioNote: 'Нажмите на динамик, чтобы услышать произношение.',
+    explorePhrasebook: 'Открыть разговорник',
+    situations: 'Шесть ситуаций',
+    situationsTitle: 'От первого приветствия до поиска дороги.',
+    howKicker: 'Как работает GEO',
+    howTitle: 'Полезно с первой минуты.',
+    stepFree: '50 фраз бесплатно',
+    stepFreeBody: 'Поиск по четырём формам без аккаунта и оплаты.',
+    stepSave: 'Сохраняйте нужное',
+    stepSaveBody:
+      'Войдите, только если хотите синхронизацию между устройствами.',
+    stepLearn: 'Добавьте обучение',
+    stepLearnBody: 'Уроки, тесты, прогресс и серии занятий по подписке.',
+    pricingKicker: 'Простые цены',
+    pricingTitle: 'Начните бесплатно. Платите только за нужное.',
+    pricingBody:
+      'Практический разговорник бесплатный. Расширенный поиск и курс приобретаются отдельно.',
+    freeForever: 'Бесплатно навсегда',
+    practicalPhrasebook: 'Практический разговорник',
+    freePlanBody: '50 фраз, поиск, произношение и сохранение.',
+    openPhrasebook: 'Открыть разговорник',
+    lifetime: 'Навсегда',
+    proBody:
+      'Растущий каталог 1000+ слов и предложений с примерами и офлайн-пакетами.',
+    explorePro: 'Подробнее о Phrasebook Pro',
+    premium: 'Премиум',
+    guidedBody: 'Ежедневные уроки, тесты, повторение, прогресс, XP и серии.',
+    viewDetails: 'Условия подписки',
+    trustKicker: 'Конфиденциальность',
+    trustTitle: 'Ваш прогресс принадлежит вам.',
+    trustBody:
+      'Гостевой просмотр открыт. Данные каждого вошедшего пользователя защищены отдельно.',
+    faqKicker: 'Короткие ответы',
+    faqTitle: 'Перед началом.',
+    faqFreeQ: 'Что доступно бесплатно?',
+    faqFreeA:
+      'Все 50 фраз, поиск, просмотр и произношение. Вход нужен только для синхронизации сохранённого.',
+    faqProQ: 'Что такое Phrasebook Pro?',
+    faqProA:
+      'Разовая покупка за $20 для растущего каталога из 1000+ слов и предложений.',
+    faqGuidedQ: 'Для чего нужна подписка $6.99?',
+    faqGuidedA:
+      'Ежедневные уроки, тесты, умное повторение, XP, прогресс и серии занятий.',
+    faqInstallQ: 'Можно установить GEO?',
+    faqInstallA:
+      'Да. GEO устанавливается как веб-приложение и имеет офлайн-экран.',
+    finalTitle: 'Следующая грузинская фраза — в одном нажатии.',
+    finalBody: 'Откройте полный бесплатный набор из 50 фраз без регистрации.',
+    explore: 'Обзор',
+    learn: 'Учиться',
+    saved: 'Сохранённые',
+    progress: 'Прогресс',
+    website: 'Сайт',
+    signIn: 'Войти',
+    signOut: 'Выйти',
+    planActive: 'Подписка активна',
+    perMonth: '$6.99 в месяц',
+    learnGeorgian: 'Учить грузинский',
+    guestIntro:
+      'Все 50 бесплатных фраз готовы. Вход нужен только для сохранения.',
+    welcomeBack: 'С возвращением',
+    guidedProgress: 'Учебный прогресс',
+    searchPlaceholder:
+      'Поиск на грузинском, русском, английском или по транслитерации',
+    searchResults: 'Результаты поиска',
+    found: 'найдено',
+    noPhrase: 'Фраза не найдена',
+    searchHint: 'Попробуйте «кофе», «утро» или «билет».',
+    freeReady: '50 бесплатных фраз готовы',
+    browseSituation: 'Выберите ситуацию',
+    sixCategories: '6 категорий',
+    freePhrases: 'бесплатных фраз',
+    allCategories: 'Все категории',
+    practicalGeorgian: 'Практический грузинский',
+    moreComing: 'Скоро появятся новые слова и фразы',
+    moreComingBody: 'Бесплатный набор уже полный. Pro расширит каталог.',
+    viewPlans: 'Посмотреть тарифы',
+    savedPhrases: 'Сохранённые фразы',
+    savedSync: 'Безопасно синхронизируются на ваших устройствах.',
+    signToSave: 'Войдите, чтобы сохранять и синхронизировать фразы.',
+    noSaved: 'Пока нет сохранённых фраз',
+    removeSaved: 'Удалить из сохранённых',
+    savePhrase: 'Сохранить фразу',
+    createAccount: 'Создать аккаунт',
+    authTitleIn: 'Войти в GEO',
+    authTitleUp: 'Создать аккаунт GEO',
+    authBody:
+      'Сохраняйте фразы на всех устройствах. История обучения доступна с активной подпиской.',
+    displayName: 'Имя',
+    email: 'Электронная почта',
+    password: 'Пароль',
+    pleaseWait: 'Подождите…',
+    newAccount: 'Впервые в GEO? Создать аккаунт',
+    existingAccount: 'Уже есть аккаунт? Войти',
+  },
+  ka: {
+    language: 'ენა',
+    menu: 'ნავიგაციის გახსნა',
+    why: 'რატომ GEO',
+    locations: 'ბათუმი და თბილისი',
+    phrasebook: 'ფრაზები',
+    pricing: 'ფასები',
+    install: 'დაყენება',
+    useWeb: 'ვებვერსიის გახსნა',
+    heroEyebrow: 'ქართული ბათუმსა და თბილისში ცხოვრებისთვის',
+    heroTitle: 'ისაუბრეთ ქართულად ყოველდღიურ ცხოვრებაში.',
+    heroBody:
+      'იპოვეთ საჭირო ფრაზა, მოუსმინეთ გამოთქმას და შეინახეთ. შექმნილია საქართველოში მცხოვრები და ჩამოსული ადამიანებისთვის.',
+    openFree: 'გახსენით 50 უფასო ფრაზა',
+    installApp: 'აპის დაყენება',
+    freeAccess: '50 ფრაზა უფასოდ',
+    secureSync: 'უსაფრთხო სინქრონიზაცია',
+    threeLanguages: 'English · Русский · ქართული',
+    whyKicker: 'რეალური ცხოვრებისთვის',
+    whyTitle: 'სასარგებლო ქართული ზედმეტის გარეშე.',
+    visiting: 'საქართველოში მოგზაურობა',
+    visitingBody: 'კაფე, ტრანსპორტი, საყიდლები და მიმართულებები.',
+    living: 'აქ ცხოვრება',
+    livingBody: 'საჭირო სიტყვები ყოველთვის ხელმისაწვდომია.',
+    connecting: 'ადამიანებთან ურთიერთობა',
+    connectingBody: 'დაიწყეთ საუბარი მარტივი და პრაქტიკული ფრაზებით.',
+    localKicker: 'ისწავლეთ იქ, სადაც ცხოვრობთ',
+    localTitle: 'ბათუმისთვის, თბილისისთვის და ყოველდღიური საქართველოსთვის.',
+    localBody:
+      'მოძებნეთ ინგლისურად ან რუსულად და ისწავლეთ ქართული დამწერლობა და გამოთქმა.',
+    batumiTitle: 'ქართული შავი ზღვისპირეთში ცხოვრებისთვის',
+    batumiBody: 'კაფე, ტრანსპორტი, საყიდლები, მიმართულებები და მეზობლები.',
+    batumiLink: 'ქართული ბათუმში',
+    tbilisiTitle: 'ისაუბრეთ დედაქალაქში',
+    tbilisiBody: 'მეტრო, რესტორნები, ბაზრები, მომსახურება და სამუშაო დღეები.',
+    tbilisiLink: 'ქართული თბილისში',
+    russianTitle: 'მარტივად რუსულენოვანთათვის',
+    russianBody:
+      'რუსული მნიშვნელობები ქართული დამწერლობისა და ჟღერადობის სწავლაში გეხმარებათ.',
+    russianLink: 'რუსულენოვანთათვის',
+    teacherKicker: 'ისწავლეთ მასწავლებელთან',
+    teacherTitle: 'გჭირდებათ პირადი დახმარება ქართულში?',
+    teacherBody:
+      'კრისტინა ბერიძე რუსულენოვან მოსწავლეებს ქართულს მშვიდი ახსნითა და პრაქტიკული საუბრით ასწავლის.',
+    children: 'ბავშვები და მოზრდილები',
+    online: 'ონლაინ ან ბათუმში',
+    fromPrice: 'გაკვეთილი 20 ₾-დან',
+    meetTeacher: 'გაიცანით კრისტინა',
+    teacherCard:
+      'ქართული რუსულენოვანთათვის. ინდივიდუალური, მცირე ჯგუფისა და ონლაინ გაკვეთილები რუსულ და ქართულ ენებზე.',
+    searchKicker: 'ოთხფორმიანი ფრაზების წიგნი',
+    searchTitle: 'მოძებნეთ ისე, როგორც ფიქრობთ.',
+    searchBody:
+      'შეიყვანეთ ქართული, ტრანსლიტერაცია, ინგლისური ან რუსული მნიშვნელობა.',
+    audioNote: 'გამოთქმის მოსასმენად დააჭირეთ დინამიკს.',
+    explorePhrasebook: 'ფრაზების გახსნა',
+    situations: 'ექვსი სიტუაცია',
+    situationsTitle: 'პირველი მისალმებიდან გზის პოვნამდე.',
+    howKicker: 'როგორ მუშაობს GEO',
+    howTitle: 'სასარგებლოა პირველივე წუთიდან.',
+    stepFree: '50 ფრაზა უფასოდ',
+    stepFreeBody: 'მოძებნეთ ოთხივე ფორმით ანგარიშისა და გადახდის გარეშე.',
+    stepSave: 'შეინახეთ საჭირო ფრაზები',
+    stepSaveBody: 'შედით მხოლოდ მოწყობილობებს შორის სინქრონიზაციისთვის.',
+    stepLearn: 'დაამატეთ სწავლება',
+    stepLearnBody: 'გამოიწერეთ გაკვეთილები, ტესტები, პროგრესი და სერიები.',
+    pricingKicker: 'მარტივი ფასები',
+    pricingTitle: 'დაიწყეთ უფასოდ. გადაიხადეთ მხოლოდ საჭიროებისთვის.',
+    pricingBody:
+      'პრაქტიკული ფრაზები უფასოა. გაფართოებული ძიება და კურსი ცალკე პროდუქტებია.',
+    freeForever: 'უფასოდ სამუდამოდ',
+    practicalPhrasebook: 'პრაქტიკული ფრაზები',
+    freePlanBody: '50 ფრაზა, ძიება, გამოთქმა და შენახვა.',
+    openPhrasebook: 'ფრაზების გახსნა',
+    lifetime: 'სამუდამო წვდომა',
+    proBody:
+      '1000-ზე მეტი სიტყვისა და წინადადების მზარდი კატალოგი მაგალითებითა და ოფლაინ პაკეტებით.',
+    explorePro: 'Phrasebook Pro-ს ნახვა',
+    premium: 'პრემიუმი',
+    guidedBody: 'ყოველდღიური გაკვეთილები, ტესტები, გამეორება, პროგრესი და XP.',
+    viewDetails: 'გამოწერის პირობები',
+    trustKicker: 'კონფიდენციალურობა',
+    trustTitle: 'თქვენი პროგრესი თქვენ გეკუთვნით.',
+    trustBody:
+      'სტუმრის რეჟიმი ღიაა. ავტორიზებული მომხმარებლების მონაცემები ერთმანეთისგან დაცულია.',
+    faqKicker: 'მოკლე პასუხები',
+    faqTitle: 'დაწყებამდე.',
+    faqFreeQ: 'რა არის უფასო?',
+    faqFreeA:
+      'ყველა 50 ფრაზა, ძიება, დათვალიერება და გამოთქმა. შესვლა მხოლოდ შენახულის სინქრონიზაციისთვისაა საჭირო.',
+    faqProQ: 'რა არის Phrasebook Pro?',
+    faqProA:
+      '$20-იანი ერთჯერადი განახლება 1000-ზე მეტი სიტყვისა და წინადადების მზარდი კატალოგისთვის.',
+    faqGuidedQ: 'რას სჭირდება $6.99-იანი გამოწერა?',
+    faqGuidedA:
+      'ყოველდღიური გაკვეთილები, ტესტები, გამეორება, XP, პროგრესი და სერიები.',
+    faqInstallQ: 'შემიძლია GEO-ს დაყენება?',
+    faqInstallA:
+      'დიახ. GEO დაყენებადი ვებაპია ქეშირებული ინტერფეისითა და ოფლაინ ეკრანით.',
+    finalTitle: 'შემდეგი ქართული ფრაზა ერთი შეხებითაა ხელმისაწვდომი.',
+    finalBody: 'გახსენით 50-ფრაზიანი უფასო ნაკრები რეგისტრაციის გარეშე.',
+    explore: 'ძიება',
+    learn: 'სწავლა',
+    saved: 'შენახული',
+    progress: 'პროგრესი',
+    website: 'ვებსაიტი',
+    signIn: 'შესვლა',
+    signOut: 'გასვლა',
+    planActive: 'გეგმა აქტიურია',
+    perMonth: '$6.99 თვეში',
+    learnGeorgian: 'ისწავლეთ ქართული',
+    guestIntro:
+      'ყველა 50 უფასო ფრაზა მზადაა. შესვლა მხოლოდ შესანახადაა საჭირო.',
+    welcomeBack: 'კეთილი დაბრუნება',
+    guidedProgress: 'სასწავლო პროგრესი',
+    searchPlaceholder: 'ძიება ქართულად, ინგლისურად, რუსულად ან ტრანსლიტერაციით',
+    searchResults: 'ძიების შედეგები',
+    found: 'ნაპოვნია',
+    noPhrase: 'ფრაზა ვერ მოიძებნა',
+    searchHint: 'სცადეთ „ყავა“, „დილა“ ან „ბილეთი“.',
+    freeReady: '50 უფასო ფრაზა მზადაა',
+    browseSituation: 'აირჩიეთ სიტუაცია',
+    sixCategories: '6 კატეგორია',
+    freePhrases: 'უფასო ფრაზა',
+    allCategories: 'ყველა კატეგორია',
+    practicalGeorgian: 'პრაქტიკული ქართული',
+    moreComing: 'მეტი სიტყვა და ფრაზა მალე დაემატება',
+    moreComingBody:
+      'უფასო საწყისი ნაკრები დასრულებულია. Pro კატალოგს გააფართოებს.',
+    viewPlans: 'გეგმების ნახვა',
+    savedPhrases: 'შენახული ფრაზები',
+    savedSync: 'უსაფრთხოდ სინქრონიზდება თქვენს მოწყობილობებზე.',
+    signToSave: 'ფრაზების შესანახად და სინქრონიზაციისთვის შედით.',
+    noSaved: 'შენახული ფრაზები ჯერ არ არის',
+    removeSaved: 'შენახულიდან წაშლა',
+    savePhrase: 'ფრაზის შენახვა',
+    createAccount: 'ანგარიშის შექმნა',
+    authTitleIn: 'GEO-ში შესვლა',
+    authTitleUp: 'GEO ანგარიშის შექმნა',
+    authBody:
+      'შეინახეთ ფრაზები ყველა მოწყობილობაზე. სწავლების ისტორია აქტიურ გამოწერას საჭიროებს.',
+    displayName: 'სახელი',
+    email: 'ელფოსტა',
+    password: 'პაროლი',
+    pleaseWait: 'დაელოდეთ…',
+    newAccount: 'ახალი ხართ GEO-ში? შექმენით ანგარიში',
+    existingAccount: 'უკვე გაქვთ ანგარიში? შედით',
+  },
+};
+
+function getCopy(locale: Locale, key: string) {
+  return localeCopy[locale][key] ?? localeCopy.en[key] ?? key;
+}
+
+function LanguageSwitcher({
+  locale,
+  onChange,
+}: {
+  locale: Locale;
+  onChange: (locale: Locale) => void;
+}) {
+  return (
+    <fieldset
+      className="language-switcher"
+      aria-label={getCopy(locale, 'language')}
+    >
+      {(['en', 'ru', 'ka'] as Locale[]).map((value) => (
+        <button
+          key={value}
+          type="button"
+          className={locale === value ? 'active' : ''}
+          aria-pressed={locale === value}
+          onClick={() => onChange(value)}
+        >
+          {value === 'ka' ? 'ქარ' : value.toUpperCase()}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -319,96 +1003,17 @@ function AudioButton({
 function Marketing({
   openApp,
   installApp,
+  locale,
+  onLocaleChange,
 }: {
   openApp: () => void;
   installApp: () => void;
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showInstall, setShowInstall] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
-  useEffect(() => {
-    const onScroll = () =>
-      setShowInstall(window.scrollY > Math.min(620, window.innerHeight * 0.65));
-    onScroll();
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const surface = document.querySelector<HTMLElement>('.marketing');
-    if (!surface) return;
-    let disposed = false;
-    const cleanups: (() => void)[] = [];
-    void import('motion').then(({ animate, hover, inView, stagger }) => {
-      if (disposed) return;
-      const intro = animate(
-        '.hero-copy > *',
-        { opacity: [0, 1], y: [24, 0] },
-        { duration: 0.7, delay: stagger(0.09), ease: [0.22, 1, 0.36, 1] },
-      );
-      const phones = animate(
-        '.phone-front',
-        { y: [0, -13, 0], rotate: [7, 5.5, 7] },
-        { duration: 6, repeat: Infinity, ease: 'easeInOut' },
-      );
-      const backPhone = animate(
-        '.phone-back',
-        { y: [0, 9, 0], rotate: [-3, -4.5, -3] },
-        { duration: 7.2, repeat: Infinity, ease: 'easeInOut' },
-      );
-      const stopReveal = inView(
-        '.audience-section, .local-section, .demo-pricing, .learning-story, .how-section, .pricing-section, .trust-section, .faq-section, .final-cta',
-        (element) => {
-          animate(
-            element,
-            { opacity: [0, 1], y: [38, 0] },
-            { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
-          );
-        },
-        { amount: 0.12 },
-      );
-      const stopHover = hover(
-        '.audience-grid article, .local-grid article, .how-grid article, .pricing-grid.redesigned article, .trust-list span, .category-showcase button',
-        (element) => {
-          animate(
-            element,
-            { y: -7, scale: 1.015 },
-            { type: 'spring', stiffness: 420, damping: 28 },
-          );
-          return () => {
-            animate(
-              element,
-              { y: 0, scale: 1 },
-              { type: 'spring', stiffness: 420, damping: 28 },
-            );
-          };
-        },
-      );
-      cleanups.push(
-        () => intro.stop(),
-        () => phones.stop(),
-        () => backPhone.stop(),
-        stopReveal,
-        stopHover,
-      );
-    });
-    let pointerFrame = 0;
-    const trackPointer = (event: PointerEvent) => {
-      if (pointerFrame) return;
-      pointerFrame = window.requestAnimationFrame(() => {
-        surface.style.setProperty('--pointer-x', `${event.clientX}px`);
-        surface.style.setProperty('--pointer-y', `${event.clientY}px`);
-        pointerFrame = 0;
-      });
-    };
-    window.addEventListener('pointermove', trackPointer, { passive: true });
-    return () => {
-      disposed = true;
-      cleanups.forEach((cleanup) => cleanup());
-      if (pointerFrame) window.cancelAnimationFrame(pointerFrame);
-      window.removeEventListener('pointermove', trackPointer);
-    };
-  }, []);
+  const t = (key: string) => getCopy(locale, key);
   const play = (id: string) => {
     setPlaying(id);
     window.setTimeout(() => setPlaying(null), 1100);
@@ -426,23 +1031,24 @@ function Marketing({
       />
       <header className="site-header">
         <Brand onHome={goHome} />
-        <nav className="desktop-nav" aria-label="Main navigation">
-          <a href="#why">Why GEO</a>
-          <a href="#locations">Batumi & Tbilisi</a>
-          <a href="#phrases">Phrasebook</a>
-          <a href="#pricing">Pricing</a>
+        <nav className="desktop-nav" aria-label={t('menu')}>
+          <a href="#why">{t('why')}</a>
+          <a href="#locations">{t('locations')}</a>
+          <a href="#phrases">{t('phrasebook')}</a>
+          <a href="#pricing">{t('pricing')}</a>
         </nav>
         <div className="header-actions">
+          <LanguageSwitcher locale={locale} onChange={onLocaleChange} />
           <button className="install-nav" onClick={installApp}>
-            <Download /> Install
+            <Download /> {t('install')}
           </button>
           <button className="open-app-link" onClick={openApp}>
-            Use on web <ChevronRight />
+            {t('useWeb')} <ChevronRight />
           </button>
           <button
             className="menu-button"
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle navigation"
+            aria-label={t('menu')}
             aria-expanded={menuOpen}
             aria-controls="mobile-navigation"
           >
@@ -456,92 +1062,57 @@ function Marketing({
             aria-label="Mobile navigation"
           >
             <a href="#why" onClick={() => setMenuOpen(false)}>
-              Why GEO
+              {t('why')}
             </a>
             <a href="#locations" onClick={() => setMenuOpen(false)}>
-              Batumi & Tbilisi
+              {t('locations')}
             </a>
             <a href="#phrases" onClick={() => setMenuOpen(false)}>
-              Phrasebook
+              {t('phrasebook')}
             </a>
             <a href="#pricing" onClick={() => setMenuOpen(false)}>
-              Pricing
+              {t('pricing')}
             </a>
-            <button onClick={installApp}>Install GEO</button>
-            <button onClick={openApp}>Use on web</button>
+            <button onClick={installApp}>{t('installApp')}</button>
+            <button onClick={openApp}>{t('useWeb')}</button>
           </nav>
         )}
       </header>
       <section className="hero">
         <div className="hero-copy">
-          <span className="eyebrow">Learn Georgian in Batumi & Tbilisi</span>
-          <h1>
-            Georgia feels closer
-            <br />
-            when you can <span className="shine-word">speak.</span>
-          </h1>
-          <p>
-            Practical Georgian for international residents, Russian speakers,
-            expats, and visitors. Find the phrase you need, save it, and build
-            confidence five minutes at a time.
-          </p>
+          <span className="eyebrow">{t('heroEyebrow')}</span>
+          <h1>{t('heroTitle')}</h1>
+          <p>{t('heroBody')}</p>
           <div className="hero-buttons">
             <Button className="primary-cta shiny-button" onClick={openApp}>
-              Use GEO on the web <ChevronRight />
+              {t('openFree')} <ChevronRight />
             </Button>
             <button className="secondary-cta" onClick={installApp}>
-              <Download /> Install the app
+              <Download /> {t('installApp')}
             </button>
           </div>
           <div className="hero-proof">
             <span>
-              <CheckCircle2 /> Free browser access
+              <CheckCircle2 /> {t('freeAccess')}
             </span>
             <span>
-              <ShieldCheck /> Secure progress sync
+              <ShieldCheck /> {t('secureSync')}
             </span>
             <span>
-              <Globe2 /> Georgian · English · Russian
+              <Globe2 /> {t('threeLanguages')}
             </span>
           </div>
         </div>
         <div className="hero-visual" aria-label="GEO app preview">
-          <img
-            className="skyline"
-            src="/batumi-line.webp"
-            width="1600"
-            height="533"
-            alt="Line illustration of the Batumi waterfront"
-            fetchPriority="high"
-          />
-          <span className="geo-cross" aria-hidden="true">
-            +
-          </span>
-          <span className="flag-orbit orbit-one" aria-hidden="true" />
-          <span className="flag-orbit orbit-two" aria-hidden="true" />
-          <div className="phone phone-back">
-            <div className="phone-notch" />
-            <div className="mini-status">
-              9:41 <span>•••</span>
-            </div>
-            <h4>Real-life situations</h4>
-            {categories.slice(0, 5).map(({ name, icon: Icon, tone }) => (
-              <div className="mini-category" key={name}>
-                <span className={`mini-icon ${tone}`}>
-                  <Icon />
-                </span>
-                <b>{name}</b>
-                <ChevronRight />
-              </div>
-            ))}
-          </div>
           <div className="phone phone-front">
             <div className="phone-notch" />
             <div className="mini-status">
               9:41 <span>•••</span>
             </div>
-            <span className="mini-back">‹ Essentials</span>
-            <span className="mini-pill">Say it now</span>
+            <span className="mini-back">
+              ‹ {categoryLabels[locale].Essentials}
+            </span>
+            <span className="mini-pill">{t('audioNote')}</span>
             <div className="mini-phrase">
               <strong>გამარჯობა</strong>
               <em>gamarjoba</em>
@@ -556,122 +1127,80 @@ function Marketing({
           </div>
         </div>
       </section>
-      <div className="kinetic-strip" aria-label="GEO highlights">
-        <div>
-          <span>ქართული</span>
-          <i>✦</i>
-          <span>Real-life phrases</span>
-          <i>✦</i>
-          <span>Five-minute learning</span>
-          <i>✦</i>
-          <span>Made for Georgia</span>
-          <i>✦</i>
-          <span aria-hidden="true">ქართული</span>
-          <i aria-hidden="true">✦</i>
-          <span aria-hidden="true">Real-life phrases</span>
-          <i aria-hidden="true">✦</i>
-        </div>
-      </div>
       <section className="audience-section" id="why">
-        <div className="section-kicker">Made for real life</div>
-        <h2>Not a textbook. A way into the conversation.</h2>
+        <div className="section-kicker">{t('whyKicker')}</div>
+        <h2>{t('whyTitle')}</h2>
         <div className="audience-grid">
           <article>
             <Plane />
             <span>
-              <b>Visiting Georgia</b>
-              <p>
-                Handle the moments that happen between landing and feeling at
-                home.
-              </p>
+              <b>{t('visiting')}</b>
+              <p>{t('visitingBody')}</p>
             </span>
           </article>
           <article>
             <Home />
             <span>
-              <b>Starting a life here</b>
-              <p>
-                Keep useful words close while routines, places, and faces become
-                familiar.
-              </p>
+              <b>{t('living')}</b>
+              <p>{t('livingBody')}</p>
             </span>
           </article>
           <article>
             <Users />
             <span>
-              <b>Connecting with people</b>
-              <p>
-                Meet Georgian effort with effort of your own—even one good
-                phrase matters.
-              </p>
+              <b>{t('connecting')}</b>
+              <p>{t('connectingBody')}</p>
             </span>
           </article>
         </div>
       </section>
       <section className="local-section" id="locations">
         <div>
-          <span className="section-kicker">Learn where you live</span>
-          <h2>Georgian for Batumi, Tbilisi, and everyday life.</h2>
-          <p>
-            Use GEO at the café downstairs, in a Bolt or taxi, at the bazaar,
-            with a landlord, or when meeting Georgian friends. English and
-            Russian translations make the first step easier.
-          </p>
+          <span className="section-kicker">{t('localKicker')}</span>
+          <h2>{t('localTitle')}</h2>
+          <p>{t('localBody')}</p>
         </div>
         <div className="local-grid">
           <article>
             <span>Batumi</span>
-            <h3>Georgian for life by the Black Sea</h3>
-            <p>
-              Tourism, cafés, transport, shopping, directions, and neighborly
-              conversation.
-            </p>
+            <h3>{t('batumiTitle')}</h3>
+            <p>{t('batumiBody')}</p>
             <a href="/learn-georgian-batumi">
-              Learn Georgian in Batumi <ChevronRight />
+              {t('batumiLink')} <ChevronRight />
             </a>
           </article>
           <article>
             <span>Tbilisi</span>
-            <h3>Speak through the capital</h3>
-            <p>
-              Metro trips, restaurants, markets, services, workdays, and meeting
-              people.
-            </p>
+            <h3>{t('tbilisiTitle')}</h3>
+            <p>{t('tbilisiBody')}</p>
             <a href="/learn-georgian-tbilisi">
-              Learn Georgian in Tbilisi <ChevronRight />
+              {t('tbilisiLink')} <ChevronRight />
             </a>
           </article>
           <article>
             <span>Русский → ქართული</span>
-            <h3>Made approachable for Russian speakers</h3>
-            <p>
-              Search with Russian meanings while learning Georgian script and
-              transliteration.
-            </p>
+            <h3>{t('russianTitle')}</h3>
+            <p>{t('russianBody')}</p>
             <a href="/learn-georgian-for-russian-speakers">
-              Для русскоязычных <ChevronRight />
+              {t('russianLink')} <ChevronRight />
             </a>
           </article>
         </div>
       </section>
       <section className="teacher-section" id="teacher">
         <div className="teacher-copy">
-          <span className="section-kicker">Learn with a real teacher</span>
-          <h2>Want personal help speaking Georgian?</h2>
-          <p>
-            Kristina Beridze teaches Georgian to Russian-speaking students with
-            calm explanations, conversation practice, and lessons shaped around
-            everyday life in Georgia.
-          </p>
+          <span className="section-kicker">{t('teacherKicker')}</span>
+          <h2>{t('teacherTitle')}</h2>
+          <p>{t('teacherBody')}</p>
           <div className="teacher-facts" aria-label="Lesson options">
             <span>
-              <Users /> Children and adults
+              <Users /> {t('children')}
             </span>
             <span>
-              <Globe2 /> Online or in Batumi
+              <Globe2 /> {t('online')}
             </span>
             <span>
-              <CheckCircle2 /> From 20 ₾ per lesson
+              <CheckCircle2 /> {t('fromPrice')}
             </span>
           </div>
           <a
@@ -680,7 +1209,7 @@ function Marketing({
             target="_blank"
             rel="noopener noreferrer"
           >
-            Meet Kristina and check availability <ChevronRight />
+            {t('meetTeacher')} <ChevronRight />
           </a>
         </div>
         <aside className="teacher-card" aria-label="About Kristina Beridze">
@@ -704,22 +1233,15 @@ function Marketing({
           <div className="teacher-card-copy">
             <small>ქართული · Русский</small>
             <h3>Kristina Beridze</h3>
-            <p>
-              Georgian for Russian speakers, taught in Russian and Georgian.
-              Individual, mini-group, and online formats depend on current
-              availability.
-            </p>
+            <p>{t('teacherCard')}</p>
           </div>
         </aside>
       </section>
       <section className="demo-pricing" id="phrases">
         <div className="phrase-demo">
-          <span className="section-kicker">Four-way phrasebook</span>
-          <h2>Search the way you think.</h2>
-          <p className="section-lead">
-            Type Georgian, transliteration, English, or Russian. GEO keeps every
-            form together.
-          </p>
+          <span className="section-kicker">{t('searchKicker')}</span>
+          <h2>{t('searchTitle')}</h2>
+          <p className="section-lead">{t('searchBody')}</p>
           <div className="demo-card">
             <div>
               <strong>მადლობა</strong>
@@ -729,244 +1251,123 @@ function Marketing({
             <AudioButton id="demo" playing={playing} onPlay={play} large />
           </div>
           <p className="demo-caption">
-            <Mic2 /> Native-reviewed audio is being prepared for launch.
+            <Mic2 /> {t('audioNote')}
           </p>
           <a className="text-link" href="/phrasebook">
-            Explore the phrasebook <ChevronRight />
+            {t('explorePhrasebook')} <ChevronRight />
           </a>
         </div>
         <div className="category-showcase">
-          <span className="section-kicker">Six starting situations</span>
-          <h2>From first hello to finding your way.</h2>
+          <span className="section-kicker">{t('situations')}</span>
+          <h2>{t('situationsTitle')}</h2>
           <div>
             {categories.map(({ name, icon: Icon, tone }) => (
               <button key={name} onClick={openApp}>
                 <span className={`mini-icon ${tone}`}>
                   <Icon />
                 </span>
-                <b>{name}</b>
+                <b>{categoryLabels[locale][name]}</b>
                 <ChevronRight />
               </button>
             ))}
           </div>
         </div>
       </section>
-      <section className="learning-story" id="learning">
-        <div>
-          <span className="section-kicker light">
-            Guided Learning · $6.99/month
-          </span>
-          <h2>
-            Five minutes today.
-            <br />A phrase you remember tomorrow.
-          </h2>
-          <p>
-            Daily lessons, quizzes, progress, XP, and streaks are part of the
-            paid Guided Learning plan. The practical 50-phrase book remains
-            free.
-          </p>
-          <a href="/guided-learning">
-            See what the plan includes <ChevronRight />
-          </a>
-        </div>
-        <div className="learning-metrics">
-          <article>
-            <Flame />
-            <b>Daily streak</b>
-            <span>Build consistency without marathon sessions.</span>
-          </article>
-          <article>
-            <Brain />
-            <b>Practice record</b>
-            <span>Track phrases, answers, XP, and review timing.</span>
-          </article>
-          <article>
-            <LockKeyhole />
-            <b>Subscriber access</b>
-            <span>Protected by account-level entitlement checks.</span>
-          </article>
-        </div>
-      </section>
       <section className="how-section" id="how">
-        <span className="section-kicker">How GEO works</span>
-        <h2>Useful from the first minute.</h2>
+        <span className="section-kicker">{t('howKicker')}</span>
+        <h2>{t('howTitle')}</h2>
         <div className="how-grid">
           <article>
             <span>01</span>
             <Search />
-            <h3>Use 50 phrases free</h3>
-            <p>
-              Search Georgian, transliteration, English, or Russian without
-              paying.
-            </p>
+            <h3>{t('stepFree')}</h3>
+            <p>{t('stepFreeBody')}</p>
           </article>
           <article>
             <span>02</span>
             <Bookmark />
-            <h3>Save what matters</h3>
-            <p>
-              Browse as a guest, or sign in to keep useful phrases across
-              devices.
-            </p>
+            <h3>{t('stepSave')}</h3>
+            <p>{t('stepSaveBody')}</p>
           </article>
           <article>
             <span>03</span>
             <LockKeyhole />
-            <h3>Unlock guided practice</h3>
-            <p>
-              Subscribe for $6.99/month to access lessons, quizzes, progress,
-              and streaks.
-            </p>
+            <h3>{t('stepLearn')}</h3>
+            <p>{t('stepLearnBody')}</p>
           </article>
         </div>
       </section>
       <section className="pricing-section" id="pricing">
         <div className="pricing-heading">
-          <span className="section-kicker">Simple pricing</span>
-          <h2>Start free. Choose lookup power or guided learning.</h2>
-          <p>
-            Search 50 essentials for free. Phrasebook Pro is a $20 lifetime
-            lookup pack; Guided Learning is a separate $6.99/month course.
-          </p>
+          <span className="section-kicker">{t('pricingKicker')}</span>
+          <h2>{t('pricingTitle')}</h2>
+          <p>{t('pricingBody')}</p>
         </div>
         <div className="pricing-grid redesigned three-plans">
           <article>
-            <span className="plan-state live">Free forever</span>
-            <h3>Practical phrasebook</h3>
+            <span className="plan-state live">{t('freeForever')}</span>
+            <h3>{t('practicalPhrasebook')}</h3>
             <b>$0</b>
-            <p>
-              50 Georgian phrases with transliteration, English, Russian,
-              search, and saved phrases.
-            </p>
-            <Button onClick={openApp}>Open phrasebook</Button>
+            <p>{t('freePlanBody')}</p>
+            <Button onClick={openApp}>{t('openPhrasebook')}</Button>
           </article>
           <article className="phrasebook-plan">
-            <span className="plan-state pro">Lifetime access</span>
+            <span className="plan-state pro">{t('lifetime')}</span>
             <h3>Phrasebook Pro</h3>
             <b>$20</b>
-            <p>
-              A growing 1,000+ word and sentence catalog, real-life examples,
-              richer context, pronunciation, and downloadable offline packs. Pay
-              once and keep access.
-            </p>
-            <a href="/pricing">Explore Phrasebook Pro</a>
+            <p>{t('proBody')}</p>
+            <a href="/pricing">{t('explorePro')}</a>
           </article>
           <article className="popular">
-            <span className="plan-state">Premium</span>
+            <span className="plan-state">{t('premium')}</span>
             <h3>Guided Learning</h3>
             <b>
               $6.99<small>/month</small>
             </b>
-            <p>
-              Daily lessons, quizzes, review, progress, XP, and streaks. Account
-              access is checked securely.
-            </p>
-            <a href="/pricing">View subscription details</a>
+            <p>{t('guidedBody')}</p>
+            <a href="/pricing">{t('viewDetails')}</a>
           </article>
         </div>
       </section>
       <section className="trust-section">
         <div>
-          <span className="section-kicker">Built with care</span>
-          <h2>Your learning belongs to you.</h2>
-          <p>
-            Guest browsing stays open. When you sign in, database rules isolate
-            your profile, saves, progress, activity, and streak from every other
-            learner.
-          </p>
-        </div>
-        <div className="trust-list">
-          <span>
-            <ShieldCheck /> Row-level account protection
-          </span>
-          <span>
-            <CheckCircle2 /> Honest beta feature status
-          </span>
-          <span>
-            <Globe2 /> Content model ready for EN · RU · KA
-          </span>
+          <span className="section-kicker">{t('trustKicker')}</span>
+          <h2>{t('trustTitle')}</h2>
+          <p>{t('trustBody')}</p>
         </div>
       </section>
       <section className="faq-section">
-        <span className="section-kicker">Questions, answered</span>
-        <h2>Before you begin.</h2>
+        <span className="section-kicker">{t('faqKicker')}</span>
+        <h2>{t('faqTitle')}</h2>
         <div>
           <details>
-            <summary>What can I use for free?</summary>
-            <p>
-              The complete 50-phrase practical phrasebook, four-way search, and
-              browsing are free. Sign in if you want to save phrases across
-              devices.
-            </p>
+            <summary>{t('faqFreeQ')}</summary>
+            <p>{t('faqFreeA')}</p>
           </details>
           <details>
-            <summary>What is included with Phrasebook Pro?</summary>
-            <p>
-              The $20 one-time pack is designed for fast real-world lookup: a
-              growing catalog of 1,000+ words and practical sentences, examples,
-              richer context, pronunciation, and offline packs. The current beta
-              contains 50 searchable entries while the expanded catalog and
-              checkout are prepared.
-            </p>
+            <summary>{t('faqProQ')}</summary>
+            <p>{t('faqProA')}</p>
           </details>
           <details>
-            <summary>What requires $6.99/month?</summary>
-            <p>
-              Daily lessons, quizzes, smart review, XP, progress, and streaks
-              require an active Guided Learning subscription.
-            </p>
+            <summary>{t('faqGuidedQ')}</summary>
+            <p>{t('faqGuidedA')}</p>
           </details>
           <details>
-            <summary>Can I install GEO and use it offline?</summary>
-            <p>
-              Yes. GEO is an installable PWA with a cached core interface and
-              offline fallback. Account sync and uncached content still require
-              a connection.
-            </p>
-          </details>
-          <details>
-            <summary>Can I subscribe today?</summary>
-            <p>
-              The access gate is active now. Secure payment checkout is the
-              remaining billing connection, so this beta does not collect
-              payment details yet.
-            </p>
+            <summary>{t('faqInstallQ')}</summary>
+            <p>{t('faqInstallA')}</p>
           </details>
         </div>
       </section>
       <section className="final-cta">
-        <img
-          src="/batumi-line.webp"
-          width="1600"
-          height="533"
-          loading="lazy"
-          alt=""
-        />
-        <span className="section-kicker light">50 phrases · free</span>
-        <h2>Your next Georgian phrase is one tap away.</h2>
-        <p>
-          Open the free phrasebook now. Upgrade once for the expanded lookup
-          library, or subscribe when you want guided learning.
-        </p>
+        <span className="section-kicker light">{t('freeAccess')}</span>
+        <h2>{t('finalTitle')}</h2>
+        <p>{t('finalBody')}</p>
         <Button onClick={openApp}>
-          Open free phrasebook <ChevronRight />
+          {t('openFree')} <ChevronRight />
         </Button>
       </section>
-      <PublicFooter />
-      <CookieNotice />
-      <div className={`sticky-install ${showInstall ? 'visible' : ''}`}>
-        <span className="sticky-logo">GEO</span>
-        <div>
-          <b>Practical Georgian</b>
-          <small>Web or installable app</small>
-        </div>
-        <span className="sticky-actions">
-          <button onClick={installApp}>
-            <Download /> Install
-          </button>
-          <Button onClick={openApp}>Use web</Button>
-        </span>
-      </div>
+      <PublicFooter locale={locale} />
+      <CookieNotice locale={locale} />
     </main>
   );
 }
@@ -976,12 +1377,17 @@ function AppShell({
   installApp,
   openModal,
   openAuth,
+  locale,
+  onLocaleChange,
 }: {
   exitToSite: () => void;
   installApp: () => void;
   openModal: (kind: 'install' | 'pricing') => void;
   openAuth: () => void;
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
 }) {
+  const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>('explore');
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
@@ -1082,7 +1488,10 @@ function AppShell({
         phrasebookAccessResult,
       ] = await Promise.all([
         supabase.from('saved_phrases').select('phrase_id'),
-        supabase.from('profiles').select('display_name').maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('display_name,interface_language')
+          .maybeSingle(),
         supabase
           .from('streaks')
           .select('current_streak,longest_streak')
@@ -1098,6 +1507,9 @@ function AppShell({
       ]);
       setSaved((savedResult.data ?? []).map((item) => item.phrase_id));
       setDisplayName(profileResult.data?.display_name ?? null);
+      const savedLocale = profileResult.data?.interface_language;
+      if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'ka')
+        onLocaleChange(savedLocale);
       setHasLearningAccess(accessResult.data === true);
       setHasPhrasebookProAccess(phrasebookAccessResult.data === true);
       const activity = activityResult.data ?? [];
@@ -1109,8 +1521,17 @@ function AppShell({
         activity,
       });
     },
-    [supabase],
+    [supabase, onLocaleChange],
   );
+
+  const changeLocale = (nextLocale: Locale) => {
+    onLocaleChange(nextLocale);
+    if (supabase && user)
+      void supabase
+        .from('profiles')
+        .update({ interface_language: nextLocale })
+        .eq('id', user.id);
+  };
 
   useEffect(() => {
     if (!supabase) return;
@@ -1327,8 +1748,8 @@ function AppShell({
               onClick={() => void toggleSaved(p)}
               aria-label={
                 saved.includes(phraseKey(p))
-                  ? 'Remove saved phrase'
-                  : 'Save phrase'
+                  ? t('removeSaved')
+                  : t('savePhrase')
               }
             >
               <Bookmark />
@@ -1357,25 +1778,25 @@ function AppShell({
             onClick={() => setScreen('explore')}
           >
             <Compass />
-            Explore
+            {t('explore')}
           </button>
           <button className={learnNav ? 'active' : ''} onClick={openLearning}>
             <BookOpen />
-            Learn
+            {t('learn')}
           </button>
           <button
             className={screen === 'saved' ? 'active' : ''}
             onClick={() => setScreen('saved')}
           >
             <Bookmark />
-            Saved
+            {t('saved')}
           </button>
           <button
             className={screen === 'progress' ? 'active' : ''}
             onClick={openProgress}
           >
             <BarChart3 />
-            Progress
+            {t('progress')}
           </button>
         </nav>
         <button
@@ -1384,24 +1805,23 @@ function AppShell({
         >
           <Star />
           <span>
-            <b>Guided Learning</b>
-            <small>
-              {hasLearningAccess ? 'Your plan is active' : '$6.99 per month'}
-            </small>
+            <b>{t('stepLearn')}</b>
+            <small>{hasLearningAccess ? t('planActive') : t('perMonth')}</small>
           </span>
           <ChevronRight />
         </button>
         <button className="back-to-site" onClick={exitToSite}>
-          <ArrowLeft /> Website
+          <ArrowLeft /> {t('website')}
         </button>
       </aside>
       <div className="app-main">
         <header className="app-topbar">
           <Brand onHome={exitToSite} />
           <div className="app-top-actions">
-            <button onClick={exitToSite}>Website</button>
+            <LanguageSwitcher locale={locale} onChange={changeLocale} />
+            <button onClick={exitToSite}>{t('website')}</button>
             <button className="app-install" onClick={installApp}>
-              <Download /> Install
+              <Download /> {t('install')}
             </button>
             <button
               onClick={() =>
@@ -1410,11 +1830,11 @@ function AppShell({
             >
               {user ? <LogOut /> : <LogIn />}
               {user
-                ? (displayName ?? user.email?.split('@')[0] ?? 'Sign out')
-                : 'Sign in'}
+                ? (displayName ?? user.email?.split('@')[0] ?? t('signOut'))
+                : t('signIn')}
             </button>
             <button onClick={() => setScreen('premium')}>
-              <Sparkles /> Premium
+              <Sparkles /> {t('premium')}
             </button>
           </div>
         </header>
@@ -1424,25 +1844,25 @@ function AppShell({
               <div className="screen-heading">
                 <div>
                   <span className="app-eyebrow">გამარჯობა · gamarjoba</span>
-                  <h1>Learn Georgian</h1>
+                  <h1>{t('learnGeorgian')}</h1>
                   <p>
                     {user
-                      ? `Welcome back${displayName ? `, ${displayName}` : ''}.`
-                      : 'Open the free 50-phrase book now. Sign in only to save phrases.'}
+                      ? `${t('welcomeBack')}${displayName ? `, ${displayName}` : ''}.`
+                      : t('guestIntro')}
                   </p>
                 </div>
                 <button className="streak-chip" onClick={openProgress}>
-                  <LockKeyhole /> Guided progress
+                  <LockKeyhole /> {t('guidedProgress')}
                 </button>
               </div>
               <search className="search-box">
                 <Search />
                 <input
                   type="search"
-                  aria-label="Search the Georgian phrasebook"
+                  aria-label={t('searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search Georgian, transliteration, English or Russian"
+                  placeholder={t('searchPlaceholder')}
                 />
                 {search && (
                   <button
@@ -1458,9 +1878,9 @@ function AppShell({
               {normalizedSearch ? (
                 <>
                   <div className="section-title">
-                    <h2>Search results</h2>
+                    <h2>{t('searchResults')}</h2>
                     <span>
-                      {filtered.length} found for “{search.trim()}”
+                      {filtered.length} {t('found')} “{search.trim()}”
                     </span>
                   </div>
                   {filtered.length ? (
@@ -1468,23 +1888,19 @@ function AppShell({
                   ) : (
                     <div className="empty-card">
                       <Search />
-                      <h3>No phrase found</h3>
-                      <p>Try “coffee”, “hello” or “ticket”.</p>
+                      <h3>{t('noPhrase')}</h3>
+                      <p>{t('searchHint')}</p>
                     </div>
                   )}
                 </>
               ) : (
                 <>
-                  <div className="free-progress">
-                    <div>
-                      <b>{Math.min(allPhrases.length, 50)} of 50</b> free
-                      phrases available
-                    </div>
-                    <Progress value={Math.min(100, allPhrases.length * 2)} />
+                  <div className="library-status">
+                    <CheckCircle2 /> <b>{t('freeReady')}</b>
                   </div>
                   <div className="section-title">
-                    <h2>Browse by situation</h2>
-                    <span>6 categories</span>
+                    <h2>{t('browseSituation')}</h2>
+                    <span>{t('sixCategories')}</span>
                   </div>
                   <div className="category-grid">
                     {categories.map(({ name, icon: Icon, tone }) => (
@@ -1497,8 +1913,10 @@ function AppShell({
                           <Icon />
                         </span>
                         <span>
-                          <b>{name}</b>
-                          <small>{library[name].length} free phrases</small>
+                          <b>{categoryLabels[locale][name]}</b>
+                          <small>
+                            {library[name].length} {t('freePhrases')}
+                          </small>
                         </span>
                         <ChevronRight />
                       </button>
@@ -1508,23 +1926,15 @@ function AppShell({
                     className="learning-banner locked-learning"
                     onClick={openLearning}
                   >
-                    <img
-                      src="/batumi-line.webp"
-                      width="1600"
-                      height="533"
-                      loading="lazy"
-                      alt=""
-                    />
                     <span>
-                      <small>Guided Learning · Premium</small>
-                      <b>Daily lessons are locked</b>
-                      <em>
-                        $6.99/month unlocks lessons, quizzes, progress, and
-                        streaks.
-                      </em>
+                      <small>
+                        {t('stepLearn')} · {t('premium')}
+                      </small>
+                      <b>{t('guidedBody')}</b>
+                      <em>{t('perMonth')}</em>
                     </span>
                     <span className="banner-action">
-                      <LockKeyhole /> View plan
+                      <LockKeyhole /> {t('viewPlans')}
                     </span>
                   </button>
                 </>
@@ -1537,13 +1947,15 @@ function AppShell({
                 className="back-button"
                 onClick={() => setScreen('explore')}
               >
-                <ArrowLeft /> All categories
+                <ArrowLeft /> {t('allCategories')}
               </button>
               <div className="screen-heading">
                 <div>
-                  <span className="app-eyebrow">Practical Georgian</span>
-                  <h1>{category}</h1>
-                  <p>{library[category].length} free phrases</p>
+                  <span className="app-eyebrow">{t('practicalGeorgian')}</span>
+                  <h1>{categoryLabels[locale][category]}</h1>
+                  <p>
+                    {library[category].length} {t('freePhrases')}
+                  </p>
                 </div>
               </div>
               {renderPhrases(library[category])}
@@ -1552,14 +1964,11 @@ function AppShell({
                   <LockKeyhole />
                 </span>
                 <div>
-                  <h2>More words & phrases are coming</h2>
-                  <p>
-                    The content model is ready for the complete reviewed
-                    phrasebook and audio library.
-                  </p>
+                  <h2>{t('moreComing')}</h2>
+                  <p>{t('moreComingBody')}</p>
                 </div>
                 <Button onClick={() => openModal('pricing')}>
-                  <LockKeyhole /> View learning plans
+                  <LockKeyhole /> {t('viewPlans')}
                 </Button>
               </div>
             </section>
@@ -1568,13 +1977,9 @@ function AppShell({
             <section className="screen">
               <div className="screen-heading">
                 <div>
-                  <span className="app-eyebrow">Your phrasebook</span>
-                  <h1>Saved phrases</h1>
-                  <p>
-                    {user
-                      ? 'Synced securely across your devices.'
-                      : 'Sign in to save and sync phrases.'}
-                  </p>
+                  <span className="app-eyebrow">{t('phrasebook')}</span>
+                  <h1>{t('savedPhrases')}</h1>
+                  <p>{user ? t('savedSync') : t('signToSave')}</p>
                 </div>
               </div>
               {saved.length ? (
@@ -1584,7 +1989,7 @@ function AppShell({
               ) : (
                 <div className="empty-card">
                   <Bookmark />
-                  <h3>No saved phrases yet</h3>
+                  <h3>{t('noSaved')}</h3>
                   <p>
                     {user
                       ? 'Tap the bookmark on any phrase to save it here.'
@@ -1948,25 +2353,25 @@ function AppShell({
             onClick={() => setScreen('explore')}
           >
             <Home />
-            <span>Home</span>
+            <span>{t('explore')}</span>
           </button>
           <button className={learnNav ? 'active' : ''} onClick={openLearning}>
             <BookOpen />
-            <span>Learn</span>
+            <span>{t('learn')}</span>
           </button>
           <button
             className={screen === 'saved' ? 'active' : ''}
             onClick={() => setScreen('saved')}
           >
             <Bookmark />
-            <span>Saved</span>
+            <span>{t('saved')}</span>
           </button>
           <button
             className={screen === 'progress' ? 'active' : ''}
             onClick={openProgress}
           >
             <BarChart3 />
-            <span>Progress</span>
+            <span>{t('progress')}</span>
           </button>
         </nav>
       </div>
@@ -1977,10 +2382,13 @@ function AppShell({
 function AuthDialog({
   open,
   onOpenChange,
+  locale,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  locale: Locale;
 }) {
+  const t = (key: string) => getCopy(locale, key);
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -2025,17 +2433,14 @@ function AuthDialog({
             <UserRound />
           </span>
           <DialogTitle>
-            {mode === 'signin' ? 'Sign in to GEO' : 'Create your GEO account'}
+            {mode === 'signin' ? t('authTitleIn') : t('authTitleUp')}
           </DialogTitle>
-          <DialogDescription>
-            Save your free phrasebook across devices. Guided Learning history is
-            available with an active subscription.
-          </DialogDescription>
+          <DialogDescription>{t('authBody')}</DialogDescription>
         </DialogHeader>
         <form className="auth-form" onSubmit={submit}>
           {mode === 'signup' && (
             <label>
-              Display name
+              {t('displayName')}
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
@@ -2045,7 +2450,7 @@ function AuthDialog({
             </label>
           )}
           <label>
-            Email
+            {t('email')}
             <input
               type="email"
               value={email}
@@ -2055,7 +2460,7 @@ function AuthDialog({
             />
           </label>
           <label>
-            Password
+            {t('password')}
             <input
               type="password"
               value={password}
@@ -2070,10 +2475,10 @@ function AuthDialog({
           {status && <output className="auth-status">{status}</output>}
           <Button type="submit" disabled={busy}>
             {busy
-              ? 'Please wait…'
+              ? t('pleaseWait')
               : mode === 'signin'
-                ? 'Sign in'
-                : 'Create account'}
+                ? t('signIn')
+                : t('createAccount')}
           </Button>
         </form>
         <button
@@ -2083,9 +2488,7 @@ function AuthDialog({
             setStatus('');
           }}
         >
-          {mode === 'signin'
-            ? 'New to GEO? Create an account'
-            : 'Already have an account? Sign in'}
+          {mode === 'signin' ? t('newAccount') : t('existingAccount')}
         </button>
       </DialogContent>
     </Dialog>
@@ -2094,11 +2497,32 @@ function AuthDialog({
 
 export default function HomePage() {
   const [mode, setMode] = useState<'marketing' | 'app'>('marketing');
+  const [locale, setLocale] = useState<Locale>('en');
   const [modal, setModal] = useState<'install' | 'pricing' | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const changeLocale = useCallback((nextLocale: Locale) => {
+    setLocale(nextLocale);
+    document.documentElement.lang = nextLocale;
+    localStorage.setItem('geo-interface-language', nextLocale);
+  }, []);
   useEffect(() => {
+    const savedLocale = localStorage.getItem('geo-interface-language');
+    const browserLocale = navigator.language.toLowerCase().startsWith('ru')
+      ? 'ru'
+      : navigator.language.toLowerCase().startsWith('ka')
+        ? 'ka'
+        : 'en';
+    window.setTimeout(
+      () =>
+        changeLocale(
+          savedLocale === 'ru' || savedLocale === 'ka' || savedLocale === 'en'
+            ? savedLocale
+            : browserLocale,
+        ),
+      0,
+    );
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
       location.hash === '#app'
@@ -2120,7 +2544,7 @@ export default function HomePage() {
       window.removeEventListener('beforeinstallprompt', captureInstall);
       window.removeEventListener('appinstalled', installed);
     };
-  }, []);
+  }, [changeLocale]);
   const openApp = () => {
     setMode('app');
     history.replaceState(null, '', '#app');
@@ -2147,13 +2571,20 @@ export default function HomePage() {
   return (
     <>
       {mode === 'marketing' ? (
-        <Marketing openApp={openApp} installApp={() => void installApp()} />
+        <Marketing
+          openApp={openApp}
+          installApp={() => void installApp()}
+          locale={locale}
+          onLocaleChange={changeLocale}
+        />
       ) : (
         <AppShell
           exitToSite={exitToSite}
           installApp={() => void installApp()}
           openModal={setModal}
           openAuth={() => setAuthOpen(true)}
+          locale={locale}
+          onLocaleChange={changeLocale}
         />
       )}
       <Dialog
@@ -2204,7 +2635,7 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} locale={locale} />
     </>
   );
 }

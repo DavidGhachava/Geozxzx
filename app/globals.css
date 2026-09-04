@@ -2340,6 +2340,268 @@ footer > button {
   }
 }
 
+/* Focused multilingual experience */
+.language-switcher {
+  min-width: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid rgba(164, 22, 39, 0.18);
+  border-radius: 11px;
+  background: #fff;
+}
+.language-switcher button,
+.app-top-actions .language-switcher button {
+  min-width: 38px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  color: #6a6260;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+.language-switcher button.active,
+.app-top-actions .language-switcher button.active {
+  color: #fff;
+  background: var(--primary);
+}
+.marketing {
+  padding-top: 72px;
+  background: #fffafa;
+}
+.marketing::before,
+.kinetic-strip,
+.sticky-install,
+.phone-back,
+.flag-orbit,
+.geo-cross,
+.hero-visual .skyline,
+.daily-skyline {
+  display: none !important;
+}
+.marketing .site-header {
+  height: 72px;
+  max-width: none;
+  padding-inline: max(22px, calc((100vw - 1220px) / 2));
+  background: rgba(255, 250, 250, 0.98);
+  backdrop-filter: none;
+}
+.marketing .desktop-nav {
+  gap: 30px;
+}
+.marketing .header-actions {
+  gap: 12px;
+}
+.hero {
+  max-width: 1220px;
+  min-height: 540px;
+  padding: 62px 20px 54px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 70px;
+}
+.hero-copy {
+  padding: 0;
+}
+.hero h1 {
+  max-width: 760px;
+  margin: 18px 0 22px;
+  font-size: clamp(3.25rem, 5.6vw, 5.4rem);
+  line-height: 0.98;
+}
+.hero-visual {
+  min-height: 430px;
+  display: grid;
+  place-items: center;
+}
+.hero-visual::before {
+  inset: 8% 4%;
+  opacity: 0.65;
+}
+.hero-visual .phone-front {
+  position: relative;
+  inset: auto;
+  width: min(330px, 100%);
+  height: 430px;
+  transform: none;
+  border-width: 5px;
+  border-radius: 34px;
+  box-shadow: 0 22px 50px rgba(72, 9, 25, 0.16);
+}
+.mini-pill {
+  max-width: 210px;
+  text-align: center;
+}
+.audience-section,
+.local-section,
+.teacher-section,
+.demo-pricing,
+.how-section,
+.pricing-section,
+.trust-section,
+.faq-section,
+.final-cta {
+  content-visibility: auto;
+  contain-intrinsic-size: 680px;
+}
+.audience-grid article,
+.local-grid article,
+.how-grid article,
+.pricing-grid.redesigned article,
+.category-showcase button,
+.category-card,
+.phrase-card,
+.stats-grid article {
+  box-shadow: none;
+  backdrop-filter: none;
+  will-change: auto;
+}
+.audience-grid article:hover,
+.local-grid article:hover,
+.how-grid article:hover,
+.pricing-grid.redesigned article:hover,
+.category-showcase button:hover,
+.category-card:hover,
+.phrase-card:hover,
+.stats-grid article:hover {
+  transform: none;
+  box-shadow: none;
+}
+.teacher-section {
+  box-shadow: none;
+}
+.teacher-card:hover .teacher-portrait img {
+  transform: none;
+}
+.trust-section {
+  grid-template-columns: 1fr;
+  max-width: 900px;
+  text-align: center;
+}
+.library-status {
+  width: fit-content;
+  margin: 22px 0 30px;
+  padding: 9px 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d8e5d6;
+  border-radius: 999px;
+  color: #315f39;
+  background: #f3faf1;
+  font-size: 0.92rem;
+}
+.library-status svg {
+  width: 18px;
+}
+.learning-banner {
+  height: auto;
+  min-height: 112px;
+  padding: 22px;
+}
+.final-cta {
+  overflow: visible;
+}
+.app-view {
+  background: #fbfaf8;
+}
+.app-topbar {
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: none;
+}
+
+@media (max-width: 1050px) {
+  .hero {
+    grid-template-columns: 1fr 0.7fr;
+    gap: 30px;
+  }
+  .marketing .header-actions > .language-switcher {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 760px) {
+  .marketing {
+    padding-top: 64px;
+  }
+  .marketing .site-header {
+    height: 64px;
+    padding-inline: 16px;
+  }
+  .marketing .brand {
+    font-size: 1.75rem;
+  }
+  .marketing .header-actions {
+    margin-left: auto;
+  }
+  .language-switcher button,
+  .app-top-actions .language-switcher button {
+    min-width: 34px;
+    height: 30px;
+    padding: 0 6px;
+  }
+  .hero {
+    min-height: 0;
+    padding: 48px 18px 44px;
+    grid-template-columns: 1fr;
+  }
+  .hero h1 {
+    font-size: clamp(2.75rem, 13vw, 4rem);
+  }
+  .hero-copy > p {
+    font-size: 1.05rem;
+  }
+  .hero-buttons {
+    display: grid;
+    gap: 10px;
+  }
+  .primary-cta,
+  .secondary-cta {
+    width: 100%;
+  }
+  .hero-proof {
+    gap: 9px;
+  }
+  .hero-visual {
+    min-height: 390px;
+  }
+  .hero-visual .phone-front {
+    height: 390px;
+  }
+  .audience-section,
+  .local-section,
+  .how-section,
+  .pricing-section,
+  .faq-section {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+  .teacher-section {
+    padding: 18px;
+  }
+  .app-topbar {
+    padding-inline: 12px;
+  }
+  .app-top-actions {
+    gap: 6px;
+  }
+  .app-top-actions > button:first-of-type,
+  .app-top-actions .app-install,
+  .app-top-actions > button:last-child {
+    display: none;
+  }
+  .app-top-actions .language-switcher button:first-child {
+    display: inline-block;
+  }
+  .library-status {
+    margin: 18px 0 24px;
+  }
+}
+
 @media (max-width: 390px) {
   .hero h1 {
     font-size: 2.8rem;
