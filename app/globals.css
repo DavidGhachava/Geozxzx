@@ -3899,10 +3899,9 @@ button:active {
 }
 .teacher-card {
   min-height: 330px;
-  padding: 30px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  overflow: hidden;
   border-radius: 24px;
   color: white;
   background:
@@ -3914,16 +3913,34 @@ button:active {
     linear-gradient(145deg, #610718, #a40c2e);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
-.teacher-monogram {
-  width: 84px;
-  height: 84px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 26px;
-  background: rgba(255, 255, 255, 0.13);
-  font-size: 1.8rem;
-  font-weight: 900;
+.teacher-portrait {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #6f1024;
+}
+.teacher-portrait::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 34%;
+  content: '';
+  background: linear-gradient(transparent, rgba(74, 3, 19, 0.48));
+  pointer-events: none;
+}
+.teacher-portrait img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 40%;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.teacher-card:hover .teacher-portrait img {
+  transform: scale(1.035);
+}
+.teacher-card-copy {
+  padding: 26px 30px 30px;
 }
 .teacher-card small {
   color: #ffd9df;
@@ -4170,7 +4187,9 @@ button:active {
   }
   .teacher-card {
     min-height: 280px;
-    padding: 24px;
+  }
+  .teacher-card-copy {
+    padding: 22px 24px 24px;
   }
   .sticky-install > div {
     display: none;

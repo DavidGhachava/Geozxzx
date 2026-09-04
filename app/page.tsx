@@ -684,10 +684,24 @@ function Marketing({
           </a>
         </div>
         <aside className="teacher-card" aria-label="About Kristina Beridze">
-          <span className="teacher-monogram" aria-hidden="true">
-            კბ
-          </span>
-          <div>
+          <picture className="teacher-portrait">
+            <source
+              type="image/avif"
+              srcSet="/kristina-beridze-640.avif 640w, /kristina-beridze-960.avif 960w"
+              sizes="(max-width: 1050px) 100vw, 390px"
+            />
+            <img
+              src="/kristina-beridze-640.webp"
+              srcSet="/kristina-beridze-640.webp 640w, /kristina-beridze-960.webp 960w"
+              sizes="(max-width: 1050px) 100vw, 390px"
+              alt="Kristina Beridze, Georgian language teacher in Batumi"
+              width="960"
+              height="640"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <div className="teacher-card-copy">
             <small>ქართული · Русский</small>
             <h3>Kristina Beridze</h3>
             <p>
