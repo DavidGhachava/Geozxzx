@@ -5032,3 +5032,187 @@ button:active {
     padding-inline: 15px;
   }
 }
+
+/* Fast app launch and low-cost rendering for modest phones. */
+html[data-app-mode='true'] .marketing {
+  visibility: hidden;
+}
+
+.marketing > section:not(.hero),
+.marketing > footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
+.search-box input::placeholder {
+  color: #665b5e;
+  opacity: 1;
+  font-weight: 650;
+}
+
+.app-teacher-card {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  align-items: center;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: 0 10px 30px rgba(61, 36, 19, 0.08);
+}
+
+.app-teacher-card > img {
+  width: 180px;
+  height: 140px;
+  border-radius: 16px;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+.app-teacher-card > div > span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-teacher-card h2 {
+  margin: 4px 0;
+  font-size: 1.45rem;
+}
+
+.app-teacher-card p {
+  margin: 0;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+
+.app-teacher-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.app-teacher-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--primary);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.app-teacher-actions a.teacher-whatsapp {
+  border-color: #177c4d;
+  background: #177c4d;
+  color: white;
+}
+
+.app-teacher-actions svg {
+  width: 18px;
+}
+
+@media (max-width: 760px) {
+  .app-topbar,
+  .bottom-nav {
+    background: #fffdf9;
+    backdrop-filter: none;
+  }
+  .app-content {
+    padding-top: 18px;
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
+  }
+  .explore-screen .screen-heading {
+    margin-bottom: 16px;
+  }
+  .explore-screen .screen-heading .app-eyebrow,
+  .explore-screen .screen-heading p {
+    display: none;
+  }
+  .explore-screen .screen-heading h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.1;
+  }
+  .explore-screen .screen-heading .streak-chip {
+    display: none;
+  }
+  .explore-screen .search-box {
+    position: sticky;
+    top: 72px;
+    z-index: 12;
+    height: 58px;
+    margin-inline: -4px;
+    border-color: rgba(178, 13, 47, 0.25);
+    background: #fffdfb;
+    box-shadow: 0 8px 24px rgba(82, 20, 32, 0.1);
+  }
+  .screen {
+    animation: none;
+  }
+  .category-card,
+  .phrase-card,
+  .app-teacher-card {
+    box-shadow: none;
+  }
+  .bottom-nav {
+    height: 72px;
+  }
+  .bottom-nav button {
+    min-width: 0;
+    touch-action: manipulation;
+  }
+  .app-teacher-card {
+    grid-template-columns: 84px 1fr;
+    gap: 14px;
+    padding: 14px;
+  }
+  .app-teacher-card > img {
+    width: 84px;
+    height: 112px;
+    border-radius: 14px;
+  }
+  .app-teacher-card h2 {
+    font-size: 1.2rem;
+  }
+  .app-teacher-card p {
+    font-size: 0.9rem;
+  }
+  .app-teacher-actions {
+    grid-column: 1 / -1;
+  }
+  .app-teacher-actions a {
+    min-height: 40px;
+    padding-inline: 12px;
+    font-size: 0.88rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (update: slow) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .site-header,
+  .legal-header,
+  .sticky-install {
+    backdrop-filter: none !important;
+  }
+}
+
+@media (display-mode: standalone) {
+  .back-to-site {
+    display: none;
+  }
+}

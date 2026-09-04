@@ -36,6 +36,7 @@ import {
   LogIn,
   LogOut,
   Mail,
+  MessageCircle,
   MonitorSmartphone,
   Phone,
   CreditCard,
@@ -55,7 +56,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
-import { PublicFooter } from '@/components/public-shell';
+import { MarketingFooter } from '@/components/marketing-footer';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -1386,7 +1387,7 @@ function Marketing({
           {t('openFree')} <ChevronRight />
         </Button>
       </section>
-      <PublicFooter locale={locale} />
+      <MarketingFooter locale={locale} />
       <CookieNotice locale={locale} />
     </main>
   );
@@ -1865,10 +1866,18 @@ function AppShell({
       ))}
     </div>
   );
+  const appHome = () => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setScreen('explore');
+      window.scrollTo(0, 0);
+      return;
+    }
+    exitToSite();
+  };
   return (
     <main className="app-view">
       <aside className="app-sidebar">
-        <Brand onHome={exitToSite} />
+        <Brand onHome={appHome} />
         <nav>
           <button
             className={
@@ -1925,7 +1934,7 @@ function AppShell({
       </aside>
       <div className="app-main">
         <header className="app-topbar">
-          <Brand onHome={exitToSite} />
+          <Brand onHome={appHome} />
           <div className="app-top-actions">
             <LanguageMenu
               locale={locale}
@@ -1968,6 +1977,10 @@ function AppShell({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder={t('searchPlaceholder')}
+                  enterKeyHint="search"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
                 {search && (
                   <button
@@ -2253,6 +2266,51 @@ function AppShell({
                   )}
                 </div>
               </div>
+              <aside className="app-teacher-card">
+                <img
+                  src="/kristina-beridze-640.avif"
+                  width="640"
+                  height="427"
+                  loading="lazy"
+                  decoding="async"
+                  alt="Kristina Beridze, Georgian and Russian language teacher in Batumi"
+                />
+                <div>
+                  <span>
+                    {locale === 'ru'
+                      ? 'Живые занятия'
+                      : locale === 'ka'
+                        ? 'ცოცხალი გაკვეთილები'
+                        : 'Learn with a teacher'}
+                  </span>
+                  <h2>Kristina Beridze</h2>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Грузинский для русскоговорящих — онлайн или в Батуми, от 20 ₾ за занятие.'
+                      : locale === 'ka'
+                        ? 'ქართული რუსულენოვანთათვის და რუსული ქართულენოვანთათვის — ონლაინ ან ბათუმში.'
+                        : 'Georgian lessons for Russian speakers, online or in Batumi, from ₾20 per lesson.'}
+                  </p>
+                  <div className="app-teacher-actions">
+                    <a
+                      className="teacher-whatsapp"
+                      href="https://wa.me/995571010750"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <MessageCircle /> WhatsApp
+                    </a>
+                    <a
+                      href="https://www.kristinalanguages.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {locale === 'ru' ? 'Подробнее' : 'View details'}{' '}
+                      <ChevronRight />
+                    </a>
+                  </div>
+                </div>
+              </aside>
             </section>
           )}
           {screen === 'daily' && hasLearningAccess && (
@@ -2858,7 +2916,8 @@ export default function HomePage() {
     }, 0);
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
-      location.hash === '#app'
+      location.hash === '#app' ||
+      new URLSearchParams(location.search).get('mode') === 'app'
     )
       window.setTimeout(() => setMode('app'), 0);
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production')
@@ -2879,6 +2938,13 @@ export default function HomePage() {
     };
   }, [changeLocale]);
   useEffect(() => {
+    if (
+      mode === 'app' ||
+      window.matchMedia('(display-mode: standalone)').matches ||
+      location.hash === '#app' ||
+      new URLSearchParams(location.search).get('mode') === 'app'
+    )
+      return;
     let active = true;
     let unsubscribe: (() => void) | undefined;
     const syncPublicAccount = async (
@@ -2898,30 +2964,35 @@ export default function HomePage() {
         .maybeSingle();
       if (active) setSiteDisplayName(data?.display_name ?? null);
     };
-    void import('@/lib/supabase/client').then(async (supabaseModule) => {
-      if (!active || !supabaseModule.isSupabaseConfigured) return;
-      const client = supabaseModule.createClient();
-      const { data } = await client.auth.getUser();
-      await syncPublicAccount(data.user, client);
-      const { data: listener } = client.auth.onAuthStateChange(
-        (_event, session) => {
-          void syncPublicAccount(session?.user ?? null, client);
-        },
-      );
-      unsubscribe = () => listener.subscription.unsubscribe();
-    });
+    const timer = window.setTimeout(() => {
+      void import('@/lib/supabase/client').then(async (supabaseModule) => {
+        if (!active || !supabaseModule.isSupabaseConfigured) return;
+        const client = supabaseModule.createClient();
+        const { data } = await client.auth.getUser();
+        await syncPublicAccount(data.user, client);
+        const { data: listener } = client.auth.onAuthStateChange(
+          (_event, session) => {
+            void syncPublicAccount(session?.user ?? null, client);
+          },
+        );
+        unsubscribe = () => listener.subscription.unsubscribe();
+      });
+    }, 300);
     return () => {
       active = false;
+      window.clearTimeout(timer);
       unsubscribe?.();
     };
-  }, []);
+  }, [mode]);
   const openApp = () => {
+    document.documentElement.dataset.appMode = 'true';
     setInitialAppScreen('explore');
     setMode('app');
     history.replaceState(null, '', '#app');
     window.scrollTo(0, 0);
   };
   const openAccount = () => {
+    document.documentElement.dataset.appMode = 'true';
     setInitialAppScreen('settings');
     setMode('app');
     history.replaceState(null, '', '#app');
@@ -2941,6 +3012,7 @@ export default function HomePage() {
     if (choice.outcome === 'accepted') setInstallPrompt(null);
   };
   const exitToSite = () => {
+    delete document.documentElement.dataset.appMode;
     setMode('marketing');
     history.replaceState(null, '', location.pathname);
     window.scrollTo(0, 0);
