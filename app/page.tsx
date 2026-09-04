@@ -30,7 +30,6 @@ import {
   ShieldCheck,
   ShieldPlus,
   ShoppingBag,
-  Sparkles,
   Star,
   Trophy,
   Users,
@@ -997,11 +996,19 @@ function AudioButton({
 function Marketing({
   openApp,
   installApp,
+  openAuth,
+  openAccount,
+  user,
+  displayName,
   locale,
   onLocaleChange,
 }: {
   openApp: () => void;
   installApp: () => void;
+  openAuth: () => void;
+  openAccount: () => void;
+  user: User | null;
+  displayName: string | null;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
@@ -1037,8 +1044,14 @@ function Marketing({
             onChange={onLocaleChange}
             label={t('language')}
           />
-          <button className="install-nav" onClick={installApp}>
-            <Download /> {t('install')}
+          <button
+            className="marketing-account"
+            onClick={user ? openAccount : openAuth}
+          >
+            <UserRound />
+            {user
+              ? (displayName ?? user.email?.split('@')[0] ?? 'Account')
+              : t('signIn')}
           </button>
           <button className="open-app-link" onClick={openApp}>
             {t('useWeb')} <ChevronRight />
@@ -1072,6 +1085,11 @@ function Marketing({
               {t('pricing')}
             </a>
             <button onClick={installApp}>{t('installApp')}</button>
+            <button onClick={user ? openAccount : openAuth}>
+              {user
+                ? `${displayName ?? user.email?.split('@')[0] ?? 'Account'} · Settings`
+                : t('signIn')}
+            </button>
             <button onClick={openApp}>{t('useWeb')}</button>
           </nav>
         )}
@@ -1372,21 +1390,21 @@ function Marketing({
 
 function AppShell({
   exitToSite,
-  installApp,
   openModal,
   openAuth,
+  initialScreen,
   locale,
   onLocaleChange,
 }: {
   exitToSite: () => void;
-  installApp: () => void;
   openModal: (kind: 'install' | 'pricing') => void;
   openAuth: () => void;
+  initialScreen?: Screen;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
   const t = (key: string) => getCopy(locale, key);
-  const [screen, setScreen] = useState<Screen>('explore');
+  const [screen, setScreen] = useState<Screen>(initialScreen ?? 'explore');
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -1912,12 +1930,6 @@ function AppShell({
               onChange={changeLocale}
               label={t('language')}
             />
-            <button className="app-website" onClick={exitToSite}>
-              {t('website')}
-            </button>
-            <button className="app-install" onClick={installApp}>
-              <Download /> {t('install')}
-            </button>
             <button
               className="account-button"
               onClick={() => (user ? setScreen('settings') : openAuth())}
@@ -1926,14 +1938,6 @@ function AppShell({
               {user
                 ? (displayName ?? user.email?.split('@')[0] ?? 'Account')
                 : t('signIn')}
-            </button>
-            <button
-              onClick={() => {
-                setUpgradeFocus('phrasebook');
-                setScreen('premium');
-              }}
-            >
-              <Sparkles /> {t('premium')}
             </button>
           </div>
         </header>
@@ -2816,6 +2820,9 @@ function AuthDialog({
 
 export default function HomePage() {
   const [mode, setMode] = useState<'marketing' | 'app'>('marketing');
+  const [initialAppScreen, setInitialAppScreen] = useState<Screen>('explore');
+  const [siteUser, setSiteUser] = useState<User | null>(null);
+  const [siteDisplayName, setSiteDisplayName] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('en');
   const [modal, setModal] = useState<'install' | 'pricing' | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
@@ -2864,7 +2871,51 @@ export default function HomePage() {
       window.removeEventListener('appinstalled', installed);
     };
   }, [changeLocale]);
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    const syncPublicAccount = async (
+      activeUser: User | null,
+      client: SupabaseClient,
+    ) => {
+      if (!active) return;
+      setSiteUser(activeUser);
+      if (!activeUser) {
+        setSiteDisplayName(null);
+        return;
+      }
+      const { data } = await client
+        .from('profiles')
+        .select('display_name')
+        .eq('id', activeUser.id)
+        .maybeSingle();
+      if (active) setSiteDisplayName(data?.display_name ?? null);
+    };
+    void import('@/lib/supabase/client').then(async (supabaseModule) => {
+      if (!active || !supabaseModule.isSupabaseConfigured) return;
+      const client = supabaseModule.createClient();
+      const { data } = await client.auth.getUser();
+      await syncPublicAccount(data.user, client);
+      const { data: listener } = client.auth.onAuthStateChange(
+        (_event, session) => {
+          void syncPublicAccount(session?.user ?? null, client);
+        },
+      );
+      unsubscribe = () => listener.subscription.unsubscribe();
+    });
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, []);
   const openApp = () => {
+    setInitialAppScreen('explore');
+    setMode('app');
+    history.replaceState(null, '', '#app');
+    window.scrollTo(0, 0);
+  };
+  const openAccount = () => {
+    setInitialAppScreen('settings');
     setMode('app');
     history.replaceState(null, '', '#app');
     window.scrollTo(0, 0);
@@ -2893,15 +2944,19 @@ export default function HomePage() {
         <Marketing
           openApp={openApp}
           installApp={() => void installApp()}
+          openAuth={() => setAuthOpen(true)}
+          openAccount={openAccount}
+          user={siteUser}
+          displayName={siteDisplayName}
           locale={locale}
           onLocaleChange={changeLocale}
         />
       ) : (
         <AppShell
           exitToSite={exitToSite}
-          installApp={() => void installApp()}
           openModal={setModal}
           openAuth={() => setAuthOpen(true)}
+          initialScreen={initialAppScreen}
           locale={locale}
           onLocaleChange={changeLocale}
         />

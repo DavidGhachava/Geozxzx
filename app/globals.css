@@ -2653,6 +2653,62 @@ footer > button {
   }
 }
 
+/* One account experience across the public site and app. */
+.marketing-account {
+  min-height: 44px;
+  max-width: 180px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(178, 13, 47, 0.16);
+  border-radius: 12px;
+  color: #4a333a;
+  background: rgba(255, 255, 255, 0.78);
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.marketing-account:hover {
+  color: var(--primary);
+  border-color: rgba(178, 13, 47, 0.32);
+  background: #fff;
+}
+.marketing-account svg {
+  width: 18px;
+  flex: none;
+  color: var(--primary);
+}
+.app-top-actions {
+  align-items: center;
+  gap: 9px;
+}
+.app-top-actions .account-button {
+  min-width: 112px;
+  max-width: 210px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(178, 13, 47, 0.14);
+  border-radius: 11px;
+  background: #fff4f5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-top-actions .account-button svg {
+  flex: none;
+}
+
+@media (max-width: 1050px) {
+  .marketing .marketing-account {
+    display: none;
+  }
+}
+
 /* Focused multilingual experience */
 .language-switcher {
   min-width: 0;
