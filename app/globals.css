@@ -4912,3 +4912,37 @@ button:active {
     left: auto;
   }
 }
+
+/* Keep the hero preview at a modern phone ratio and prevent menus from
+   changing the viewport width while they are open. */
+@media (min-width: 761px) {
+  html {
+    scrollbar-gutter: stable;
+  }
+  .hero-visual {
+    min-height: 610px;
+  }
+  .hero-visual .phone-front {
+    width: min(292px, 100%);
+    height: 580px;
+    border-radius: 42px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-visual {
+    min-height: 540px;
+  }
+  .hero-visual .phone-front {
+    width: min(250px, 72vw);
+    height: 520px;
+    border-radius: 38px;
+  }
+}
+
+@media (max-width: 390px) {
+  .hero-visual .phone-front {
+    width: min(232px, 70vw);
+    height: 490px;
+  }
+}

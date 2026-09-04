@@ -28,7 +28,7 @@ export function LanguageMenu({
   const current =
     options.find((option) => option.value === locale) ?? options[0];
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger className="language-menu-trigger" aria-label={label}>
         <span>{current.short}</span>
         <ChevronDown />
