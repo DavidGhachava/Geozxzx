@@ -5216,3 +5216,193 @@ html[data-app-mode='true'] .marketing {
     display: none;
   }
 }
+
+/* Clear phrasebook paths and one consistent red-and-white product system. */
+.library-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 22px 0 30px;
+}
+
+.library-overview .library-status {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.library-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.library-quick-actions button {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid rgba(178, 13, 47, 0.2);
+  border-radius: 13px;
+  background: #fffdfc;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 850;
+}
+
+.library-quick-actions button.library-pro-action {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.library-quick-actions svg {
+  width: 18px;
+}
+
+.pricing-grid .phrasebook-plan {
+  border-color: rgba(178, 13, 47, 0.28);
+  background: linear-gradient(145deg, #fffdfc, #fff0f2);
+  box-shadow: 0 18px 45px rgba(112, 10, 35, 0.1);
+}
+
+.pricing-grid .plan-state.pro {
+  color: var(--primary);
+  background: #f9dfe4;
+}
+
+.premium-price-card.phrasebook-pro-card {
+  border: 1px solid rgba(178, 13, 47, 0.25);
+  color: #2a1118;
+  background: linear-gradient(150deg, #fffdfc, #ffe9ed);
+  box-shadow: 0 18px 40px rgba(112, 10, 35, 0.12);
+}
+
+.phrasebook-pro-card > span {
+  color: var(--primary);
+  background: #f9dfe4;
+}
+
+.phrasebook-pro-card > button {
+  background: var(--primary);
+  color: white;
+}
+
+.modal-plans .phrasebook-choice {
+  border-color: rgba(178, 13, 47, 0.24);
+  color: var(--primary);
+  background: #fff1f3;
+}
+
+.app-teacher-card {
+  grid-template-columns: 76px 1fr;
+  max-width: 760px;
+  gap: 16px;
+  margin: 26px auto 0;
+  padding: 16px 18px;
+  border-color: rgba(178, 13, 47, 0.2);
+  border-left: 4px solid var(--primary);
+  border-radius: 18px;
+  box-shadow: none;
+}
+
+.app-teacher-card > img {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+}
+
+.app-teacher-card > div {
+  min-width: 0;
+}
+
+.app-teacher-card > div > span {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.app-teacher-card h2 {
+  margin: 2px 0 3px;
+  font-size: 1.2rem;
+}
+
+.app-teacher-card p {
+  font-size: 0.92rem;
+}
+
+.app-teacher-actions {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.app-teacher-actions a,
+.app-teacher-actions a.teacher-whatsapp {
+  min-height: 38px;
+  padding-inline: 12px;
+  border-color: rgba(178, 13, 47, 0.24);
+  background: white;
+  color: var(--primary);
+  font-size: 0.86rem;
+}
+
+.app-teacher-actions a.teacher-whatsapp {
+  background: var(--primary);
+  color: white;
+}
+
+@media (max-width: 760px) {
+  .library-overview {
+    display: grid;
+    gap: 12px;
+    margin: 18px 0 26px;
+  }
+  .library-quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .library-quick-actions button {
+    min-width: 0;
+    justify-content: center;
+    padding-inline: 9px;
+    font-size: 0.82rem;
+  }
+  .all-phrases-screen .screen-heading h1 {
+    font-size: 1.9rem;
+  }
+  .locked-learning {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .locked-learning .banner-action {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+  }
+  .premium-price-card.phrasebook-pro-card {
+    padding: 24px;
+  }
+  .premium-price-card.phrasebook-pro-card h2 {
+    margin-top: 16px;
+  }
+  .app-teacher-card {
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+  .app-teacher-card > img {
+    width: 64px;
+    height: 64px;
+  }
+  .app-teacher-card h2 {
+    font-size: 1.08rem;
+  }
+  .app-teacher-card p {
+    font-size: 0.86rem;
+  }
+  .app-teacher-actions a,
+  .app-teacher-actions a.teacher-whatsapp {
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: 0.8rem;
+  }
+}

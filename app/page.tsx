@@ -80,6 +80,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 type Screen =
   | 'explore'
+  | 'all'
   | 'category'
   | 'saved'
   | 'premium'
@@ -1881,7 +1882,9 @@ function AppShell({
         <nav>
           <button
             className={
-              screen === 'explore' || screen === 'category' ? 'active' : ''
+              screen === 'explore' || screen === 'all' || screen === 'category'
+                ? 'active'
+                : ''
             }
             onClick={() => setScreen('explore')}
           >
@@ -2013,8 +2016,34 @@ function AppShell({
                 </>
               ) : (
                 <>
-                  <div className="library-status">
-                    <CheckCircle2 /> <b>{t('freeReady')}</b>
+                  <div className="library-overview">
+                    <div className="library-status">
+                      <CheckCircle2 /> <b>{t('freeReady')}</b>
+                    </div>
+                    <div className="library-quick-actions">
+                      <button onClick={() => setScreen('all')}>
+                        <BookOpen />
+                        {locale === 'ru'
+                          ? 'Все 50 фраз'
+                          : locale === 'ka'
+                            ? '50-ვე ფრაზა'
+                            : 'View all 50'}
+                      </button>
+                      <button
+                        className="library-pro-action"
+                        onClick={() => {
+                          setUpgradeFocus('phrasebook');
+                          setScreen('premium');
+                        }}
+                      >
+                        <LockKeyhole />
+                        {locale === 'ru'
+                          ? 'Открыть 1 000+'
+                          : locale === 'ka'
+                            ? '1 000+ სიტყვა'
+                            : 'Access 1,000+'}
+                      </button>
+                    </div>
                   </div>
                   <div className="section-title">
                     <h2>{t('browseSituation')}</h2>
@@ -2057,6 +2086,41 @@ function AppShell({
                   </button>
                 </>
               )}
+            </section>
+          )}
+          {screen === 'all' && (
+            <section className="screen all-phrases-screen">
+              <button
+                className="back-button"
+                onClick={() => setScreen('explore')}
+              >
+                <ArrowLeft />
+                {locale === 'ru'
+                  ? 'Назад к обзору'
+                  : locale === 'ka'
+                    ? 'უკან მიმოხილვაზე'
+                    : 'Back to Explore'}
+              </button>
+              <div className="screen-heading">
+                <div>
+                  <span className="app-eyebrow">{t('phrasebook')}</span>
+                  <h1>
+                    {locale === 'ru'
+                      ? 'Все 50 бесплатных фраз'
+                      : locale === 'ka'
+                        ? '50 უფასო ფრაზა'
+                        : 'All 50 free phrases'}
+                  </h1>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Нажмите на динамик, чтобы услышать грузинское произношение.'
+                      : locale === 'ka'
+                        ? 'ქართული გამოთქმის მოსასმენად დააჭირეთ დინამიკს.'
+                        : 'Tap the speaker to hear the Georgian pronunciation.'}
+                  </p>
+                </div>
+              </div>
+              {renderPhrases(allPhrases)}
             </section>
           )}
           {screen === 'category' && (
@@ -2731,7 +2795,9 @@ function AppShell({
         <nav className="bottom-nav" aria-label="App navigation">
           <button
             className={
-              screen === 'explore' || screen === 'category' ? 'active' : ''
+              screen === 'explore' || screen === 'all' || screen === 'category'
+                ? 'active'
+                : ''
             }
             onClick={() => setScreen('explore')}
           >
