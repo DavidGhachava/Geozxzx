@@ -100,6 +100,7 @@ export type Database = {
           display_name: string | null;
           preferred_translation: string;
           interface_language: string;
+          phone_number: string | null;
           timezone: string;
           created_at: string;
           updated_at: string;
@@ -109,6 +110,7 @@ export type Database = {
           display_name?: string | null;
           preferred_translation?: string;
           interface_language?: string;
+          phone_number?: string | null;
           timezone?: string;
           created_at?: string;
           updated_at?: string;
@@ -118,6 +120,7 @@ export type Database = {
           display_name?: string | null;
           preferred_translation?: string;
           interface_language?: string;
+          phone_number?: string | null;
           timezone?: string;
           created_at?: string;
           updated_at?: string;

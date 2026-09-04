@@ -1,3 +1,36 @@
 import { InfoPage } from '@/components/public-shell';
 
-export default function SecurityPage(){return <InfoPage eyebrow="Trust" title="Security at GEO" intro="GEO is designed so every signed-in learner can access only their own private learning records."><section><h2>Current protections</h2><p>Authentication is provided by Supabase. Profiles, saved phrases, learning progress, streaks, and daily activity use database row-level security tied to the authenticated user. Public phrase content is read-only for learners, and progress updates run through an authenticated database function.</p><h2>Responsible use</h2><p>Do not enter sensitive personal information into profile fields. GEO is in public beta, and no internet service can promise absolute security.</p><h2>Reporting a concern</h2><p>A dedicated security contact and coordinated disclosure process must be added before commercial launch. Until then, do not include exploit details or personal data in public channels.</p></section></InfoPage>}
+export default function SecurityPage() {
+  return (
+    <InfoPage
+      eyebrow="Trust"
+      title="Security at GEO"
+      intro="GEO is designed so signed-in learners can access only their own private records."
+    >
+      <section>
+        <h2>Current protections</h2>
+        <p>
+          Supabase Auth protects sign-in. Database row-level security ties
+          profiles, saves, progress, streaks, and daily activity to the
+          authenticated owner. Paid access is checked server-side.
+        </p>
+        <h2>Account controls</h2>
+        <p>
+          Settings can revoke every other session and permanently delete the
+          account. Account deletion uses a JWT-protected server function and
+          never accepts another user ID from the browser.
+        </p>
+        <h2>Payments</h2>
+        <p>
+          GEO does not store bank or card details. A certified payment provider
+          will manage those details when checkout launches.
+        </p>
+        <h2>Report a concern</h2>
+        <p>
+          Email security concerns privately to daviddavowo@gmail.com. Do not
+          include passwords, payment details, or unnecessary personal data.
+        </p>
+      </section>
+    </InfoPage>
+  );
+}

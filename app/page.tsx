@@ -36,6 +36,12 @@ import {
   Users,
   LogIn,
   LogOut,
+  Mail,
+  MonitorSmartphone,
+  Phone,
+  CreditCard,
+  Settings,
+  Trash2,
   UserRound,
   Volume2,
   X,
@@ -51,6 +57,21 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { PublicFooter } from '@/components/public-shell';
+import {
+  LanguageMenu,
+  type InterfaceLocale as Locale,
+} from '@/components/language-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -65,7 +86,8 @@ type Screen =
   | 'daily'
   | 'lesson'
   | 'quiz'
-  | 'progress';
+  | 'progress'
+  | 'settings';
 type CategoryName =
   | 'Essentials'
   | 'Food & Cafés'
@@ -82,8 +104,6 @@ type Phrase = {
   ru: string;
   audio_url?: string | null;
 };
-
-type Locale = 'en' | 'ru' | 'ka';
 
 const categories: {
   name: CategoryName;
@@ -484,8 +504,8 @@ const localeCopy: Record<Locale, Record<string, string>> = {
       'All 50 phrases, four-way search, browsing, and pronunciation. Sign in only to sync saved phrases.',
     faqProQ: 'What is Phrasebook Pro?',
     faqProA:
-      'A $20 one-time upgrade for the growing 1,000+ word and sentence lookup library.',
-    faqGuidedQ: 'What requires $6.99/month?',
+      'A ₾60 one-time upgrade for the growing 1,000+ word and sentence lookup library.',
+    faqGuidedQ: 'What requires ₾19.99/month?',
     faqGuidedA:
       'Daily lessons, quizzes, smart review, XP, progress, and streaks.',
     faqInstallQ: 'Can I install GEO?',
@@ -501,7 +521,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'Sign in',
     signOut: 'Sign out',
     planActive: 'Your plan is active',
-    perMonth: '$6.99 per month',
+    perMonth: '₾19.99 per month',
     learnGeorgian: 'Learn Georgian',
     guestIntro: 'All 50 free phrases are ready. Sign in only to save them.',
     welcomeBack: 'Welcome back',
@@ -632,8 +652,8 @@ const localeCopy: Record<Locale, Record<string, string>> = {
       'Все 50 фраз, поиск, просмотр и произношение. Вход нужен только для синхронизации сохранённого.',
     faqProQ: 'Что такое Phrasebook Pro?',
     faqProA:
-      'Разовая покупка за $20 для растущего каталога из 1000+ слов и предложений.',
-    faqGuidedQ: 'Для чего нужна подписка $6.99?',
+      'Разовая покупка за ₾60 для растущего каталога из 1000+ слов и предложений.',
+    faqGuidedQ: 'Для чего нужна подписка ₾19.99?',
     faqGuidedA:
       'Ежедневные уроки, тесты, умное повторение, XP, прогресс и серии занятий.',
     faqInstallQ: 'Можно установить GEO?',
@@ -649,7 +669,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'Войти',
     signOut: 'Выйти',
     planActive: 'Подписка активна',
-    perMonth: '$6.99 в месяц',
+    perMonth: '₾19.99 в месяц',
     learnGeorgian: 'Учить грузинский',
     guestIntro:
       'Все 50 бесплатных фраз готовы. Вход нужен только для сохранения.',
@@ -780,8 +800,8 @@ const localeCopy: Record<Locale, Record<string, string>> = {
       'ყველა 50 ფრაზა, ძიება, დათვალიერება და გამოთქმა. შესვლა მხოლოდ შენახულის სინქრონიზაციისთვისაა საჭირო.',
     faqProQ: 'რა არის Phrasebook Pro?',
     faqProA:
-      '$20-იანი ერთჯერადი განახლება 1000-ზე მეტი სიტყვისა და წინადადების მზარდი კატალოგისთვის.',
-    faqGuidedQ: 'რას სჭირდება $6.99-იანი გამოწერა?',
+      '₾60-იანი ერთჯერადი განახლება 1000-ზე მეტი სიტყვისა და წინადადების მზარდი კატალოგისთვის.',
+    faqGuidedQ: 'რას სჭირდება ₾19.99-იანი გამოწერა?',
     faqGuidedA:
       'ყოველდღიური გაკვეთილები, ტესტები, გამეორება, XP, პროგრესი და სერიები.',
     faqInstallQ: 'შემიძლია GEO-ს დაყენება?',
@@ -797,7 +817,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'შესვლა',
     signOut: 'გასვლა',
     planActive: 'გეგმა აქტიურია',
-    perMonth: '$6.99 თვეში',
+    perMonth: '₾19.99 თვეში',
     learnGeorgian: 'ისწავლეთ ქართული',
     guestIntro:
       'ყველა 50 უფასო ფრაზა მზადაა. შესვლა მხოლოდ შესანახადაა საჭირო.',
@@ -842,33 +862,6 @@ function getCopy(locale: Locale, key: string) {
   return localeCopy[locale][key] ?? localeCopy.en[key] ?? key;
 }
 
-function LanguageSwitcher({
-  locale,
-  onChange,
-}: {
-  locale: Locale;
-  onChange: (locale: Locale) => void;
-}) {
-  return (
-    <fieldset
-      className="language-switcher"
-      aria-label={getCopy(locale, 'language')}
-    >
-      {(['en', 'ru', 'ka'] as Locale[]).map((value) => (
-        <button
-          key={value}
-          type="button"
-          className={locale === value ? 'active' : ''}
-          aria-pressed={locale === value}
-          onClick={() => onChange(value)}
-        >
-          {value === 'ka' ? 'ქარ' : value.toUpperCase()}
-        </button>
-      ))}
-    </fieldset>
-  );
-}
-
 const structuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -897,19 +890,19 @@ const structuredData = {
           '@type': 'Offer',
           name: 'Free Phrasebook',
           price: 0,
-          priceCurrency: 'USD',
+          priceCurrency: 'GEL',
         },
         {
           '@type': 'Offer',
           name: 'Phrasebook Pro Lifetime Access',
-          price: 20,
-          priceCurrency: 'USD',
+          price: 60,
+          priceCurrency: 'GEL',
         },
         {
           '@type': 'Offer',
           name: 'Guided Learning Monthly Subscription',
-          price: 6.99,
-          priceCurrency: 'USD',
+          price: 19.99,
+          priceCurrency: 'GEL',
         },
       ],
     },
@@ -921,7 +914,7 @@ const structuredData = {
           name: 'What is Phrasebook Pro?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Phrasebook Pro is a $20 one-time upgrade designed to provide lifetime access to a growing catalog of 1,000+ Georgian words and practical sentences with richer lookup tools.',
+            text: 'Phrasebook Pro is a ₾60 one-time upgrade designed to provide lifetime access to a growing catalog of 1,000+ Georgian words and practical sentences with richer lookup tools.',
           },
         },
         {
@@ -960,7 +953,8 @@ function Brand({ onHome }: { onHome: () => void }) {
       onClick={onHome}
       aria-label="Go to the GEO homepage"
     >
-      GEO<span>.</span>
+      <img src="/brand/geo-wave.svg" alt="" width="36" height="36" />
+      <span className="brand-word">GEO</span>
     </button>
   );
 }
@@ -1038,7 +1032,11 @@ function Marketing({
           <a href="#pricing">{t('pricing')}</a>
         </nav>
         <div className="header-actions">
-          <LanguageSwitcher locale={locale} onChange={onLocaleChange} />
+          <LanguageMenu
+            locale={locale}
+            onChange={onLocaleChange}
+            label={t('language')}
+          />
           <button className="install-nav" onClick={installApp}>
             <Download /> {t('install')}
           </button>
@@ -1307,14 +1305,14 @@ function Marketing({
           <article>
             <span className="plan-state live">{t('freeForever')}</span>
             <h3>{t('practicalPhrasebook')}</h3>
-            <b>$0</b>
+            <b>Free</b>
             <p>{t('freePlanBody')}</p>
             <Button onClick={openApp}>{t('openPhrasebook')}</Button>
           </article>
           <article className="phrasebook-plan">
             <span className="plan-state pro">{t('lifetime')}</span>
             <h3>Phrasebook Pro</h3>
-            <b>$20</b>
+            <b>₾60</b>
             <p>{t('proBody')}</p>
             <a href="/pricing">{t('explorePro')}</a>
           </article>
@@ -1322,7 +1320,7 @@ function Marketing({
             <span className="plan-state">{t('premium')}</span>
             <h3>Guided Learning</h3>
             <b>
-              $6.99<small>/month</small>
+              ₾19.99<small>/month</small>
             </b>
             <p>{t('guidedBody')}</p>
             <a href="/pricing">{t('viewDetails')}</a>
@@ -1397,6 +1395,25 @@ function AppShell({
     useState<Record<CategoryName, Phrase[]>>(phrases);
   const [user, setUser] = useState<User | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [settingsName, setSettingsName] = useState('');
+  const [settingsStatus, setSettingsStatus] = useState('');
+  const [settingsBusy, setSettingsBusy] = useState(false);
+  const [deviceLabel] = useState(() => {
+    if (typeof navigator === 'undefined') return 'This browser';
+    const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    const browser = /Edg\//.test(navigator.userAgent)
+      ? 'Edge'
+      : /Chrome\//.test(navigator.userAgent)
+        ? 'Chrome'
+        : /Safari\//.test(navigator.userAgent)
+          ? 'Safari'
+          : 'Browser';
+    return `${mobile ? 'Mobile device' : 'Computer'} · ${browser}`;
+  });
+  const [upgradeFocus, setUpgradeFocus] = useState<'phrasebook' | 'guided'>(
+    'phrasebook',
+  );
   const [hasLearningAccess, setHasLearningAccess] = useState(false);
   const [hasPhrasebookProAccess, setHasPhrasebookProAccess] = useState(false);
   const [stats, setStats] = useState({
@@ -1473,6 +1490,8 @@ function AppShell({
       if (!supabase || !activeUser) {
         setSaved([]);
         setDisplayName(null);
+        setPhoneNumber('');
+        setSettingsName('');
         setHasLearningAccess(false);
         setHasPhrasebookProAccess(false);
         setStats({ streak: 0, longest: 0, xp: 0, practiced: 0, activity: [] });
@@ -1490,7 +1509,7 @@ function AppShell({
         supabase.from('saved_phrases').select('phrase_id'),
         supabase
           .from('profiles')
-          .select('display_name,interface_language')
+          .select('display_name,interface_language,phone_number')
           .maybeSingle(),
         supabase
           .from('streaks')
@@ -1507,6 +1526,8 @@ function AppShell({
       ]);
       setSaved((savedResult.data ?? []).map((item) => item.phrase_id));
       setDisplayName(profileResult.data?.display_name ?? null);
+      setSettingsName(profileResult.data?.display_name ?? '');
+      setPhoneNumber(profileResult.data?.phone_number ?? '');
       const savedLocale = profileResult.data?.interface_language;
       if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'ka')
         onLocaleChange(savedLocale);
@@ -1614,9 +1635,67 @@ function AppShell({
       );
   };
 
-  const openLearning = () => setScreen(hasLearningAccess ? 'daily' : 'premium');
-  const openProgress = () =>
+  const openLearning = () => {
+    setUpgradeFocus('phrasebook');
+    setScreen(hasPhrasebookProAccess ? 'explore' : 'premium');
+  };
+  const openProgress = () => {
+    setUpgradeFocus('guided');
     setScreen(hasLearningAccess ? 'progress' : 'premium');
+  };
+
+  const saveSettings = async () => {
+    if (!supabase || !user) {
+      openAuth();
+      return;
+    }
+    setSettingsBusy(true);
+    setSettingsStatus('');
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        display_name: settingsName.trim() || null,
+        phone_number: phoneNumber.trim() || null,
+        interface_language: locale,
+      })
+      .eq('id', user.id);
+    setSettingsBusy(false);
+    if (error) {
+      setSettingsStatus(error.message);
+      return;
+    }
+    setDisplayName(settingsName.trim() || null);
+    setSettingsStatus('Account details saved.');
+  };
+
+  const signOutOtherDevices = async () => {
+    if (!supabase || !user) return;
+    setSettingsBusy(true);
+    setSettingsStatus('');
+    const { error } = await supabase.auth.signOut({ scope: 'others' });
+    setSettingsBusy(false);
+    setSettingsStatus(
+      error
+        ? error.message
+        : 'Other sessions have been signed out. Their access tokens may remain valid briefly until expiry.',
+    );
+  };
+
+  const deleteAccount = async () => {
+    if (!supabase || !user) return;
+    setSettingsBusy(true);
+    const { error } = await supabase.functions.invoke('delete-account', {
+      body: {},
+    });
+    if (error) {
+      setSettingsBusy(false);
+      setSettingsStatus(error.message);
+      return;
+    }
+    await supabase.auth.signOut({ scope: 'global' });
+    setSettingsBusy(false);
+    setScreen('explore');
+  };
 
   useEffect(() => {
     if (
@@ -1798,10 +1877,20 @@ function AppShell({
             <BarChart3 />
             {t('progress')}
           </button>
+          <button
+            className={screen === 'settings' ? 'active' : ''}
+            onClick={() => setScreen('settings')}
+          >
+            <Settings />
+            Settings
+          </button>
         </nav>
         <button
           className="sidebar-premium"
-          onClick={() => setScreen('premium')}
+          onClick={() => {
+            setUpgradeFocus('guided');
+            setScreen('premium');
+          }}
         >
           <Star />
           <span>
@@ -1818,22 +1907,32 @@ function AppShell({
         <header className="app-topbar">
           <Brand onHome={exitToSite} />
           <div className="app-top-actions">
-            <LanguageSwitcher locale={locale} onChange={changeLocale} />
-            <button onClick={exitToSite}>{t('website')}</button>
+            <LanguageMenu
+              locale={locale}
+              onChange={changeLocale}
+              label={t('language')}
+            />
+            <button className="app-website" onClick={exitToSite}>
+              {t('website')}
+            </button>
             <button className="app-install" onClick={installApp}>
               <Download /> {t('install')}
             </button>
             <button
-              onClick={() =>
-                user && supabase ? void supabase.auth.signOut() : openAuth()
-              }
+              className="account-button"
+              onClick={() => (user ? setScreen('settings') : openAuth())}
             >
-              {user ? <LogOut /> : <LogIn />}
+              {user ? <UserRound /> : <LogIn />}
               {user
-                ? (displayName ?? user.email?.split('@')[0] ?? t('signOut'))
+                ? (displayName ?? user.email?.split('@')[0] ?? 'Account')
                 : t('signIn')}
             </button>
-            <button onClick={() => setScreen('premium')}>
+            <button
+              onClick={() => {
+                setUpgradeFocus('phrasebook');
+                setScreen('premium');
+              }}
+            >
               <Sparkles /> {t('premium')}
             </button>
           </div>
@@ -1924,7 +2023,7 @@ function AppShell({
                   </div>
                   <button
                     className="learning-banner locked-learning"
-                    onClick={openLearning}
+                    onClick={openProgress}
                   >
                     <span>
                       <small>
@@ -2017,119 +2116,135 @@ function AppShell({
                   <LockKeyhole />
                 </span>
                 <h1>
-                  Choose how
-                  <br />
-                  you want to learn
+                  {upgradeFocus === 'phrasebook'
+                    ? 'Find the Georgian you need'
+                    : 'Keep your learning moving'}
                 </h1>
                 <p>
-                  Keep the 50-phrase book free, unlock a deep lookup library
-                  once, or subscribe for a structured daily course.
+                  {upgradeFocus === 'phrasebook'
+                    ? 'Unlock the practical 1,000-word lookup library once and keep it.'
+                    : 'Progress, streaks, lessons, quizzes, and smart review belong to Guided Learning.'}
                 </p>
               </div>
               <div className="premium-layout">
                 <div className="feature-list">
-                  <div>
-                    <Search />
-                    <span>
-                      <b>1,000+ instant lookups with Pro</b>
-                      <small>
-                        Find words and sentences in four writing forms
-                      </small>
-                    </span>
-                  </div>
-                  <div>
-                    <Globe2 />
-                    <span>
-                      <b>Sentence examples and context</b>
-                      <small>
-                        Know what to say, when to say it, and how it sounds
-                      </small>
-                    </span>
-                  </div>
-                  <div>
-                    <Download />
-                    <span>
-                      <b>Lifetime and offline value</b>
-                      <small>
-                        Pro is a one-time purchase with downloadable packs
-                      </small>
-                    </span>
-                  </div>
-                  <div>
-                    <CalendarDays />
-                    <span>
-                      <b>Daily lessons with Guided Learning</b>
-                      <small>Short, structured practice for $6.99/month</small>
-                    </span>
-                  </div>
-                  <div>
-                    <Brain />
-                    <span>
-                      <b>Quizzes, progress, XP, and streaks</b>
-                      <small>
-                        Guided Learning helps you build a lasting habit
-                      </small>
-                    </span>
-                  </div>
+                  {upgradeFocus === 'phrasebook' ? (
+                    <>
+                      <div>
+                        <Search />
+                        <span>
+                          <b>1,000 modern spoken entries</b>
+                          <small>
+                            Built from current conversational Georgian
+                          </small>
+                        </span>
+                      </div>
+                      <div>
+                        <Globe2 />
+                        <span>
+                          <b>Search English, Russian, Georgian, or Latin</b>
+                          <small>Get to the useful phrase quickly</small>
+                        </span>
+                      </div>
+                      <div>
+                        <Download />
+                        <span>
+                          <b>Pay once and keep access</b>
+                          <small>No subscription for the phrase library</small>
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <CalendarDays />
+                        <span>
+                          <b>Five-minute daily lessons</b>
+                          <small>A clear next step every day</small>
+                        </span>
+                      </div>
+                      <div>
+                        <Brain />
+                        <span>
+                          <b>Progress, XP, quizzes, and streaks</b>
+                          <small>Your learning record syncs securely</small>
+                        </span>
+                      </div>
+                      <div>
+                        <ShieldCheck />
+                        <span>
+                          <b>Cancel from account settings</b>
+                          <small>
+                            Simple billing controls when checkout launches
+                          </small>
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="premium-plan-stack">
-                  <div className="premium-price-card phrasebook-pro-card">
-                    <span>
-                      {hasPhrasebookProAccess
-                        ? 'Lifetime access active'
-                        : 'Pay once · Keep forever'}
-                    </span>
-                    <h2>$20</h2>
-                    <h3>Phrasebook Pro</h3>
-                    <p>
-                      1,000+ searchable words and practical sentences, examples,
-                      context, pronunciation, and offline packs as the expanded
-                      catalog launches.
-                    </p>
-                    <Button
-                      onClick={
-                        hasPhrasebookProAccess
-                          ? () => setScreen('explore')
+                  {upgradeFocus === 'phrasebook' ? (
+                    <div className="premium-price-card phrasebook-pro-card">
+                      <span>
+                        {hasPhrasebookProAccess
+                          ? 'Lifetime access active'
+                          : 'Pay once · Keep forever'}
+                      </span>
+                      <h2>
+                        ₾60 <small>once</small>
+                      </h2>
+                      <h3>Phrasebook Pro</h3>
+                      <p>
+                        1,000+ searchable words and practical sentences,
+                        examples, context, pronunciation, and offline packs as
+                        the expanded catalog launches.
+                      </p>
+                      <Button
+                        onClick={
+                          hasPhrasebookProAccess
+                            ? () => setScreen('explore')
+                            : user
+                              ? () => openModal('pricing')
+                              : openAuth
+                        }
+                      >
+                        {hasPhrasebookProAccess
+                          ? 'Search Phrasebook Pro'
                           : user
-                            ? () => openModal('pricing')
-                            : openAuth
-                      }
-                    >
-                      {hasPhrasebookProAccess
-                        ? 'Search Phrasebook Pro'
-                        : user
-                          ? 'Get lifetime access'
-                          : 'Sign in to get Pro'}
-                    </Button>
-                  </div>
-                  <div className="premium-price-card">
-                    <span>
-                      {hasLearningAccess ? 'Active subscription' : 'Premium'}
-                    </span>
-                    <h2>
-                      $6.99 <small>/ month</small>
-                    </h2>
-                    <h3>Guided Learning</h3>
-                    <p>
-                      Daily lessons, quizzes, smart review, progress, XP, and
-                      streaks for learners who want structure.
-                    </p>
-                    <Button
-                      onClick={
-                        hasLearningAccess
-                          ? openLearning
+                            ? 'Get lifetime access'
+                            : 'Sign in to get Pro'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="premium-price-card">
+                      <span>
+                        {hasLearningAccess ? 'Active subscription' : 'Premium'}
+                      </span>
+                      <h2>
+                        ₾19.99 <small>/ month</small>
+                      </h2>
+                      <h3>Guided Learning</h3>
+                      <p>
+                        Daily lessons, quizzes, smart review, progress, XP, and
+                        streaks for learners who want structure.
+                      </p>
+                      <Button
+                        onClick={
+                          hasLearningAccess
+                            ? openLearning
+                            : user
+                              ? () => openModal('pricing')
+                              : openAuth
+                        }
+                      >
+                        {hasLearningAccess
+                          ? 'Open today’s lesson'
                           : user
-                            ? () => openModal('pricing')
-                            : openAuth
-                      }
-                    >
-                      {hasLearningAccess
-                        ? 'Open today’s lesson'
-                        : user
-                          ? 'Subscribe for $6.99'
-                          : 'Sign in to subscribe'}
-                    </Button>
-                  </div>
+                            ? 'Subscribe for ₾19.99'
+                            : 'Sign in to subscribe'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
@@ -2340,6 +2455,210 @@ function AppShell({
                   <h3>Keep your learning history</h3>
                   <p>Sign in to sync XP, streaks, saved phrases and reviews.</p>
                   <Button onClick={openAuth}>Sign in or create account</Button>
+                </div>
+              )}
+            </section>
+          )}
+          {screen === 'settings' && (
+            <section className="screen settings-screen">
+              <div className="screen-heading">
+                <div>
+                  <span className="app-eyebrow">Simple, secure, yours</span>
+                  <h1>Account settings</h1>
+                  <p>
+                    Manage your profile, access, sessions, and billing status.
+                  </p>
+                </div>
+              </div>
+              {!user ? (
+                <div className="empty-card settings-signin">
+                  <UserRound />
+                  <h3>Sign in to manage your account</h3>
+                  <p>Your free phrasebook works without an account.</p>
+                  <Button onClick={openAuth}>Sign in or create account</Button>
+                </div>
+              ) : (
+                <div className="settings-grid">
+                  <article className="settings-card settings-profile">
+                    <div className="settings-card-heading">
+                      <UserRound />
+                      <span>
+                        <b>Profile</b>
+                        <small>Your contact details</small>
+                      </span>
+                    </div>
+                    <label>
+                      Display name
+                      <input
+                        value={settingsName}
+                        maxLength={80}
+                        onChange={(event) =>
+                          setSettingsName(event.target.value)
+                        }
+                      />
+                    </label>
+                    <label>
+                      <Mail /> Email
+                      <input
+                        value={user.email ?? ''}
+                        readOnly
+                        aria-readonly="true"
+                      />
+                      <small>
+                        Email changes require a secure confirmation flow.
+                      </small>
+                    </label>
+                    <label>
+                      <Phone /> Phone number <span>optional</span>
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        maxLength={30}
+                        autoComplete="tel"
+                        placeholder="+995 5xx xxx xxx"
+                        onChange={(event) => setPhoneNumber(event.target.value)}
+                      />
+                    </label>
+                    <div className="settings-field">
+                      Interface language
+                      <LanguageMenu locale={locale} onChange={changeLocale} />
+                    </div>
+                    <Button
+                      onClick={() => void saveSettings()}
+                      disabled={settingsBusy}
+                    >
+                      Save changes
+                    </Button>
+                  </article>
+
+                  <article className="settings-card">
+                    <div className="settings-card-heading">
+                      <MonitorSmartphone />
+                      <span>
+                        <b>Sessions & security</b>
+                        <small>Control account access</small>
+                      </span>
+                    </div>
+                    <div className="device-row">
+                      <span className="device-icon">
+                        <MonitorSmartphone />
+                      </span>
+                      <span>
+                        <b>{deviceLabel}</b>
+                        <small>Current signed-in session</small>
+                      </span>
+                      <i>Active</i>
+                    </div>
+                    <p className="settings-note">
+                      For privacy, GEO does not build a device-history profile.
+                      You can still remotely sign out every other active
+                      session.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => void signOutOtherDevices()}
+                      disabled={settingsBusy}
+                    >
+                      Sign out other devices
+                    </Button>
+                    <button
+                      className="settings-text-action"
+                      onClick={() =>
+                        supabase &&
+                        void supabase.auth.signOut({ scope: 'local' })
+                      }
+                    >
+                      <LogOut /> Sign out this device
+                    </button>
+                  </article>
+
+                  <article className="settings-card settings-billing">
+                    <div className="settings-card-heading">
+                      <CreditCard />
+                      <span>
+                        <b>Plans & billing</b>
+                        <small>Clear, no hidden products</small>
+                      </span>
+                    </div>
+                    <div className="plan-status">
+                      <span>
+                        <b>Phrasebook Pro</b>
+                        <small>₾60 one-time</small>
+                      </span>
+                      <i className={hasPhrasebookProAccess ? 'active' : ''}>
+                        {hasPhrasebookProAccess ? 'Active' : 'Not owned'}
+                      </i>
+                    </div>
+                    <div className="plan-status">
+                      <span>
+                        <b>Guided Learning</b>
+                        <small>₾19.99 / month</small>
+                      </span>
+                      <i className={hasLearningAccess ? 'active' : ''}>
+                        {hasLearningAccess ? 'Active' : 'Not active'}
+                      </i>
+                    </div>
+                    <p className="settings-note">
+                      GEO never stores card or bank details. When checkout is
+                      connected, payment methods, invoices, and cancellation
+                      will be managed through the secure billing provider.
+                    </p>
+                    <Button
+                      onClick={() => {
+                        setUpgradeFocus(
+                          hasPhrasebookProAccess ? 'guided' : 'phrasebook',
+                        );
+                        setScreen('premium');
+                      }}
+                    >
+                      View available plan
+                    </Button>
+                  </article>
+
+                  <article className="settings-card danger-card">
+                    <div className="settings-card-heading">
+                      <Trash2 />
+                      <span>
+                        <b>Delete account</b>
+                        <small>Permanent and irreversible</small>
+                      </span>
+                    </div>
+                    <p>
+                      This removes your profile, saved phrases, progress,
+                      streaks, and activity.
+                    </p>
+                    <AlertDialog>
+                      <AlertDialogTrigger className="delete-account-trigger">
+                        Delete my account
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete your GEO account?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This permanently deletes your account and learning
+                            data. It cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Keep account</AlertDialogCancel>
+                          <AlertDialogAction
+                            variant="destructive"
+                            onClick={() => void deleteAccount()}
+                            disabled={settingsBusy}
+                          >
+                            Delete permanently
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </article>
+                  {settingsStatus && (
+                    <output className="settings-status">
+                      {settingsStatus}
+                    </output>
+                  )}
                 </div>
               )}
             </section>
@@ -2612,14 +2931,14 @@ export default function HomePage() {
                   <b>Phrasebook Pro</b>
                   <small>1,000+ lookups · Lifetime access</small>
                 </span>
-                <strong>$20</strong>
+                <strong>₾60</strong>
               </div>
               <div className="recommended">
                 <span>
                   <b>Guided Learning</b>
                   <small>Structured learning and progress</small>
                 </span>
-                <strong>$6.99/mo</strong>
+                <strong>₾19.99/mo</strong>
               </div>
             </div>
           )}

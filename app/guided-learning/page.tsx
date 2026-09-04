@@ -9,7 +9,7 @@ export const metadata = {
 export default function GuidedLearningPage() {
   return (
     <InfoPage
-      eyebrow="Guided Learning · $6.99/month"
+      eyebrow="Guided Learning · ₾19.99/month"
       title="A daily habit that fits into real life."
       intro="Guided Learning is GEO’s premium plan. An active subscription unlocks lessons, quizzes, smart review, progress, XP, and streaks."
     >

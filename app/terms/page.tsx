@@ -4,7 +4,7 @@ export default function TermsPage() {
     <InfoPage
       eyebrow="Legal · Effective 4 September 2026"
       title="Terms of Service"
-      intro="These beta terms govern use of GEO’s free 50-phrase phrasebook and access-gated paid features. Operator identity, jurisdiction, and formal contact details must be completed before commercial launch."
+      intro="These beta terms govern GEO’s free phrasebook and paid-feature gates. Contact: daviddavowo@gmail.com. Operator identity and jurisdiction will be completed before commercial launch."
     >
       <section>
         <h2>Using GEO</h2>
@@ -49,7 +49,7 @@ export default function TermsPage() {
         </p>
         <h2>Paid services</h2>
         <p>
-          Phrasebook Pro is listed at $20 once and Guided Learning at $6.99 per
+          Phrasebook Pro is listed at ₾60 once and Guided Learning at ₾19.99 per
           month, but checkout is not active and the beta does not accept
           payments. Product scope, billing entity, taxes, cancellation controls,
           refunds, and purchase restoration will be presented before paid

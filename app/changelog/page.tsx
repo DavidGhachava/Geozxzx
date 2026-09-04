@@ -29,11 +29,11 @@ export default function ChangelogPage() {
           </li>
           <li>Expanded the free practical phrasebook to 50 phrases.</li>
           <li>
-            Added secure $6.99/month Guided Learning entitlement checks for
+            Added secure ₾19.99/month Guided Learning entitlement checks for
             lessons, quizzes, progress, XP, daily activity, and streaks.
           </li>
           <li>
-            Added the $20 one-time Phrasebook Pro tier and a separate secure
+            Added the ₾60 one-time Phrasebook Pro tier and a separate secure
             lifetime entitlement for its future 1,000+ lookup catalog.
           </li>
           <li>

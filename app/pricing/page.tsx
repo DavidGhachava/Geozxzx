@@ -3,7 +3,7 @@ import { InfoPage } from '@/components/public-shell';
 export const metadata = {
   title: 'Georgian Learning App Pricing',
   description:
-    'Search 50 Georgian phrases free, get a growing 1,000+ word and sentence Phrasebook Pro catalog for $20 once, or choose Guided Learning for $6.99 a month.',
+    'Search 50 Georgian phrases free, get a growing 1,000+ word and sentence Phrasebook Pro catalog for ₾60 once, or choose Guided Learning for ₾19.99 a month.',
   alternates: { canonical: '/pricing' },
 };
 export default function PricingPage() {
@@ -18,7 +18,7 @@ export default function PricingPage() {
           <article>
             <span>Free forever</span>
             <h2>Phrasebook</h2>
-            <strong>$0</strong>
+            <strong>Free</strong>
             <p>
               All 50 practical phrases, Georgian and transliteration search,
               English and Russian meanings, category browsing, and saved
@@ -29,7 +29,7 @@ export default function PricingPage() {
           <article className="phrasebook-plan">
             <span>One-time purchase</span>
             <h2>Phrasebook Pro</h2>
-            <strong>$20 once</strong>
+            <strong>₾60 once</strong>
             <p>
               Lifetime access to a growing catalog of 1,000+ useful Georgian
               words and practical sentences, with four-way search, real-life
@@ -40,7 +40,7 @@ export default function PricingPage() {
           <article>
             <span>Subscription</span>
             <h2>Guided Learning</h2>
-            <strong>$6.99/month</strong>
+            <strong>₾19.99/month</strong>
             <p>
               Daily lessons, quizzes, smart review, synchronized progress, XP,
               daily activity, and streaks. Access requires a confirmed active

@@ -1,3 +1,33 @@
 import { InfoPage } from '@/components/public-shell';
 
-export default function DataDeletionPage(){return <InfoPage eyebrow="Privacy" title="Data deletion" intro="You can remove saved phrases in the app today. Full account deletion is being prepared for the public beta workflow."><section><h2>What deletion covers</h2><p>An account-deletion request should remove or de-identify the profile, saved phrases, learning progress, daily activity, streak data, and the authentication account, subject to any limited retention required for security or law.</p><h2>Current limitation</h2><p>Self-service account deletion and an official privacy-request address are not yet available. GEO should not invite account onboarding at scale until the operator publishes that request channel and a verified deletion procedure.</p><h2>Guest use</h2><p>You may browse the public phrasebook without creating an account. Browser-only preferences and the cookie-notice choice can be cleared using your browser’s site-data controls.</p></section></InfoPage>}
+export default function DataDeletionPage() {
+  return (
+    <InfoPage
+      eyebrow="Privacy"
+      title="Data deletion"
+      intro="Signed-in users can permanently delete their GEO account from the app settings."
+    >
+      <section>
+        <h2>Delete in the app</h2>
+        <p>
+          Open GEO, choose your account, open Settings, and select Delete my
+          account. Confirming removes the authentication account and its linked
+          profile, saved phrases, progress, activity, streaks, subscriptions,
+          and entitlements through database cascades.
+        </p>
+        <h2>If you cannot sign in</h2>
+        <p>
+          Email daviddavowo@gmail.com from the address linked to the account.
+          Identity verification may be required before a manual request can be
+          completed.
+        </p>
+        <h2>Guest use</h2>
+        <p>
+          The public phrasebook does not require an account. Browser-only
+          language and cookie choices can be removed with the browser’s
+          site-data controls.
+        </p>
+      </section>
+    </InfoPage>
+  );
+}

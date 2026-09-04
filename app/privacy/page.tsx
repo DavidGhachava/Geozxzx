@@ -1,2 +1,49 @@
 import { InfoPage } from '@/components/public-shell';
-export default function PrivacyPage(){return <InfoPage eyebrow="Legal · Effective 4 September 2026" title="Privacy Policy" intro="This policy explains the information GEO currently handles in its browser app. It should be professionally reviewed and updated with the operator’s legal identity and contact details before commercial launch."><section><h2>Information we handle</h2><p>You may browse phrases without an account. If you create an account, GEO processes your email address, account identifier, optional display name, interface and translation preferences, timezone, saved phrase identifiers, learning progress, quiz outcomes recorded by the current lesson flow, XP, streaks, and daily activity. Hosting and database providers may also process security and operational logs such as timestamps, request details, device information, and IP addresses.</p><h2>Why we use it</h2><p>We use this information to authenticate you, provide the phrasebook and lessons, synchronize your choices across devices, protect accounts and the service, diagnose failures, and meet legal obligations. Where applicable, processing may rely on performing the service you request, legitimate interests in operating it securely, consent for optional technologies, or legal obligations.</p><h2>Providers and transfers</h2><p>GEO currently uses Supabase for authentication and application data, and OpenAI Sites and its infrastructure providers for website hosting and delivery. Those providers process information under their own security, data-location, and contractual arrangements. GEO does not currently use advertising cookies or sell personal information.</p><h2>Retention and security</h2><p>Account data is retained while the account is active and as reasonably needed for security, dispute resolution, and legal compliance. User-owned records are protected by row-level access controls. No online system is completely secure, and the current beta should not be used to store sensitive personal information.</p><h2>Your choices and rights</h2><p>You can use the phrasebook as a guest, sign out, or remove saved phrases. Depending on where you live, you may have rights to access, correct, export, restrict, object to, or delete personal data, and to complain to a data-protection authority. Account export and self-service deletion are not yet available in the interface; operational contact details and a formal request channel must be added before public beta onboarding.</p><h2>Children</h2><p>GEO is not intentionally directed to children below the age at which they may independently consent to online services in their location. A parental and age-assurance policy will be completed before marketing to minors.</p><h2>Changes</h2><p>Material changes will be dated on this page. Continued use after a change does not replace any consent that applicable law requires.</p></section></InfoPage>}
+
+export default function PrivacyPage() {
+  return (
+    <InfoPage
+      eyebrow="Legal · Effective 4 September 2026"
+      title="Privacy Policy"
+      intro="This policy explains the information GEO handles. Contact: daviddavowo@gmail.com. Operator identity and jurisdiction will be added before commercial launch."
+    >
+      <section>
+        <h2>Information we handle</h2>
+        <p>
+          You can browse phrases without an account. An account may contain your
+          email, optional name and phone number, language preferences, saved
+          phrases, progress, quiz results, XP, streaks, and daily activity.
+          Infrastructure providers may process security logs such as timestamps,
+          device information, and IP addresses. GEO never stores card or bank
+          details.
+        </p>
+        <h2>Why we use it</h2>
+        <p>
+          We use this data to authenticate you, synchronize learning, provide
+          access, secure the service, diagnose problems, and meet legal
+          obligations. GEO does not sell personal information or use advertising
+          cookies.
+        </p>
+        <h2>Providers and retention</h2>
+        <p>
+          Supabase provides authentication and application-data storage. OpenAI
+          Sites and its infrastructure providers deliver the website. Account
+          data is retained while your account is active and as reasonably
+          required for security, disputes, and law.
+        </p>
+        <h2>Your controls</h2>
+        <p>
+          You can use the free phrasebook as a guest, edit profile details,
+          remove saves, revoke other sessions, sign out, or permanently delete
+          your account from Settings. Depending on your location, additional
+          rights may apply.
+        </p>
+        <h2>Children and changes</h2>
+        <p>
+          GEO is not intentionally directed to children below their local
+          digital-consent age. Material policy changes will be dated here.
+        </p>
+      </section>
+    </InfoPage>
+  );
+}

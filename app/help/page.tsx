@@ -21,7 +21,7 @@ export default function HelpPage() {
         </p>
         <h2>Phrasebook Pro</h2>
         <p>
-          Phrasebook Pro is the $20 one-time lookup upgrade. It is designed for
+          Phrasebook Pro is the ₾60 one-time lookup upgrade. It is designed for
           a growing 1,000+ word and practical-sentence catalog, examples, richer
           context, pronunciation, and downloadable offline packs. The current
           beta has 50 searchable entries while the expanded catalog and checkout
@@ -30,7 +30,7 @@ export default function HelpPage() {
         <h2>Guided Learning</h2>
         <p>
           Lessons, quizzes, progress, XP, daily activity, and streaks require an
-          active $6.99/month subscription. The access gate is active; payment
+          active ₾19.99/month subscription. The access gate is active; payment
           checkout is still being connected.
         </p>
         <h2>Install GEO</h2>
