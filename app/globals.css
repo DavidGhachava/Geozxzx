@@ -28,7 +28,7 @@ svg { stroke-width: 1.9; }
 .brand span { color: var(--coral); }
 
 /* Marketing */
-.marketing { min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 80% 12%, #fff 0, transparent 26%), var(--background); }
+.marketing { min-height: 100vh; overflow: clip; background: radial-gradient(circle at 80% 12%, #fff 0, transparent 26%), var(--background); }
 .site-header { height: 82px; max-width: 1440px; margin: auto; padding: 0 5vw; display: flex; align-items: center; gap: 70px; position: relative; z-index: 20; }
 .desktop-nav { display: flex; gap: 48px; font-weight: 750; }
 .desktop-nav a { transition: color .2s; }
@@ -313,4 +313,49 @@ footer { border-top:1px solid var(--border); max-width:1340px; margin:auto; padd
 @media (prefers-reduced-motion: reduce) {
   .shine-word, .flag-orbit, .kinetic-strip > div, .learning-story::before { animation: none!important; }
   .marketing::before { display: none; }
+}
+
+/* Local discovery, sticky navigation and real PWA actions */
+.site-header { position: sticky; top: 0; background: rgba(255,250,250,.78); border-bottom: 1px solid rgba(178,13,47,.1); backdrop-filter: blur(18px) saturate(1.2); }
+.legal-header { position: sticky; top: 0; z-index: 30; }
+.install-nav { min-height: 42px; padding: 0 15px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(178,13,47,.2); border-radius: 12px; color: var(--primary); background: rgba(255,255,255,.58); font-weight: 850; transition: transform .2s, background .2s, box-shadow .2s; }
+.install-nav svg { width: 17px; }
+.install-nav:hover { transform: translateY(-2px); background: white; box-shadow: 0 12px 28px rgba(116,5,31,.12); }
+.local-section { max-width: 1340px; margin: 0 auto; padding: 105px 5vw; display: grid; grid-template-columns: .72fr 1.28fr; gap: 7vw; align-items: start; }
+.local-section > div:first-child { position: sticky; top: 130px; }
+.local-section h2 { margin: 0 0 20px; font-size: clamp(2.4rem,4vw,4rem); line-height: 1; letter-spacing: -.055em; }
+.local-section > div:first-child p { color: var(--muted-foreground); font-size: 1.05rem; line-height: 1.7; }
+.local-grid { display: grid; gap: 15px; }
+.local-grid article { min-height: 185px; padding: 27px; border: 1px solid rgba(178,13,47,.16); border-radius: 21px; background: linear-gradient(145deg,rgba(255,255,255,.86),rgba(255,241,243,.58)); box-shadow: inset 0 1px 0 white, 0 18px 48px rgba(116,5,31,.09); backdrop-filter: blur(18px); will-change: transform; }
+.local-grid article > span { color: var(--primary); font-size: .75rem; font-weight: 950; letter-spacing: .11em; text-transform: uppercase; }
+.local-grid h3 { margin: 10px 0 6px; font-size: 1.4rem; }
+.local-grid p { margin: 0; color: var(--muted-foreground); line-height: 1.55; }
+.local-grid a { display: inline-flex; align-items: center; gap: 6px; margin-top: 17px; color: var(--primary); font-weight: 900; }
+.local-grid a svg { width: 17px; transition: transform .2s; }.local-grid a:hover svg { transform: translateX(4px); }
+.audience-section, .local-section, .demo-pricing, .learning-story, .how-section, .pricing-section, .trust-section, .faq-section, .final-cta { content-visibility: auto; contain-intrinsic-size: 800px; }
+.sticky-install { width: min(610px,calc(100% - 24px)); }
+.sticky-actions { margin-left: auto; display: flex; gap: 8px; }
+.sticky-actions > button { min-height: 44px; padding: 0 15px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(178,13,47,.2); border-radius: 11px; color: var(--primary); background: rgba(255,255,255,.7); font-weight: 850; }
+.sticky-actions > button svg { width: 17px; }
+.sticky-actions > button:last-child { color: white; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }.dialog-actions > button { min-height: 50px; }
+.app-top-actions .app-install { display: flex; align-items: center; gap: 6px; color: var(--primary); }
+.app-top-actions .app-install svg { width: 17px; }
+
+@media (max-width: 1050px) {
+  .desktop-nav { gap: 20px; }
+  .header-actions { gap: 10px; }
+  .local-section { grid-template-columns: 1fr; }
+  .local-section > div:first-child { position: static; }
+}
+
+@media (max-width: 760px) {
+  .install-nav { display: none; }
+  .local-section { padding: 72px 20px; }
+  .sticky-install > div { display: none; }
+  .sticky-actions { margin-left: auto; }
+  .sticky-actions > button { padding-inline: 12px; }
+  .app-top-actions .app-install { display: none; }
+  .dialog-actions { grid-template-columns: 1fr; }
+  .audience-grid article, .how-grid article, .local-grid article, .trust-list span, .category-showcase button, .demo-card, .legal-header, .sticky-install { backdrop-filter: none; }
 }

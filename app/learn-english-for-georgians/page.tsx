@@ -1,0 +1,6 @@
+/* eslint-disable next/no-html-link-for-pages */
+import type { Metadata } from 'next';
+import { InfoPage } from '@/components/public-shell';
+
+export const metadata: Metadata = { title: 'English for Georgian Speakers — Secondary Roadmap', description: 'English learning for Georgian speakers is a secondary direction for GEO. The current product is focused first on helping people learn Georgian.', alternates: { canonical: '/learn-english-for-georgians' } };
+export default function EnglishForGeorgiansPage(){return <InfoPage eyebrow="Secondary direction" title="English for Georgian speakers comes second." intro="GEO’s main mission is helping international residents and visitors learn Georgian. A Georgian-to-English learning path is a future secondary direction, not the current core product."><section><h2>What exists today</h2><p>English meanings already support the Georgian phrasebook, but GEO does not yet claim to offer a complete English course for Georgian speakers.</p><h2>What may come later</h2><p>A future path could use Georgian explanations to teach practical English, with the same short lessons, saved phrases, pronunciation support, and progress tracking. It will launch only after the Georgian-learning experience is mature.</p><p><a className="inline-cta" href="/">Explore the Georgian learning app →</a></p></section></InfoPage>}

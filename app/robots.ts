@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
+import { SITE_ORIGIN } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: '*', allow: '/' }, sitemap: 'https://geo-learn-georgian.heromak2008.chatgpt.site/sitemap.xml' };
+  return { rules: { userAgent: '*', allow: '/', disallow: ['/offline.html'] }, sitemap: `${SITE_ORIGIN}/sitemap.xml`, host: SITE_ORIGIN };
 }
