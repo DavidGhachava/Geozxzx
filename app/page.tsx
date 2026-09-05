@@ -26,6 +26,7 @@ import {
   Menu,
   Mic2,
   Plane,
+  Share2,
   Search,
   ShieldCheck,
   ShieldPlus,
@@ -89,6 +90,7 @@ type Screen =
   | 'quiz'
   | 'progress'
   | 'settings';
+type InstallPlatform = 'ios' | 'android' | 'desktop';
 type CategoryName =
   | 'Essentials'
   | 'Food & Cafés'
@@ -2955,12 +2957,29 @@ export default function HomePage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const [installPlatform, setInstallPlatform] =
+    useState<InstallPlatform>('desktop');
+  const [installLinkCopied, setInstallLinkCopied] = useState(false);
   const changeLocale = useCallback((nextLocale: Locale) => {
     setLocale(nextLocale);
     document.documentElement.lang = nextLocale;
     localStorage.setItem('geo-interface-language', nextLocale);
   }, []);
   useEffect(() => {
+    const isIos =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    window.setTimeout(
+      () =>
+        setInstallPlatform(
+          isIos
+            ? 'ios'
+            : /Android/i.test(navigator.userAgent)
+              ? 'android'
+              : 'desktop',
+        ),
+      0,
+    );
     const savedLocale = localStorage.getItem('geo-interface-language');
     const preferredLocale = (navigator.languages?.[0] ?? navigator.language)
       .toLowerCase()
@@ -3073,9 +3092,45 @@ export default function HomePage() {
       setModal('install');
       return;
     }
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    if (choice.outcome === 'accepted') setInstallPrompt(null);
+    const prompt = installPrompt;
+    setModal(null);
+    try {
+      await prompt.prompt();
+      const choice = await prompt.userChoice;
+      setInstallPrompt(null);
+      if (choice.outcome === 'dismissed') setModal('install');
+    } catch {
+      setInstallPrompt(null);
+      setModal('install');
+    }
+  };
+  const shareInstallLink = async () => {
+    const appUrl = `${location.origin}/?mode=app#app`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'GEO Georgian phrasebook',
+          text: 'Install GEO for fast access to Georgian phrases.',
+          url: appUrl,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(appUrl);
+      setInstallLinkCopied(true);
+      window.setTimeout(() => setInstallLinkCopied(false), 2500);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      try {
+        await navigator.clipboard.writeText(appUrl);
+        setInstallLinkCopied(true);
+        window.setTimeout(() => setInstallLinkCopied(false), 2500);
+      } catch {
+        window.prompt(
+          'Copy this link and open it in Safari or Chrome:',
+          appUrl,
+        );
+      }
+    }
   };
   const exitToSite = () => {
     delete document.documentElement.dataset.appMode;
@@ -3116,14 +3171,83 @@ export default function HomePage() {
               {modal === 'install' ? <Download /> : <Star />}
             </span>
             <DialogTitle>
-              {modal === 'install' ? 'Install GEO' : 'Choose your GEO upgrade'}
+              {modal === 'install'
+                ? installPlatform === 'ios'
+                  ? 'Install GEO on iPhone or iPad'
+                  : installPlatform === 'android'
+                    ? 'Install GEO on Android'
+                    : 'Install GEO on this device'
+                : 'Choose your GEO upgrade'}
             </DialogTitle>
             <DialogDescription>
               {modal === 'install'
-                ? 'On iPhone or iPad, tap Share, then “Add to Home Screen.” On Chrome or Edge, use “Install app” in the browser menu if the install prompt is not shown. GEO’s core interface is cached for quick launch and essential offline access.'
+                ? installPlatform === 'ios'
+                  ? 'Apple requires web apps to be added from Safari. It takes three quick taps and GEO will then open like a normal app without the homepage.'
+                  : installPlatform === 'android'
+                    ? 'Your current browser has not offered the native install window yet. Open GEO in Chrome and follow these steps.'
+                    : 'Install GEO from Chrome or Edge for a fast, app-like phrasebook with essential offline access.'
                 : 'Phrasebook Pro is a lifetime lookup pack. Guided Learning is the monthly course. Secure checkout is being connected, so this beta does not collect payment details yet.'}
             </DialogDescription>
           </DialogHeader>
+          {modal === 'install' && (
+            <div className="install-guide">
+              {installPlatform === 'ios' ? (
+                <>
+                  <div className="install-step">
+                    <span>1</span>
+                    <p>
+                      Open this page in <b>Safari</b>.
+                    </p>
+                  </div>
+                  <div className="install-step">
+                    <span>2</span>
+                    <p>
+                      Tap the <b>Share</b> button <Share2 />.
+                    </p>
+                  </div>
+                  <div className="install-step">
+                    <span>3</span>
+                    <p>
+                      Choose <b>Add to Home Screen</b>, then tap <b>Add</b>.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="install-step">
+                    <span>1</span>
+                    <p>
+                      Open this page in{' '}
+                      <b>
+                        {installPlatform === 'android'
+                          ? 'Chrome'
+                          : 'Chrome or Edge'}
+                      </b>
+                      .
+                    </p>
+                  </div>
+                  <div className="install-step">
+                    <span>2</span>
+                    <p>
+                      Open the browser menu and choose <b>Install app</b> or{' '}
+                      <b>Add to Home screen</b>.
+                    </p>
+                  </div>
+                  <div className="install-step">
+                    <span>3</span>
+                    <p>
+                      Confirm <b>Install</b>. GEO will appear with your other
+                      apps.
+                    </p>
+                  </div>
+                </>
+              )}
+              <p className="install-note">
+                GEO is a secure web app, so there is no App Store or Play Store
+                download file.
+              </p>
+            </div>
+          )}
           {modal === 'pricing' && (
             <div className="modal-plans">
               <div className="phrasebook-choice">
@@ -3144,9 +3268,23 @@ export default function HomePage() {
           )}
           <div className="dialog-actions">
             {modal === 'install' && (
-              <Button variant="outline" onClick={openApp}>
-                Use on web
-              </Button>
+              <>
+                {installPrompt && (
+                  <Button onClick={() => void installApp()}>
+                    <Download /> Install now
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => void shareInstallLink()}
+                >
+                  <Share2 />{' '}
+                  {installLinkCopied ? 'Link copied' : 'Share install link'}
+                </Button>
+                <Button variant="outline" onClick={openApp}>
+                  Use on web
+                </Button>
+              </>
             )}
             <Button className="dialog-done" onClick={() => setModal(null)}>
               Close

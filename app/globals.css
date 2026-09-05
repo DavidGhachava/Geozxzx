@@ -1719,6 +1719,52 @@ footer > button {
   background: #fff8f6;
   color: var(--primary);
 }
+.install-guide {
+  display: grid;
+  gap: 9px;
+  margin-top: 2px;
+}
+.install-step {
+  min-height: 54px;
+  padding: 10px 12px;
+  border: 1px solid rgba(178, 13, 47, 0.14);
+  border-radius: 14px;
+  background: #fff8f8;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.install-step > span {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+.install-step p {
+  margin: 0;
+  color: #51494b;
+  font-size: 0.91rem;
+  line-height: 1.35;
+}
+.install-step p svg {
+  width: 17px;
+  height: 17px;
+  margin-left: 2px;
+  vertical-align: -3px;
+  color: var(--primary);
+}
+.install-note {
+  margin: 3px 2px 0;
+  color: var(--muted-foreground);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
 .dialog-done {
   height: 50px;
   background: linear-gradient(135deg, var(--primary), #c62b3e);
@@ -4728,11 +4774,17 @@ button:active {
 }
 .dialog-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .dialog-actions > button {
   min-height: 50px;
+}
+.dialog-actions > button svg {
+  width: 17px;
+}
+.dialog-actions > button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 .app-top-actions .app-install {
   display: flex;
