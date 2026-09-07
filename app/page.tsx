@@ -57,6 +57,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
+import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
 import {
   LanguageMenu,
@@ -953,6 +954,8 @@ const structuredData = {
     },
   ],
 };
+
+const wordAudioIds = new Set(wordAudioManifest);
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
@@ -1908,36 +1911,49 @@ function AppShell({
   );
   const renderWords = (items: WordEntry[]) => (
     <div className="word-list">
-      {items.map((word) => (
-        <article className="word-card" key={word.id}>
-          <div>
-            <strong>{word.ka}</strong>
-            <em>{word.tr}</em>
-            <p>{locale === 'ru' ? word.ru : word.en}</p>
-          </div>
-          <div className="word-actions">
-            <button
-              className={`save-button ${savedWords.includes(word.id) ? 'saved' : ''}`}
-              onClick={() => toggleSavedWord(word)}
-              aria-label={
-                savedWords.includes(word.id)
-                  ? t('removeSaved')
-                  : t('savePhrase')
-              }
-            >
-              <Bookmark />
-            </button>
-            <button
-              className="audio-button audio-pending"
-              disabled
-              title="Audio coming soon"
-              aria-label="Audio coming soon"
-            >
-              <Volume2 />
-            </button>
-          </div>
-        </article>
-      ))}
+      {items.map((word) => {
+        const hasAudio = wordAudioIds.has(word.id);
+        return (
+          <article className="word-card" key={word.id}>
+            <div>
+              <strong>{word.ka}</strong>
+              <em>{word.tr}</em>
+              <p>{locale === 'ru' ? word.ru : word.en}</p>
+            </div>
+            <div className="word-actions">
+              <button
+                className={`save-button ${savedWords.includes(word.id) ? 'saved' : ''}`}
+                onClick={() => toggleSavedWord(word)}
+                aria-label={
+                  savedWords.includes(word.id)
+                    ? t('removeSaved')
+                    : t('savePhrase')
+                }
+              >
+                <Bookmark />
+              </button>
+              {hasAudio ? (
+                <AudioButton
+                  id={`word-audio-${word.id}`}
+                  playing={playing}
+                  onPlay={play}
+                  text={word.ka}
+                  audioUrl={`/audio/words/${word.id}.mp3`}
+                />
+              ) : (
+                <button
+                  className="audio-button audio-pending"
+                  disabled
+                  title="Audio coming soon"
+                  aria-label="Audio coming soon"
+                >
+                  <Volume2 />
+                </button>
+              )}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
   const appHome = () => {
