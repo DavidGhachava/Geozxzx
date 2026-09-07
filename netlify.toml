@@ -1,35 +1,45 @@
 [build]
-  command = "npm run build"
-  publish = "dist/client"
+command = "npm run build"
+publish = "dist/client"
 
 [build.environment]
-  NODE_VERSION = "22"
+NODE_VERSION = "22"
 
 [[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Frame-Options = "DENY"
+for = "/*"
+[headers.values]
+X-Content-Type-Options = "nosniff"
+Referrer-Policy = "strict-origin-when-cross-origin"
+X-Frame-Options = "DENY"
 
 [[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "/assets/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+for = "/_next/static/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/sw.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Service-Worker-Allowed = "/"
+for = "/sw.js"
+[headers.values]
+Cache-Control = "no-cache, no-store, must-revalidate"
+Service-Worker-Allowed = "/"
 
 [[headers]]
-  for = "/manifest.webmanifest"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
-    Content-Type = "application/manifest+json"
+for = "/manifest.webmanifest"
+[headers.values]
+Cache-Control = "public, max-age=3600"
+Content-Type = "application/manifest+json"
+
+[[headers]]
+for = "/audio/words/*"
+[headers.values]
+Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+for = "/data/*"
+[headers.values]
+Cache-Control = "public, max-age=3600, stale-while-revalidate=604800"

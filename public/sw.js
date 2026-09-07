@@ -1,4 +1,4 @@
-const CACHE = 'geo-pwa-v4';
+const CACHE = 'geo-pwa-v5';
 const CORE = [
   '/',
   '/offline.html',
@@ -6,6 +6,7 @@ const CORE = [
   '/favicon.svg',
   '/pwa-192.png',
   '/pwa-512.png',
+  '/data/word-library-extended.json',
 ];
 
 self.addEventListener('install', (event) => {
@@ -65,6 +66,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (
+    url.pathname.startsWith('/data/') ||
     ['style', 'script', 'image', 'font', 'audio'].includes(request.destination)
   ) {
     event.respondWith(

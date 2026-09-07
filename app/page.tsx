@@ -2,7 +2,7 @@
 /* eslint-disable next/no-img-element */
 /* eslint-disable next/no-html-link-for-pages */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import {
   ArrowLeft,
@@ -976,6 +976,7 @@ function AudioButton({
   onPlay,
   text,
   audioUrl,
+  onPrime,
   large = false,
 }: {
   id: string;
@@ -983,6 +984,7 @@ function AudioButton({
   onPlay: (id: string, text?: string, audioUrl?: string | null) => void;
   text?: string;
   audioUrl?: string | null;
+  onPrime?: (audioUrl: string) => void;
   large?: boolean;
 }) {
   const active = playing === id;
@@ -990,6 +992,9 @@ function AudioButton({
     <button
       className={`audio-button ${large ? 'audio-large' : ''} ${active ? 'is-playing' : ''}`}
       onClick={() => onPlay(id, text, audioUrl)}
+      onFocus={() => audioUrl && onPrime?.(audioUrl)}
+      onPointerDown={() => audioUrl && onPrime?.(audioUrl)}
+      onPointerEnter={() => audioUrl && onPrime?.(audioUrl)}
       aria-label="Play pronunciation"
     >
       {active ? (
@@ -1428,6 +1433,7 @@ function AppShell({
   const [savedWords, setSavedWords] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [visibleWords, setVisibleWords] = useState(50);
+  const [allWords, setAllWords] = useState<WordEntry[]>(wordLibrary);
   const [library, setLibrary] =
     useState<Record<CategoryName, Phrase[]>>(phrases);
   const [user, setUser] = useState<User | null>(null);
@@ -1461,6 +1467,8 @@ function AppShell({
     activity: [] as { activity_date: string; xp_earned: number }[],
   });
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const audioSources = useRef(new Map<string, Promise<string>>());
+  const currentAudio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     const stored = localStorage.getItem('geo-saved-words');
     window.setTimeout(() => {
@@ -1474,6 +1482,31 @@ function AppShell({
   }, []);
   useEffect(() => {
     let active = true;
+    void fetch('/data/word-library-extended.json', { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error('Expanded word library unavailable');
+        return response.json() as Promise<{ words: string[][] }>;
+      })
+      .then(({ words }) => {
+        if (!active) return;
+        const expanded = words.map(([ka, tr, en, ru], index) => ({
+          id: `word-${String(index + wordLibrary.length + 1).padStart(3, '0')}`,
+          ka,
+          tr,
+          en,
+          ru,
+        }));
+        setAllWords([...wordLibrary, ...expanded]);
+      })
+      .catch(() => {
+        // The curated core remains fully usable if the extended catalog is offline.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  useEffect(() => {
+    let active = true;
     void import('@/lib/supabase/client').then((supabaseModule) => {
       if (active && supabaseModule.isSupabaseConfigured)
         setSupabase(supabaseModule.createClient());
@@ -1482,7 +1515,31 @@ function AppShell({
       active = false;
     };
   }, []);
-  const play = (id: string, text?: string, audioUrl?: string | null) => {
+  const primeAudio = useCallback((audioUrl: string) => {
+    const existing = audioSources.current.get(audioUrl);
+    if (existing) return existing;
+    const source = fetch(audioUrl, { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error('Audio unavailable');
+        return response.blob();
+      })
+      .then((blob) => URL.createObjectURL(blob))
+      .catch(() => audioUrl);
+    audioSources.current.set(audioUrl, source);
+    return source;
+  }, []);
+  useEffect(
+    () => () => {
+      currentAudio.current?.pause();
+      for (const source of audioSources.current.values()) {
+        void source.then((url) => {
+          if (url.startsWith('blob:')) URL.revokeObjectURL(url);
+        });
+      }
+    },
+    [],
+  );
+  const play = async (id: string, text?: string, audioUrl?: string | null) => {
     setPlaying(id);
     const speakFallback = () => {
       if (!text || !('speechSynthesis' in window)) return;
@@ -1493,7 +1550,9 @@ function AppShell({
       window.speechSynthesis.speak(utterance);
     };
     if (audioUrl) {
-      const audio = new Audio(audioUrl);
+      currentAudio.current?.pause();
+      const audio = new Audio(await primeAudio(audioUrl));
+      currentAudio.current = audio;
       audio.addEventListener('ended', () => setPlaying(null), { once: true });
       void audio.play().catch(speakFallback);
     } else speakFallback();
@@ -1502,7 +1561,10 @@ function AppShell({
   const phraseKey = (phrase: Phrase) => phrase.id ?? phrase.ka;
   const allPhrases = useMemo(() => Object.values(library).flat(), [library]);
   const normalizedSearch = search.trim().normalize('NFKC').toLocaleLowerCase();
-  const searchTerms = normalizedSearch.split(/\s+/).filter(Boolean);
+  const searchTerms = useMemo(
+    () => normalizedSearch.split(/\s+/).filter(Boolean),
+    [normalizedSearch],
+  );
   const filtered = normalizedSearch
     ? allPhrases.filter((p) => {
         const searchable = `${p.ka} ${p.tr} ${p.en} ${p.ru}`
@@ -1511,14 +1573,29 @@ function AppShell({
         return searchTerms.every((term) => searchable.includes(term));
       })
     : [];
-  const filteredWords = normalizedSearch
-    ? wordLibrary.filter((word) => {
-        const searchable = `${word.ka} ${word.tr} ${word.en} ${word.ru}`
-          .normalize('NFKC')
-          .toLocaleLowerCase();
-        return searchTerms.every((term) => searchable.includes(term));
-      })
-    : wordLibrary;
+  const filteredWords = useMemo(
+    () =>
+      normalizedSearch
+        ? allWords.filter((word) => {
+            const searchable = `${word.ka} ${word.tr} ${word.en} ${word.ru}`
+              .normalize('NFKC')
+              .toLocaleLowerCase();
+            return searchTerms.every((term) => searchable.includes(term));
+          })
+        : allWords,
+    [allWords, normalizedSearch, searchTerms],
+  );
+  useEffect(() => {
+    if (screen !== 'words') return;
+    const delay = normalizedSearch ? 150 : 900;
+    const timer = window.setTimeout(() => {
+      for (const word of filteredWords.slice(0, normalizedSearch ? 8 : 12)) {
+        if (wordAudioIds.has(word.id))
+          void primeAudio(`/audio/words/${word.id}.mp3`);
+      }
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [filteredWords, normalizedSearch, primeAudio, screen]);
   const openCategory = (name: CategoryName) => {
     setCategory(name);
     setScreen('category');
@@ -1918,7 +1995,7 @@ function AppShell({
             <div>
               <strong>{word.ka}</strong>
               <em>{word.tr}</em>
-              <p>{locale === 'ru' ? word.ru : word.en}</p>
+              <p>{locale === 'ru' ? word.ru || word.en : word.en}</p>
             </div>
             <div className="word-actions">
               <button
@@ -1937,6 +2014,7 @@ function AppShell({
                   id={`word-audio-${word.id}`}
                   playing={playing}
                   onPlay={play}
+                  onPrime={primeAudio}
                   text={word.ka}
                   audioUrl={`/audio/words/${word.id}.mp3`}
                 />
@@ -2051,7 +2129,13 @@ function AppShell({
           {screen === 'words' && (
             <section className="screen words-screen">
               <div className="words-heading">
-                <span className="app-eyebrow">400 practical words</span>
+                <span className="app-eyebrow">
+                  {locale === 'ru'
+                    ? `${allWords.length.toLocaleString('ru-RU')} практических слов`
+                    : locale === 'ka'
+                      ? `${allWords.length.toLocaleString('ka-GE')} პრაქტიკული სიტყვა`
+                      : `${allWords.length.toLocaleString('en-US')} practical words`}
+                </span>
                 <h1>{t('learnGeorgian')}</h1>
               </div>
               <search className="search-box word-search">
@@ -2330,7 +2414,7 @@ function AppShell({
               </div>
               {savedWords.length ? (
                 renderWords(
-                  wordLibrary.filter((word) => savedWords.includes(word.id)),
+                  allWords.filter((word) => savedWords.includes(word.id)),
                 )
               ) : (
                 <div className="empty-card">
