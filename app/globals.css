@@ -5669,6 +5669,171 @@ html[data-app-mode='true'] .marketing {
   width: 18px;
 }
 
+.immersive-lesson {
+  display: block;
+  background: #fffdfd;
+}
+
+.immersive-lesson .app-sidebar,
+.immersive-lesson .app-topbar,
+.immersive-lesson .bottom-nav {
+  display: none;
+}
+
+.immersive-lesson .app-main {
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+}
+
+.immersive-lesson .app-content {
+  min-height: 100dvh;
+  padding: 0;
+}
+
+.lesson-preview-screen {
+  width: 100%;
+  min-height: 100dvh;
+  padding: 22px clamp(18px, 4vw, 44px) 28px;
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-focus-topbar {
+  width: min(720px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 14px;
+}
+
+.lesson-focus-topbar > button {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: #f8edef;
+  color: #5e4650;
+  display: grid;
+  place-items: center;
+}
+
+.lesson-focus-topbar > button svg {
+  width: 20px;
+}
+
+.lesson-focus-topbar > span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.lesson-focus-topbar [data-slot='progress'] {
+  height: 10px;
+}
+
+.lesson-focus-topbar [data-slot='progress-track'] {
+  background: #f1e5e7;
+}
+
+.lesson-focus-topbar [data-slot='progress-indicator'] {
+  background: linear-gradient(90deg, var(--primary), #ff435f);
+}
+
+.lesson-focus-stage {
+  flex: 1;
+  min-height: 390px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+
+.lesson-focus-label {
+  margin-bottom: 18px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #f8edef;
+  color: var(--primary);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.lesson-focus-stage h1 {
+  margin: 0;
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.lesson-focus-stage > p {
+  margin: 10px 0 26px;
+  color: #8b737b;
+  font-size: 1.15rem;
+}
+
+.lesson-focus-stage .audio-large {
+  width: 70px;
+  height: 70px;
+  margin: 0 0 24px;
+  box-shadow: 0 12px 30px rgba(178, 13, 47, 0.18);
+}
+
+.lesson-focus-meaning {
+  min-height: 45px;
+  padding: 8px 20px;
+  border-radius: 14px;
+  color: #d9c9cd;
+  font-size: 1.35rem;
+  font-weight: 850;
+}
+
+.lesson-focus-meaning.shown {
+  color: #24161a;
+  background: #fff1f3;
+}
+
+.lesson-focus-actions {
+  width: min(520px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-reveal-button,
+.lesson-next-button {
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(110deg, #a9092b, #ef294d);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 12px 28px rgba(178, 13, 47, 0.2);
+}
+
+.lesson-next-button svg {
+  width: 19px;
+}
+
+.lesson-leave-button {
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: #806a71;
+  font-weight: 800;
+}
+
 /* Clear phrasebook paths and one consistent red-and-white product system. */
 .library-overview {
   display: flex;
@@ -5861,6 +6026,26 @@ html[data-app-mode='true'] .marketing {
   }
   .lesson-preview-heading p {
     font-size: 0.84rem;
+  }
+  .lesson-preview-screen {
+    padding: 15px 16px max(20px, env(safe-area-inset-bottom));
+  }
+  .lesson-focus-topbar {
+    grid-template-columns: 40px minmax(0, 1fr) 38px;
+    gap: 10px;
+  }
+  .lesson-focus-topbar > button {
+    width: 40px;
+    height: 40px;
+  }
+  .lesson-focus-stage {
+    min-height: 350px;
+  }
+  .lesson-focus-stage h1 {
+    font-size: clamp(2.8rem, 13vw, 4.4rem);
+  }
+  .lesson-focus-stage > p {
+    font-size: 1rem;
   }
   .library-overview {
     display: grid;
