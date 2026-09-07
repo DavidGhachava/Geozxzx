@@ -2386,6 +2386,143 @@ footer > button {
   }
 }
 
+/* Fast, compact mobile-first word library. */
+.words-screen {
+  max-width: 1040px;
+}
+.words-heading {
+  margin-bottom: 18px;
+}
+.words-heading h1 {
+  margin: 4px 0 0;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: -0.045em;
+}
+.word-result-count {
+  min-height: 38px;
+  padding: 10px 2px 6px;
+  color: var(--muted-foreground);
+  font-size: 0.84rem;
+}
+.word-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.word-card {
+  min-width: 0;
+  min-height: 92px;
+  padding: 13px 14px;
+  border: 1px solid rgba(178, 13, 47, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 7px 20px rgba(90, 15, 35, 0.045);
+}
+.word-card > div:first-child {
+  min-width: 0;
+}
+.word-card strong,
+.word-card em,
+.word-card p {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.word-card strong {
+  font-size: 1.22rem;
+  line-height: 1.15;
+}
+.word-card em {
+  margin-top: 2px;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+.word-card p {
+  margin: 3px 0 0;
+  color: #50484a;
+  font-size: 0.88rem;
+}
+.word-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 7px;
+}
+.word-actions .save-button,
+.word-actions .audio-button {
+  width: 38px;
+  height: 38px;
+}
+.audio-pending {
+  cursor: default;
+  opacity: 0.38;
+}
+.load-more-words {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 16px;
+  border-color: rgba(178, 13, 47, 0.24);
+  color: var(--primary);
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .words-screen {
+    padding-bottom: 94px;
+  }
+  .words-heading {
+    margin-bottom: 12px;
+  }
+  .words-heading .app-eyebrow {
+    font-size: 0.72rem;
+  }
+  .words-heading h1 {
+    font-size: 1.85rem;
+  }
+  .word-search {
+    position: sticky;
+    z-index: 20;
+    top: 78px;
+    height: 56px;
+    border-radius: 15px;
+    background: rgba(255, 253, 252, 0.96);
+    box-shadow: 0 8px 25px rgba(78, 12, 30, 0.09);
+    backdrop-filter: blur(12px);
+  }
+  .word-search input::placeholder {
+    color: #6f6668;
+    opacity: 1;
+  }
+  .word-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .word-card {
+    min-height: 80px;
+    padding: 10px 11px 10px 13px;
+    border-radius: 14px;
+  }
+  .word-card strong {
+    font-size: 1.12rem;
+  }
+  .word-actions .save-button,
+  .word-actions .audio-button {
+    width: 36px;
+    height: 36px;
+  }
+  .explore-screen .library-overview,
+  .explore-screen > .section-title,
+  .explore-screen .category-grid,
+  .explore-screen .learning-banner {
+    display: none;
+  }
+}
+
 /* Product-ready account, language, and compact mobile navigation */
 .brand {
   display: inline-flex;

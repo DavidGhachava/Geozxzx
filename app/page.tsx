@@ -6,7 +6,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import {
   ArrowLeft,
-  BarChart3,
   Bookmark,
   BookOpen,
   Brain,
@@ -58,6 +57,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
+import { wordLibrary, type WordEntry } from '@/lib/word-library';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -81,6 +81,7 @@ interface BeforeInstallPromptEvent extends Event {
 
 type Screen =
   | 'explore'
+  | 'words'
   | 'all'
   | 'category'
   | 'saved'
@@ -390,21 +391,6 @@ const phrases: Record<CategoryName, Phrase[]> = {
     },
   ],
 };
-
-const phraseAudioUrls = new Map(
-  Object.values(phrases)
-    .flat()
-    .map((phrase, index) => {
-      const slug = phrase.tr
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-      return [
-        phrase.ka,
-        `/audio/phrases/${String(index + 1).padStart(2, '0')}-${slug}.mp3`,
-      ];
-    }),
-);
 
 const categoryLabels: Record<Locale, Record<CategoryName, string>> = {
   en: {
@@ -1165,8 +1151,6 @@ function Marketing({
                 id="hero-phone"
                 playing={playing}
                 onPlay={play}
-                text="გამარჯობა"
-                audioUrl={phraseAudioUrls.get('გამარჯობა')}
                 large
               />
             </div>
@@ -1294,14 +1278,7 @@ function Marketing({
               <em>madloba</em>
               <p>{locale === 'ru' ? 'Спасибо' : 'Thank you'}</p>
             </div>
-            <AudioButton
-              id="demo"
-              playing={playing}
-              onPlay={play}
-              text="მადლობა"
-              audioUrl={phraseAudioUrls.get('მადლობა')}
-              large
-            />
+            <AudioButton id="demo" playing={playing} onPlay={play} large />
           </div>
           <p className="demo-caption">
             <Mic2 /> {t('audioNote')}
@@ -1441,11 +1418,13 @@ function AppShell({
   onLocaleChange: (locale: Locale) => void;
 }) {
   const t = (key: string) => getCopy(locale, key);
-  const [screen, setScreen] = useState<Screen>(initialScreen ?? 'explore');
+  const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
+  const [savedWords, setSavedWords] = useState<string[]>([]);
   const [search, setSearch] = useState('');
+  const [visibleWords, setVisibleWords] = useState(50);
   const [library, setLibrary] =
     useState<Record<CategoryName, Phrase[]>>(phrases);
   const [user, setUser] = useState<User | null>(null);
@@ -1479,6 +1458,17 @@ function AppShell({
     activity: [] as { activity_date: string; xp_earned: number }[],
   });
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  useEffect(() => {
+    const stored = localStorage.getItem('geo-saved-words');
+    window.setTimeout(() => {
+      if (!stored) return;
+      try {
+        setSavedWords(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem('geo-saved-words');
+      }
+    }, 0);
+  }, []);
   useEffect(() => {
     let active = true;
     void import('@/lib/supabase/client').then((supabaseModule) => {
@@ -1518,6 +1508,14 @@ function AppShell({
         return searchTerms.every((term) => searchable.includes(term));
       })
     : [];
+  const filteredWords = normalizedSearch
+    ? wordLibrary.filter((word) => {
+        const searchable = `${word.ka} ${word.tr} ${word.en} ${word.ru}`
+          .normalize('NFKC')
+          .toLocaleLowerCase();
+        return searchTerms.every((term) => searchable.includes(term));
+      })
+    : wordLibrary;
   const openCategory = (name: CategoryName) => {
     setCategory(name);
     setScreen('category');
@@ -1691,6 +1689,13 @@ function AppShell({
       setSaved((items) =>
         wasSaved ? [...items, key] : items.filter((value) => value !== key),
       );
+  };
+  const toggleSavedWord = (word: WordEntry) => {
+    const next = savedWords.includes(word.id)
+      ? savedWords.filter((id) => id !== word.id)
+      : [...savedWords, word.id];
+    setSavedWords(next);
+    localStorage.setItem('geo-saved-words', JSON.stringify(next));
   };
 
   const openLearning = () => {
@@ -1894,8 +1899,42 @@ function AppShell({
               playing={playing}
               onPlay={play}
               text={p.ka}
-              audioUrl={p.audio_url ?? phraseAudioUrls.get(p.ka)}
+              audioUrl={p.audio_url}
             />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+  const renderWords = (items: WordEntry[]) => (
+    <div className="word-list">
+      {items.map((word) => (
+        <article className="word-card" key={word.id}>
+          <div>
+            <strong>{word.ka}</strong>
+            <em>{word.tr}</em>
+            <p>{locale === 'ru' ? word.ru : word.en}</p>
+          </div>
+          <div className="word-actions">
+            <button
+              className={`save-button ${savedWords.includes(word.id) ? 'saved' : ''}`}
+              onClick={() => toggleSavedWord(word)}
+              aria-label={
+                savedWords.includes(word.id)
+                  ? t('removeSaved')
+                  : t('savePhrase')
+              }
+            >
+              <Bookmark />
+            </button>
+            <button
+              className="audio-button audio-pending"
+              disabled
+              title="Audio coming soon"
+              aria-label="Audio coming soon"
+            >
+              <Volume2 />
+            </button>
           </div>
         </article>
       ))}
@@ -1903,7 +1942,7 @@ function AppShell({
   );
   const appHome = () => {
     if (window.matchMedia('(display-mode: standalone)').matches) {
-      setScreen('explore');
+      setScreen('words');
       window.scrollTo(0, 0);
       return;
     }
@@ -1925,9 +1964,12 @@ function AppShell({
             <Compass />
             {t('explore')}
           </button>
-          <button className={learnNav ? 'active' : ''} onClick={openLearning}>
-            <BookOpen />
-            {t('learn')}
+          <button
+            className={screen === 'words' ? 'active' : ''}
+            onClick={() => setScreen('words')}
+          >
+            <Search />
+            {locale === 'ru' ? 'Слова' : locale === 'ka' ? 'სიტყვები' : 'Words'}
           </button>
           <button
             className={screen === 'saved' ? 'active' : ''}
@@ -1937,11 +1979,11 @@ function AppShell({
             {t('saved')}
           </button>
           <button
-            className={screen === 'progress' ? 'active' : ''}
+            className={screen === 'progress' || learnNav ? 'active' : ''}
             onClick={openProgress}
           >
-            <BarChart3 />
-            {t('progress')}
+            <BookOpen />
+            {t('learn')}
           </button>
           <button
             className={screen === 'settings' ? 'active' : ''}
@@ -1990,6 +2032,72 @@ function AppShell({
           </div>
         </header>
         <div className="app-content">
+          {screen === 'words' && (
+            <section className="screen words-screen">
+              <div className="words-heading">
+                <span className="app-eyebrow">400 practical words</span>
+                <h1>{t('learnGeorgian')}</h1>
+              </div>
+              <search className="search-box word-search">
+                <Search />
+                <input
+                  type="search"
+                  aria-label={t('searchPlaceholder')}
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    setVisibleWords(50);
+                  }}
+                  placeholder={t('searchPlaceholder')}
+                  enterKeyHint="search"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+                {search && (
+                  <button
+                    type="button"
+                    className="search-clear"
+                    onClick={() => setSearch('')}
+                    aria-label="Clear search"
+                  >
+                    <X />
+                  </button>
+                )}
+              </search>
+              <div className="word-result-count">
+                <span>
+                  {normalizedSearch
+                    ? `${filteredWords.length} ${t('found')}`
+                    : `${Math.min(visibleWords, filteredWords.length)} of ${filteredWords.length}`}
+                </span>
+              </div>
+              {filteredWords.length ? (
+                <>
+                  {renderWords(filteredWords.slice(0, visibleWords))}
+                  {visibleWords < filteredWords.length && (
+                    <Button
+                      className="load-more-words"
+                      variant="outline"
+                      onClick={() => setVisibleWords((count) => count + 50)}
+                    >
+                      {locale === 'ru'
+                        ? 'Загрузить ещё 50'
+                        : locale === 'ka'
+                          ? 'კიდევ 50-ის ჩატვირთვა'
+                          : 'Load 50 more'}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <div className="empty-card">
+                  <Search />
+                  <h3>{t('noPhrase')}</h3>
+                  <p>{t('searchHint')}</p>
+                </div>
+              )}
+            </section>
+          )}
           {screen === 'explore' && (
             <section className="screen explore-screen">
               <div className="screen-heading">
@@ -2195,12 +2303,18 @@ function AppShell({
                 <div>
                   <span className="app-eyebrow">{t('phrasebook')}</span>
                   <h1>{t('savedPhrases')}</h1>
-                  <p>{user ? t('savedSync') : t('signToSave')}</p>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Ваши сохранённые слова на этом устройстве.'
+                      : locale === 'ka'
+                        ? 'ამ მოწყობილობაზე შენახული სიტყვები.'
+                        : 'Your saved words on this device.'}
+                  </p>
                 </div>
               </div>
-              {saved.length ? (
-                renderPhrases(
-                  allPhrases.filter((p) => saved.includes(phraseKey(p))),
+              {savedWords.length ? (
+                renderWords(
+                  wordLibrary.filter((word) => savedWords.includes(word.id)),
                 )
               ) : (
                 <div className="empty-card">
@@ -2211,10 +2325,12 @@ function AppShell({
                       ? 'Tap the bookmark on any phrase to save it here.'
                       : 'Create an account or sign in to keep phrases across devices.'}
                   </p>
-                  <Button
-                    onClick={user ? () => setScreen('explore') : openAuth}
-                  >
-                    {user ? 'Explore phrases' : 'Sign in to sync'}
+                  <Button onClick={() => setScreen('words')}>
+                    {locale === 'ru'
+                      ? 'Найти слова'
+                      : locale === 'ka'
+                        ? 'სიტყვების ნახვა'
+                        : 'Browse words'}
                   </Button>
                 </div>
               )}
@@ -2499,8 +2615,6 @@ function AppShell({
                     id="lesson"
                     playing={playing}
                     onPlay={play}
-                    text="გამარჯობა"
-                    audioUrl={phraseAudioUrls.get('გამარჯობა')}
                     large
                   />
                   <i />
@@ -2840,9 +2954,18 @@ function AppShell({
             <Home />
             <span>{t('explore')}</span>
           </button>
-          <button className={learnNav ? 'active' : ''} onClick={openLearning}>
-            <BookOpen />
-            <span>{t('learn')}</span>
+          <button
+            className={screen === 'words' ? 'active' : ''}
+            onClick={() => setScreen('words')}
+          >
+            <Search />
+            <span>
+              {locale === 'ru'
+                ? 'Слова'
+                : locale === 'ka'
+                  ? 'სიტყვები'
+                  : 'Words'}
+            </span>
           </button>
           <button
             className={screen === 'saved' ? 'active' : ''}
@@ -2852,11 +2975,11 @@ function AppShell({
             <span>{t('saved')}</span>
           </button>
           <button
-            className={screen === 'progress' ? 'active' : ''}
+            className={screen === 'progress' || learnNav ? 'active' : ''}
             onClick={openProgress}
           >
-            <BarChart3 />
-            <span>{t('progress')}</span>
+            <BookOpen />
+            <span>{t('learn')}</span>
           </button>
         </nav>
       </div>
@@ -2982,7 +3105,7 @@ function AuthDialog({
 
 export default function HomePage() {
   const [mode, setMode] = useState<'marketing' | 'app'>('marketing');
-  const [initialAppScreen, setInitialAppScreen] = useState<Screen>('explore');
+  const [initialAppScreen, setInitialAppScreen] = useState<Screen>('words');
   const [siteUser, setSiteUser] = useState<User | null>(null);
   const [siteDisplayName, setSiteDisplayName] = useState<string | null>(null);
   const [locale, setLocale] = useState<Locale>('en');
@@ -3105,7 +3228,7 @@ export default function HomePage() {
   }, [mode]);
   const openApp = () => {
     document.documentElement.dataset.appMode = 'true';
-    setInitialAppScreen('explore');
+    setInitialAppScreen('words');
     setMode('app');
     history.replaceState(null, '', '#app');
     window.scrollTo(0, 0);
