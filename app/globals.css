@@ -5784,6 +5784,86 @@ html[data-app-mode='true'] .marketing {
   box-shadow: 0 12px 30px rgba(178, 13, 47, 0.18);
 }
 
+.lesson-test-stage h2 {
+  max-width: 480px;
+  margin: 0 0 28px;
+  font-size: clamp(1.65rem, 4vw, 2.5rem);
+  letter-spacing: -0.035em;
+}
+
+.lesson-listen-hint {
+  margin: -13px 0 24px;
+  color: #8b737b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.lesson-answer-form {
+  width: min(480px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 9px;
+}
+
+.lesson-answer-form input {
+  width: 100%;
+  min-height: 54px;
+  padding: 0 16px;
+  border: 2px solid #eadadd;
+  border-radius: 15px;
+  outline: none;
+  background: #fff;
+  color: #24161a;
+  font-size: 1rem;
+  transition: border-color 150ms ease;
+}
+
+.lesson-answer-form input:focus {
+  border-color: var(--primary);
+}
+
+.lesson-answer-form input::placeholder {
+  color: #8b777d;
+}
+
+.lesson-answer-form button {
+  min-height: 54px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 15px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 900;
+}
+
+.lesson-answer-form button:disabled {
+  opacity: 0.45;
+}
+
+.lesson-answer-result {
+  width: min(480px, 100%);
+  margin-top: 12px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 0.94rem;
+}
+
+.lesson-answer-result.correct {
+  border: 1px solid #bee0c2;
+  background: #eef9f0;
+  color: #24622f;
+}
+
+.lesson-answer-result.wrong {
+  border: 1px solid #efc9cf;
+  background: #fff0f2;
+  color: #8e1830;
+}
+
 .lesson-focus-meaning {
   min-height: 45px;
   padding: 8px 20px;
@@ -6046,6 +6126,18 @@ html[data-app-mode='true'] .marketing {
   }
   .lesson-focus-stage > p {
     font-size: 1rem;
+  }
+  .lesson-test-stage h2 {
+    margin-bottom: 24px;
+    font-size: 1.65rem;
+  }
+  .lesson-answer-form {
+    grid-template-columns: 1fr;
+  }
+  .lesson-answer-result {
+    align-items: flex-start;
+    flex-direction: column;
+    text-align: left;
   }
   .library-overview {
     display: grid;

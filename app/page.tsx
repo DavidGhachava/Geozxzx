@@ -117,6 +117,31 @@ function phraseMeaning(phrase: Phrase, locale: Locale) {
   return locale === 'ru' ? phrase.ru : phrase.en;
 }
 
+function normalizeLessonAnswer(value: string) {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isLessonAnswerCorrect(
+  answer: string,
+  word: WordEntry,
+  locale: Locale,
+) {
+  const expected = locale === 'ru' ? word.ru : word.en;
+  const accepted = expected
+    .split('/')
+    .flatMap((value) => [value, value.replace(/\([^)]*\)/g, '')]);
+  const normalizedAnswer = normalizeLessonAnswer(answer);
+  return accepted.some(
+    (value) => normalizeLessonAnswer(value) === normalizedAnswer,
+  );
+}
+
 const categories: {
   name: CategoryName;
   count: number;
@@ -1433,6 +1458,13 @@ function AppShell({
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
   const [previewMeaningShown, setPreviewMeaningShown] = useState(false);
+  const [previewMode, setPreviewMode] = useState<'learn' | 'test'>('learn');
+  const [previewSegment, setPreviewSegment] = useState<0 | 1>(0);
+  const [previewTestIndex, setPreviewTestIndex] = useState(0);
+  const [previewAnswer, setPreviewAnswer] = useState('');
+  const [previewResult, setPreviewResult] = useState<
+    'idle' | 'correct' | 'wrong'
+  >('idle');
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -2485,6 +2517,11 @@ function AppShell({
                       setPreviewLessonNumber(lesson.number);
                       setPreviewWordIndex(0);
                       setPreviewMeaningShown(false);
+                      setPreviewMode('learn');
+                      setPreviewSegment(0);
+                      setPreviewTestIndex(0);
+                      setPreviewAnswer('');
+                      setPreviewResult('idle');
                       setScreen('lesson-preview');
                       window.scrollTo(0, 0);
                     }}
@@ -2537,26 +2574,72 @@ function AppShell({
                     ...item,
                   },
               );
+              const segmentWords = previewWords.slice(
+                previewSegment * 5,
+                previewSegment * 5 + 5,
+              );
               const currentWord =
-                previewWords[previewWordIndex] ?? previewWords[0];
-              const isLastWord = previewWordIndex === previewWords.length - 1;
+                segmentWords[
+                  previewMode === 'learn' ? previewWordIndex : previewTestIndex
+                ] ?? segmentWords[0];
+              const isLastLearningWord =
+                previewWordIndex === segmentWords.length - 1;
+              const isLastTestWord =
+                previewTestIndex === segmentWords.length - 1;
               const hasAudio = currentWord
                 ? wordAudioIds.has(currentWord.id)
                 : false;
-              const continueLesson = () => {
-                if (!isLastWord) {
+              const progressStep =
+                previewSegment * 10 +
+                (previewMode === 'learn'
+                  ? previewWordIndex + 1
+                  : 5 + previewTestIndex + 1);
+              const continueLearning = () => {
+                if (!isLastLearningWord) {
                   setPreviewWordIndex((index) => index + 1);
                   setPreviewMeaningShown(false);
                   return;
                 }
-                if (lesson.number < 3) {
-                  setPreviewLessonNumber((number) => number + 1);
+                setPreviewMode('test');
+                setPreviewTestIndex(0);
+                setPreviewAnswer('');
+                setPreviewResult('idle');
+              };
+              const continueTest = () => {
+                if (!isLastTestWord) {
+                  setPreviewTestIndex((index) => index + 1);
+                  setPreviewAnswer('');
+                  setPreviewResult('idle');
+                  return;
+                }
+                if (previewSegment === 0) {
+                  setPreviewSegment(1);
+                  setPreviewMode('learn');
                   setPreviewWordIndex(0);
                   setPreviewMeaningShown(false);
+                  setPreviewTestIndex(0);
+                  setPreviewAnswer('');
+                  setPreviewResult('idle');
+                  return;
+                }
+                if (lesson.number < 3) {
+                  setPreviewLessonNumber((number) => number + 1);
+                  setPreviewSegment(0);
+                  setPreviewMode('learn');
+                  setPreviewWordIndex(0);
+                  setPreviewMeaningShown(false);
+                  setPreviewTestIndex(0);
+                  setPreviewAnswer('');
+                  setPreviewResult('idle');
                   return;
                 }
                 setScreen('learn');
               };
+              const answerLabel = currentWord
+                ? locale === 'ru'
+                  ? currentWord.ru
+                  : currentWord.en
+                : '';
               return (
                 <section className="screen lesson-preview-screen">
                   <div className="lesson-focus-topbar">
@@ -2572,24 +2655,18 @@ function AppShell({
                     >
                       <X />
                     </button>
-                    <Progress
-                      value={
-                        ((previewWordIndex + 1) / previewWords.length) * 100
-                      }
-                    />
-                    <span>
-                      {previewWordIndex + 1}/{previewWords.length}
-                    </span>
+                    <Progress value={(progressStep / 20) * 100} />
+                    <span>{progressStep}/20</span>
                   </div>
 
-                  {currentWord && (
+                  {currentWord && previewMode === 'learn' && (
                     <div className="lesson-focus-stage">
                       <span className="lesson-focus-label">
                         {locale === 'ru'
-                          ? `Урок ${lesson.number}`
+                          ? `Урок ${lesson.number} · Блок ${previewSegment + 1}`
                           : locale === 'ka'
-                            ? `გაკვეთილი ${lesson.number}`
-                            : `Lesson ${lesson.number}`}
+                            ? `გაკვეთილი ${lesson.number} · ნაწილი ${previewSegment + 1}`
+                            : `Lesson ${lesson.number} · Set ${previewSegment + 1}`}
                       </span>
                       <h1>{currentWord.ka}</h1>
                       <p>{currentWord.tr}</p>
@@ -2628,8 +2705,122 @@ function AppShell({
                     </div>
                   )}
 
+                  {currentWord && previewMode === 'test' && (
+                    <div className="lesson-focus-stage lesson-test-stage">
+                      <span className="lesson-focus-label">
+                        {locale === 'ru'
+                          ? `Проверка ${previewSegment + 1} из 2`
+                          : locale === 'ka'
+                            ? `ტესტი ${previewSegment + 1} / 2`
+                            : `Test ${previewSegment + 1} of 2`}
+                      </span>
+                      <h2>
+                        {locale === 'ru'
+                          ? 'Что означает это слово?'
+                          : locale === 'ka'
+                            ? 'რას ნიშნავს ეს სიტყვა?'
+                            : 'What does this word mean?'}
+                      </h2>
+                      {hasAudio ? (
+                        <AudioButton
+                          id={`lesson-test-${currentWord.id}`}
+                          playing={playing}
+                          onPlay={play}
+                          onPrime={primeAudio}
+                          text={currentWord.ka}
+                          audioUrl={`/audio/words/${currentWord.id}.mp3`}
+                          large
+                        />
+                      ) : (
+                        <button
+                          className="audio-button audio-large audio-pending"
+                          disabled
+                          title="Audio coming soon"
+                          aria-label="Audio coming soon"
+                        >
+                          <Volume2 />
+                        </button>
+                      )}
+                      <small className="lesson-listen-hint">
+                        {locale === 'ru'
+                          ? 'Нажмите, чтобы услышать ещё раз'
+                          : locale === 'ka'
+                            ? 'კიდევ მოსასმენად დააჭირეთ'
+                            : 'Tap to hear it again'}
+                      </small>
+                      <form
+                        className="lesson-answer-form"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (!previewAnswer.trim() || previewResult !== 'idle')
+                            return;
+                          setPreviewResult(
+                            isLessonAnswerCorrect(
+                              previewAnswer,
+                              currentWord,
+                              locale,
+                            )
+                              ? 'correct'
+                              : 'wrong',
+                          );
+                        }}
+                      >
+                        <input
+                          value={previewAnswer}
+                          onChange={(event) =>
+                            setPreviewAnswer(event.target.value)
+                          }
+                          disabled={previewResult !== 'idle'}
+                          placeholder={
+                            locale === 'ru'
+                              ? 'Введите значение по-русски'
+                              : 'Type the meaning in English'
+                          }
+                          aria-label={
+                            locale === 'ru'
+                              ? 'Значение слова'
+                              : 'Meaning of the word'
+                          }
+                        />
+                        {previewResult === 'idle' && (
+                          <button
+                            type="submit"
+                            disabled={!previewAnswer.trim()}
+                          >
+                            {locale === 'ru'
+                              ? 'Проверить'
+                              : locale === 'ka'
+                                ? 'შემოწმება'
+                                : 'Check'}
+                          </button>
+                        )}
+                      </form>
+                      {previewResult !== 'idle' && (
+                        <div
+                          className={`lesson-answer-result ${previewResult}`}
+                          aria-live="polite"
+                        >
+                          <strong>
+                            {previewResult === 'correct'
+                              ? locale === 'ru'
+                                ? 'Правильно!'
+                                : locale === 'ka'
+                                  ? 'სწორია!'
+                                  : 'Correct!'
+                              : locale === 'ru'
+                                ? 'Почти! Правильный ответ:'
+                                : locale === 'ka'
+                                  ? 'თითქმის! სწორი პასუხია:'
+                                  : 'Almost! The answer is:'}
+                          </strong>
+                          <span>{answerLabel}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="lesson-focus-actions">
-                    {!previewMeaningShown ? (
+                    {previewMode === 'learn' && !previewMeaningShown ? (
                       <button
                         className="lesson-reveal-button"
                         onClick={() => setPreviewMeaningShown(true)}
@@ -2640,35 +2831,55 @@ function AppShell({
                             ? 'მნიშვნელობის ჩვენება'
                             : 'Show meaning'}
                       </button>
-                    ) : (
+                    ) : previewMode === 'learn' ? (
                       <button
                         className="lesson-next-button"
-                        onClick={continueLesson}
+                        onClick={continueLearning}
                       >
                         {locale === 'ru'
-                          ? isLastWord
-                            ? lesson.number < 3
-                              ? 'Следующий урок'
-                              : 'Завершить'
+                          ? isLastLearningWord
+                            ? 'Начать проверку'
                             : 'Следующее слово'
                           : locale === 'ka'
-                            ? isLastWord
-                              ? lesson.number < 3
-                                ? 'შემდეგი გაკვეთილი'
-                                : 'დასრულება'
+                            ? isLastLearningWord
+                              ? 'ტესტის დაწყება'
                               : 'შემდეგი სიტყვა'
-                            : isLastWord
-                              ? lesson.number < 3
-                                ? 'Next lesson'
-                                : 'Finish'
+                            : isLastLearningWord
+                              ? 'Start test'
                               : 'Next word'}
-                        {isLastWord && lesson.number === 3 ? (
-                          <Check />
-                        ) : (
-                          <ChevronRight />
-                        )}
+                        <ChevronRight />
                       </button>
-                    )}
+                    ) : previewResult !== 'idle' ? (
+                      <button
+                        className="lesson-next-button"
+                        onClick={continueTest}
+                      >
+                        {locale === 'ru'
+                          ? isLastTestWord
+                            ? previewSegment === 0
+                              ? 'Следующие 5 слов'
+                              : lesson.number < 3
+                                ? 'Следующий урок'
+                                : 'Завершить'
+                            : 'Следующий вопрос'
+                          : locale === 'ka'
+                            ? isLastTestWord
+                              ? previewSegment === 0
+                                ? 'შემდეგი 5 სიტყვა'
+                                : lesson.number < 3
+                                  ? 'შემდეგი გაკვეთილი'
+                                  : 'დასრულება'
+                              : 'შემდეგი კითხვა'
+                            : isLastTestWord
+                              ? previewSegment === 0
+                                ? 'Learn the next 5'
+                                : lesson.number < 3
+                                  ? 'Next lesson'
+                                  : 'Finish'
+                              : 'Next question'}
+                        <ChevronRight />
+                      </button>
+                    ) : null}
                     <button
                       className="lesson-leave-button"
                       onClick={() => setScreen('learn')}
