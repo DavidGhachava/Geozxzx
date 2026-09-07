@@ -49,7 +49,7 @@ export default function TermsPage() {
         </p>
         <h2>Paid services</h2>
         <p>
-          Phrasebook Pro is listed at ₾60 once and Guided Learning at ₾19.99 per
+          Phrasebook Pro is listed at ₾60 once and Guided Learning at ₾19 per
           month, but checkout is not active and the beta does not accept
           payments. Product scope, billing entity, taxes, cancellation controls,
           refunds, and purchase restoration will be presented before paid

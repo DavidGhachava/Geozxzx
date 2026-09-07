@@ -29,7 +29,7 @@ export default function ChangelogPage() {
           </li>
           <li>Expanded the free practical phrasebook to 50 phrases.</li>
           <li>
-            Added secure ₾19.99/month Guided Learning entitlement checks for
+            Added secure ₾19/month Guided Learning entitlement checks for
             lessons, quizzes, progress, XP, daily activity, and streaks.
           </li>
           <li>

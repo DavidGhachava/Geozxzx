@@ -30,7 +30,7 @@ export default function HelpPage() {
         <h2>Guided Learning</h2>
         <p>
           Lessons, quizzes, progress, XP, daily activity, and streaks require an
-          active ₾19.99/month subscription. The access gate is active; payment
+          active ₾19/month subscription. The access gate is active; payment
           checkout is still being connected.
         </p>
         <h2>Install GEO</h2>

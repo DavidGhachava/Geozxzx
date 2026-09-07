@@ -30,7 +30,7 @@ export default function FeaturesPage() {
           sentence catalog, examples, richer context, pronunciation, and
           downloadable offline packs with lifetime access.
         </p>
-        <h2>Guided Learning · ₾19.99/month</h2>
+        <h2>Guided Learning · ₾19/month</h2>
         <p>
           Subscribers unlock five-minute lessons, quizzes, smart review,
           synchronized progress, XP, daily activity, and streaks. Lesson

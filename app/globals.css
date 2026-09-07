@@ -5406,6 +5406,189 @@ html[data-app-mode='true'] .marketing {
   }
 }
 
+.lesson-path-screen {
+  max-width: 920px;
+  margin-inline: auto;
+}
+
+.lesson-path-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.lesson-path-heading h1 {
+  margin: 7px 0 7px;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  letter-spacing: -0.055em;
+}
+
+.lesson-path-heading p {
+  max-width: 600px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+}
+
+.lesson-path-count {
+  min-height: 44px;
+  padding: 0 15px;
+  border: 1px solid rgba(178, 13, 47, 0.18);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.lesson-path-count svg {
+  width: 18px;
+}
+
+.lesson-path-list {
+  display: grid;
+  gap: 11px;
+}
+
+.lesson-path-card {
+  width: 100%;
+  min-height: 108px;
+  padding: 14px 16px;
+  border: 1px solid rgba(178, 13, 47, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(120deg, #fff 0%, #fff9f9 100%);
+  color: var(--text);
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 15px;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(94, 11, 30, 0.04);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.lesson-path-card:hover {
+  border-color: rgba(178, 13, 47, 0.42);
+  box-shadow: 0 13px 30px rgba(94, 11, 30, 0.09);
+  transform: translateY(-2px);
+}
+
+.lesson-path-card:nth-child(2) {
+  background: linear-gradient(120deg, #fff 0%, #fff4f1 100%);
+}
+
+.lesson-path-card:nth-child(3) {
+  background: linear-gradient(120deg, #fff 0%, #fdf1f4 100%);
+}
+
+.lesson-path-number {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(178, 13, 47, 0.2);
+}
+
+.lesson-path-card:nth-child(2) .lesson-path-number {
+  background: #e44951;
+}
+
+.lesson-path-card:nth-child(3) .lesson-path-number {
+  background: #8d1732;
+}
+
+.lesson-path-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.lesson-path-copy small {
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.lesson-path-copy b {
+  font-size: 1.05rem;
+}
+
+.lesson-path-copy > span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lesson-path-copy em {
+  color: #6d3341;
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.lesson-path-action {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(178, 13, 47, 0.08);
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+}
+
+.lesson-path-action svg {
+  width: 18px;
+}
+
+.lesson-path-footer {
+  margin-top: 15px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f7e8e9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #66323e;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.lesson-path-footer button {
+  min-height: 40px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.lesson-path-footer svg {
+  width: 17px;
+}
+
 /* Clear phrasebook paths and one consistent red-and-white product system. */
 .library-overview {
   display: flex;
@@ -5539,6 +5722,58 @@ html[data-app-mode='true'] .marketing {
 }
 
 @media (max-width: 760px) {
+  .lesson-path-heading {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .lesson-path-heading h1 {
+    font-size: 2.05rem;
+  }
+  .lesson-path-heading p {
+    font-size: 0.9rem;
+  }
+  .lesson-path-count {
+    min-height: 38px;
+    padding-inline: 11px;
+    font-size: 0.78rem;
+  }
+  .lesson-path-card {
+    min-height: 98px;
+    padding: 12px;
+    grid-template-columns: 44px minmax(0, 1fr) 32px;
+    gap: 11px;
+    border-radius: 16px;
+  }
+  .lesson-path-number {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    font-size: 1rem;
+  }
+  .lesson-path-copy small {
+    font-size: 0.61rem;
+  }
+  .lesson-path-copy b {
+    font-size: 0.94rem;
+  }
+  .lesson-path-copy > span {
+    font-size: 0.78rem;
+  }
+  .lesson-path-copy em {
+    font-size: 0.73rem;
+  }
+  .lesson-path-action {
+    width: 32px;
+    height: 32px;
+  }
+  .lesson-path-footer {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lesson-path-footer button {
+    justify-content: center;
+  }
   .library-overview {
     display: grid;
     gap: 12px;

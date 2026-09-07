@@ -59,6 +59,7 @@ import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
+import { beginnerLessons } from '@/lib/beginner-lessons';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -86,6 +87,7 @@ type Screen =
   | 'all'
   | 'category'
   | 'saved'
+  | 'learn'
   | 'premium'
   | 'daily'
   | 'lesson'
@@ -514,7 +516,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     faqProQ: 'What is Phrasebook Pro?',
     faqProA:
       'A ₾60 one-time upgrade for the growing 1,000+ word and sentence lookup library.',
-    faqGuidedQ: 'What requires ₾19.99/month?',
+    faqGuidedQ: 'What requires ₾19/month?',
     faqGuidedA:
       'Daily lessons, quizzes, smart review, XP, progress, and streaks.',
     faqInstallQ: 'Can I install GEO?',
@@ -530,7 +532,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'Sign in',
     signOut: 'Sign out',
     planActive: 'Your plan is active',
-    perMonth: '₾19.99 per month',
+    perMonth: '₾19 per month',
     learnGeorgian: 'Learn Georgian',
     guestIntro: 'All 50 free phrases are ready. Sign in only to save them.',
     welcomeBack: 'Welcome back',
@@ -662,7 +664,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     faqProQ: 'Что такое Phrasebook Pro?',
     faqProA:
       'Разовая покупка за ₾60 для растущего каталога из 1000+ слов и предложений.',
-    faqGuidedQ: 'Для чего нужна подписка ₾19.99?',
+    faqGuidedQ: 'Для чего нужна подписка ₾19?',
     faqGuidedA:
       'Ежедневные уроки, тесты, умное повторение, XP, прогресс и серии занятий.',
     faqInstallQ: 'Можно установить GEO?',
@@ -678,7 +680,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'Войти',
     signOut: 'Выйти',
     planActive: 'Подписка активна',
-    perMonth: '₾19.99 в месяц',
+    perMonth: '₾19 в месяц',
     learnGeorgian: 'Учить грузинский',
     guestIntro:
       'Все 50 бесплатных фраз готовы. Вход нужен только для сохранения.',
@@ -810,7 +812,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     faqProQ: 'რა არის Phrasebook Pro?',
     faqProA:
       '₾60-იანი ერთჯერადი განახლება 1000-ზე მეტი სიტყვისა და წინადადების მზარდი კატალოგისთვის.',
-    faqGuidedQ: 'რას სჭირდება ₾19.99-იანი გამოწერა?',
+    faqGuidedQ: 'რას სჭირდება ₾19-იანი გამოწერა?',
     faqGuidedA:
       'ყოველდღიური გაკვეთილები, ტესტები, გამეორება, XP, პროგრესი და სერიები.',
     faqInstallQ: 'შემიძლია GEO-ს დაყენება?',
@@ -826,7 +828,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     signIn: 'შესვლა',
     signOut: 'გასვლა',
     planActive: 'გეგმა აქტიურია',
-    perMonth: '₾19.99 თვეში',
+    perMonth: '₾19 თვეში',
     learnGeorgian: 'ისწავლეთ ქართული',
     guestIntro:
       'ყველა 50 უფასო ფრაზა მზადაა. შესვლა მხოლოდ შესანახადაა საჭირო.',
@@ -910,7 +912,7 @@ const structuredData = {
         {
           '@type': 'Offer',
           name: 'Guided Learning Monthly Subscription',
-          price: 19.99,
+          price: 19,
           priceCurrency: 'GEL',
         },
       ],
@@ -1360,7 +1362,7 @@ function Marketing({
             <span className="plan-state">{t('premium')}</span>
             <h3>Guided Learning</h3>
             <b>
-              ₾19.99<small>/month</small>
+              ₾19<small>/month</small>
             </b>
             <p>{t('guidedBody')}</p>
             <a href="/pricing">{t('viewDetails')}</a>
@@ -1601,6 +1603,7 @@ function AppShell({
     setScreen('category');
   };
   const learnNav =
+    screen === 'learn' ||
     screen === 'premium' ||
     screen === 'daily' ||
     screen === 'lesson' ||
@@ -1779,8 +1782,7 @@ function AppShell({
   };
 
   const openLearning = () => {
-    setUpgradeFocus('phrasebook');
-    setScreen(hasPhrasebookProAccess ? 'explore' : 'premium');
+    setScreen('learn');
   };
   const openProgress = () => {
     setUpgradeFocus('guided');
@@ -2074,7 +2076,7 @@ function AppShell({
           </button>
           <button
             className={screen === 'progress' || learnNav ? 'active' : ''}
-            onClick={openProgress}
+            onClick={openLearning}
           >
             <BookOpen />
             {t('learn')}
@@ -2436,13 +2438,113 @@ function AppShell({
               )}
             </section>
           )}
+          {screen === 'learn' && (
+            <section className="screen lesson-path-screen">
+              <div className="lesson-path-heading">
+                <div>
+                  <span className="app-eyebrow">
+                    {locale === 'ru'
+                      ? 'Путь для начинающих · 10 уроков'
+                      : locale === 'ka'
+                        ? 'დამწყების გზა · 10 გაკვეთილი'
+                        : 'Beginner path · 10 lessons'}
+                  </span>
+                  <h1>
+                    {locale === 'ru'
+                      ? 'Говорите с первого дня'
+                      : locale === 'ka'
+                        ? 'ისაუბრეთ პირველივე დღიდან'
+                        : 'Speak from day one'}
+                  </h1>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Короткие уроки соединяют полезные слова в настоящую речь.'
+                      : locale === 'ka'
+                        ? 'მოკლე გაკვეთილები საჭირო სიტყვებს რეალურ საუბრად აერთიანებს.'
+                        : 'Short lessons turn useful words into real conversations.'}
+                  </p>
+                </div>
+                <span className="lesson-path-count">
+                  <BookOpen /> 3 / 10
+                </span>
+              </div>
+
+              <div className="lesson-path-list">
+                {beginnerLessons.slice(0, 3).map((lesson) => (
+                  <button
+                    className="lesson-path-card"
+                    key={lesson.number}
+                    onClick={() => {
+                      if (hasLearningAccess) {
+                        setScreen('daily');
+                        return;
+                      }
+                      setUpgradeFocus('guided');
+                      setScreen('premium');
+                    }}
+                  >
+                    <span className="lesson-path-number">{lesson.number}</span>
+                    <span className="lesson-path-copy">
+                      <small>
+                        {locale === 'ru'
+                          ? `Урок ${lesson.number} · ${lesson.minutes} мин · до 10 слов`
+                          : locale === 'ka'
+                            ? `გაკვეთილი ${lesson.number} · ${lesson.minutes} წთ · 10-მდე სიტყვა`
+                            : `Lesson ${lesson.number} · ${lesson.minutes} min · up to 10 words`}
+                      </small>
+                      <b>{lesson.title[locale]}</b>
+                      <span>{lesson.outcome[locale]}</span>
+                      <em>{lesson.preview[locale]}</em>
+                    </span>
+                    <span className="lesson-path-action">
+                      {hasLearningAccess ? <ChevronRight /> : <LockKeyhole />}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="lesson-path-footer">
+                <span>
+                  {locale === 'ru'
+                    ? 'Ещё 7 уроков уже запланированы'
+                    : locale === 'ka'
+                      ? 'შემდეგი 7 გაკვეთილი უკვე დაგეგმილია'
+                      : 'The next 7 lessons are already mapped out'}
+                </span>
+                <button
+                  onClick={() => {
+                    setUpgradeFocus('guided');
+                    setScreen('premium');
+                  }}
+                >
+                  {hasLearningAccess
+                    ? locale === 'ru'
+                      ? 'Открыть обучение'
+                      : locale === 'ka'
+                        ? 'სწავლის გახსნა'
+                        : 'Open learning'
+                    : locale === 'ru'
+                      ? 'Guided Learning · ₾19/мес.'
+                      : locale === 'ka'
+                        ? 'Guided Learning · ₾19/თვე'
+                        : 'Guided Learning · ₾19/month'}
+                  <ChevronRight />
+                </button>
+              </div>
+            </section>
+          )}
           {screen === 'premium' && (
             <section className="screen premium-screen">
               <button
                 className="back-button"
-                onClick={() => setScreen('explore')}
+                onClick={() =>
+                  setScreen(upgradeFocus === 'guided' ? 'learn' : 'words')
+                }
               >
-                <ArrowLeft /> Back to free phrasebook
+                <ArrowLeft />{' '}
+                {upgradeFocus === 'guided'
+                  ? 'Back to lesson path'
+                  : 'Back to words'}
               </button>
               <div className="premium-hero">
                 <span className="premium-orb">
@@ -2554,7 +2656,7 @@ function AppShell({
                         {hasLearningAccess ? 'Active subscription' : 'Premium'}
                       </span>
                       <h2>
-                        ₾19.99 <small>/ month</small>
+                        ₾19 <small>/ month</small>
                       </h2>
                       <h3>Guided Learning</h3>
                       <p>
@@ -2564,7 +2666,7 @@ function AppShell({
                       <Button
                         onClick={
                           hasLearningAccess
-                            ? openLearning
+                            ? () => setScreen('daily')
                             : user
                               ? () => openModal('pricing')
                               : openAuth
@@ -2573,7 +2675,7 @@ function AppShell({
                         {hasLearningAccess
                           ? 'Open today’s lesson'
                           : user
-                            ? 'Subscribe for ₾19.99'
+                            ? 'Subscribe for ₾19'
                             : 'Sign in to subscribe'}
                       </Button>
                     </div>
@@ -2970,7 +3072,7 @@ function AppShell({
                     <div className="plan-status">
                       <span>
                         <b>Guided Learning</b>
-                        <small>₾19.99 / month</small>
+                        <small>₾19 / month</small>
                       </span>
                       <i className={hasLearningAccess ? 'active' : ''}>
                         {hasLearningAccess ? 'Active' : 'Not active'}
@@ -3076,7 +3178,7 @@ function AppShell({
           </button>
           <button
             className={screen === 'progress' || learnNav ? 'active' : ''}
-            onClick={openProgress}
+            onClick={openLearning}
           >
             <BookOpen />
             <span>{t('learn')}</span>
@@ -3519,7 +3621,7 @@ export default function HomePage() {
                   <b>Guided Learning</b>
                   <small>Structured learning and progress</small>
                 </span>
-                <strong>₾19.99/mo</strong>
+                <strong>₾19/mo</strong>
               </div>
             </div>
           )}
