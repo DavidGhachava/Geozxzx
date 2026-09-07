@@ -5457,14 +5457,14 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-path-card {
   width: 100%;
-  min-height: 108px;
-  padding: 14px 16px;
+  min-height: 84px;
+  padding: 12px 14px;
   border: 1px solid rgba(178, 13, 47, 0.18);
   border-radius: 18px;
   background: linear-gradient(120deg, #fff 0%, #fff9f9 100%);
   color: var(--text);
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 38px;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
   align-items: center;
   gap: 15px;
   text-align: left;
@@ -5490,9 +5490,9 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-number {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: var(--primary);
   color: #fff;
   display: grid;
@@ -5517,11 +5517,9 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-copy small {
-  color: var(--primary);
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .lesson-path-copy b {
@@ -5544,13 +5542,18 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-action {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: rgba(178, 13, 47, 0.08);
-  color: var(--primary);
-  display: grid;
-  place-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .lesson-path-action svg {
@@ -5564,11 +5567,12 @@ html[data-app-mode='true'] .marketing {
   background: #f7e8e9;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   color: #66323e;
   font-size: 0.88rem;
   font-weight: 700;
+  text-align: center;
 }
 
 .lesson-path-footer button {
@@ -5587,6 +5591,82 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-path-footer svg {
   width: 17px;
+}
+
+.lesson-preview-screen {
+  max-width: 920px;
+  margin-inline: auto;
+}
+
+.lesson-preview-heading {
+  margin: 20px 0 22px;
+  padding: 18px;
+  border: 1px solid rgba(178, 13, 47, 0.18);
+  border-radius: 20px;
+  background: linear-gradient(120deg, #fff 0%, #fff1f3 100%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lesson-preview-heading > div {
+  min-width: 0;
+}
+
+.lesson-preview-heading small {
+  color: var(--primary);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lesson-preview-heading h1 {
+  margin: 3px 0;
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  letter-spacing: -0.035em;
+}
+
+.lesson-preview-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.lesson-preview-navigation {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lesson-preview-navigation button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(178, 13, 47, 0.22);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-weight: 850;
+}
+
+.lesson-preview-navigation button.next {
+  margin-left: auto;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.lesson-preview-navigation button:disabled {
+  opacity: 0.35;
+}
+
+.lesson-preview-navigation svg {
+  width: 18px;
 }
 
 /* Clear phrasebook paths and one consistent red-and-white product system. */
@@ -5738,9 +5818,9 @@ html[data-app-mode='true'] .marketing {
     font-size: 0.78rem;
   }
   .lesson-path-card {
-    min-height: 98px;
+    min-height: 78px;
     padding: 12px;
-    grid-template-columns: 44px minmax(0, 1fr) 32px;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
     gap: 11px;
     border-radius: 16px;
   }
@@ -5763,8 +5843,9 @@ html[data-app-mode='true'] .marketing {
     font-size: 0.73rem;
   }
   .lesson-path-action {
-    width: 32px;
-    height: 32px;
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: 0.75rem;
   }
   .lesson-path-footer {
     align-items: stretch;
@@ -5773,6 +5854,13 @@ html[data-app-mode='true'] .marketing {
   }
   .lesson-path-footer button {
     justify-content: center;
+  }
+  .lesson-preview-heading {
+    align-items: flex-start;
+    padding: 15px;
+  }
+  .lesson-preview-heading p {
+    font-size: 0.84rem;
   }
   .library-overview {
     display: grid;

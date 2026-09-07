@@ -88,6 +88,7 @@ type Screen =
   | 'category'
   | 'saved'
   | 'learn'
+  | 'lesson-preview'
   | 'premium'
   | 'daily'
   | 'lesson'
@@ -1429,6 +1430,7 @@ function AppShell({
 }) {
   const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
+  const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -1604,6 +1606,7 @@ function AppShell({
   };
   const learnNav =
     screen === 'learn' ||
+    screen === 'lesson-preview' ||
     screen === 'premium' ||
     screen === 'daily' ||
     screen === 'lesson' ||
@@ -2475,29 +2478,30 @@ function AppShell({
                     className="lesson-path-card"
                     key={lesson.number}
                     onClick={() => {
-                      if (hasLearningAccess) {
-                        setScreen('daily');
-                        return;
-                      }
-                      setUpgradeFocus('guided');
-                      setScreen('premium');
+                      setPreviewLessonNumber(lesson.number);
+                      setScreen('lesson-preview');
+                      window.scrollTo(0, 0);
                     }}
                   >
                     <span className="lesson-path-number">{lesson.number}</span>
                     <span className="lesson-path-copy">
-                      <small>
-                        {locale === 'ru'
-                          ? `Урок ${lesson.number} · ${lesson.minutes} мин · до 10 слов`
-                          : locale === 'ka'
-                            ? `გაკვეთილი ${lesson.number} · ${lesson.minutes} წთ · 10-მდე სიტყვა`
-                            : `Lesson ${lesson.number} · ${lesson.minutes} min · up to 10 words`}
-                      </small>
                       <b>{lesson.title[locale]}</b>
-                      <span>{lesson.outcome[locale]}</span>
-                      <em>{lesson.preview[locale]}</em>
+                      <small>
+                        {lesson.minutes} min · {lesson.words.length}{' '}
+                        {locale === 'ru'
+                          ? 'слов'
+                          : locale === 'ka'
+                            ? 'სიტყვა'
+                            : 'words'}
+                      </small>
                     </span>
                     <span className="lesson-path-action">
-                      {hasLearningAccess ? <ChevronRight /> : <LockKeyhole />}
+                      {locale === 'ru'
+                        ? 'Начать'
+                        : locale === 'ka'
+                          ? 'დაწყება'
+                          : 'Start lesson'}
+                      <ChevronRight />
                     </span>
                   </button>
                 ))}
@@ -2511,28 +2515,99 @@ function AppShell({
                       ? 'შემდეგი 7 გაკვეთილი უკვე დაგეგმილია'
                       : 'The next 7 lessons are already mapped out'}
                 </span>
-                <button
-                  onClick={() => {
-                    setUpgradeFocus('guided');
-                    setScreen('premium');
-                  }}
-                >
-                  {hasLearningAccess
-                    ? locale === 'ru'
-                      ? 'Открыть обучение'
-                      : locale === 'ka'
-                        ? 'სწავლის გახსნა'
-                        : 'Open learning'
-                    : locale === 'ru'
-                      ? 'Guided Learning · ₾19/мес.'
-                      : locale === 'ka'
-                        ? 'Guided Learning · ₾19/თვე'
-                        : 'Guided Learning · ₾19/month'}
-                  <ChevronRight />
-                </button>
               </div>
             </section>
           )}
+          {screen === 'lesson-preview' &&
+            (() => {
+              const lesson =
+                beginnerLessons.find(
+                  (item) => item.number === previewLessonNumber,
+                ) ?? beginnerLessons[0];
+              const previewWords: WordEntry[] = (lesson.previewWords ?? []).map(
+                (item, index) =>
+                  allWords.find((word) => word.ka === item.ka) ?? {
+                    id: `lesson-${lesson.number}-${index + 1}`,
+                    ...item,
+                  },
+              );
+              return (
+                <section className="screen lesson-preview-screen">
+                  <button
+                    className="back-button"
+                    onClick={() => setScreen('learn')}
+                  >
+                    <ArrowLeft />
+                    {locale === 'ru'
+                      ? 'Все уроки'
+                      : locale === 'ka'
+                        ? 'ყველა გაკვეთილი'
+                        : 'All lessons'}
+                  </button>
+                  <div className="lesson-preview-heading">
+                    <span className="lesson-path-number">{lesson.number}</span>
+                    <div>
+                      <small>
+                        {locale === 'ru'
+                          ? `Урок ${lesson.number}`
+                          : locale === 'ka'
+                            ? `გაკვეთილი ${lesson.number}`
+                            : `Lesson ${lesson.number}`}
+                      </small>
+                      <h1>{lesson.title[locale]}</h1>
+                      <p>{lesson.outcome[locale]}</p>
+                    </div>
+                  </div>
+                  {renderWords(previewWords)}
+                  <div className="lesson-preview-navigation">
+                    <button
+                      disabled={lesson.number === 1}
+                      onClick={() => {
+                        setPreviewLessonNumber((number) =>
+                          Math.max(1, number - 1),
+                        );
+                        window.scrollTo(0, 0);
+                      }}
+                    >
+                      <ArrowLeft />
+                      {locale === 'ru'
+                        ? 'Назад'
+                        : locale === 'ka'
+                          ? 'უკან'
+                          : 'Previous'}
+                    </button>
+                    {lesson.number < 3 ? (
+                      <button
+                        className="next"
+                        onClick={() => {
+                          setPreviewLessonNumber((number) => number + 1);
+                          window.scrollTo(0, 0);
+                        }}
+                      >
+                        {locale === 'ru'
+                          ? 'Следующий урок'
+                          : locale === 'ka'
+                            ? 'შემდეგი გაკვეთილი'
+                            : 'Next lesson'}
+                        <ChevronRight />
+                      </button>
+                    ) : (
+                      <button
+                        className="next"
+                        onClick={() => setScreen('learn')}
+                      >
+                        {locale === 'ru'
+                          ? 'Готово'
+                          : locale === 'ka'
+                            ? 'მზადაა'
+                            : 'Done'}
+                        <Check />
+                      </button>
+                    )}
+                  </div>
+                </section>
+              );
+            })()}
           {screen === 'premium' && (
             <section className="screen premium-screen">
               <button

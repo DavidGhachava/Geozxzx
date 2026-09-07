@@ -8,6 +8,12 @@ export type BeginnerLesson = {
   outcome: LocalizedText;
   preview: LocalizedText;
   words: string[];
+  previewWords?: Array<{
+    ka: string;
+    tr: string;
+    en: string;
+    ru: string;
+  }>;
   minutes: number;
 };
 
@@ -41,6 +47,28 @@ export const beginnerLessons: BeginnerLesson[] = [
       'ნახვამდის',
       'ბოდიში',
     ],
+    previewWords: [
+      { ka: 'გამარჯობა', tr: 'gamarjoba', en: 'hello', ru: 'привет' },
+      {
+        ka: 'დილა მშვიდობისა',
+        tr: 'dila mshvidobisa',
+        en: 'good morning',
+        ru: 'доброе утро',
+      },
+      { ka: 'კარგი', tr: 'kargi', en: 'good', ru: 'хорошо' },
+      { ka: 'მადლობა', tr: 'madloba', en: 'thank you', ru: 'спасибо' },
+      { ka: 'გთხოვთ', tr: 'gtkhovt', en: 'please', ru: 'пожалуйста' },
+      { ka: 'კი', tr: 'ki', en: 'yes', ru: 'да' },
+      { ka: 'არა', tr: 'ara', en: 'no', ru: 'нет' },
+      {
+        ka: 'გემრიელია',
+        tr: 'gemrielia',
+        en: "it's delicious",
+        ru: 'вкусно',
+      },
+      { ka: 'ნახვამდის', tr: 'nakhvamdis', en: 'goodbye', ru: 'до свидания' },
+      { ka: 'ბოდიში', tr: 'bodishi', en: 'sorry / excuse me', ru: 'извините' },
+    ],
     minutes: 8,
   },
   {
@@ -72,6 +100,18 @@ export const beginnerLessons: BeginnerLesson[] = [
       'არის',
       'როგორ',
     ],
+    previewWords: [
+      { ka: 'მე', tr: 'me', en: 'I / me', ru: 'я' },
+      { ka: 'შენ', tr: 'shen', en: 'you (informal)', ru: 'ты' },
+      { ka: 'ის', tr: 'is', en: 'he / she', ru: 'он / она' },
+      { ka: 'ჩვენ', tr: 'chven', en: 'we', ru: 'мы' },
+      { ka: 'თქვენ', tr: 'tkven', en: 'you (formal / plural)', ru: 'вы' },
+      { ka: 'არიან', tr: 'arian', en: 'they are', ru: 'они' },
+      { ka: 'ვარ', tr: 'var', en: 'I am', ru: 'я есть' },
+      { ka: 'ხარ', tr: 'khar', en: 'you are', ru: 'ты есть' },
+      { ka: 'არის', tr: 'aris', en: 'is / it is', ru: 'есть' },
+      { ka: 'როგორ', tr: 'rogor', en: 'how', ru: 'как' },
+    ],
     minutes: 9,
   },
   {
@@ -102,6 +142,18 @@ export const beginnerLessons: BeginnerLesson[] = [
       'მშია',
       'მწყურია',
       'კიდევ',
+    ],
+    previewWords: [
+      { ka: 'მინდა', tr: 'minda', en: 'I want', ru: 'я хочу' },
+      { ka: 'მჭირდება', tr: 'mchirdeba', en: 'I need', ru: 'мне нужно' },
+      { ka: 'წყალი', tr: 'tsqali', en: 'water', ru: 'вода' },
+      { ka: 'საჭმელი', tr: 'sachmeli', en: 'food', ru: 'еда' },
+      { ka: 'ყავა', tr: 'qava', en: 'coffee', ru: 'кофе' },
+      { ka: 'ჩაი', tr: 'chai', en: 'tea', ru: 'чай' },
+      { ka: 'დახმარება', tr: 'dakhmareba', en: 'help', ru: 'помощь' },
+      { ka: 'მშია', tr: 'mshia', en: 'I am hungry', ru: 'я голоден / голодна' },
+      { ka: 'მწყურია', tr: 'mtsquria', en: 'I am thirsty', ru: 'я хочу пить' },
+      { ka: 'კიდევ', tr: 'kidev', en: 'more / again', ru: 'ещё' },
     ],
     minutes: 8,
   },
