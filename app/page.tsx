@@ -391,6 +391,21 @@ const phrases: Record<CategoryName, Phrase[]> = {
   ],
 };
 
+const phraseAudioUrls = new Map(
+  Object.values(phrases)
+    .flat()
+    .map((phrase, index) => {
+      const slug = phrase.tr
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      return [
+        phrase.ka,
+        `/audio/phrases/${String(index + 1).padStart(2, '0')}-${slug}.mp3`,
+      ];
+    }),
+);
+
 const categoryLabels: Record<Locale, Record<CategoryName, string>> = {
   en: {
     Essentials: 'Essentials',
@@ -1023,9 +1038,14 @@ function Marketing({
   const [menuOpen, setMenuOpen] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
   const t = (key: string) => getCopy(locale, key);
-  const play = (id: string) => {
+  const play = (id: string, text?: string, audioUrl?: string | null) => {
     setPlaying(id);
-    window.setTimeout(() => setPlaying(null), 1100);
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.addEventListener('ended', () => setPlaying(null), { once: true });
+      void audio.play().catch(() => setPlaying(null));
+    }
+    window.setTimeout(() => setPlaying(null), 5000);
   };
   const goHome = () => {
     setMenuOpen(false);
@@ -1145,6 +1165,8 @@ function Marketing({
                 id="hero-phone"
                 playing={playing}
                 onPlay={play}
+                text="გამარჯობა"
+                audioUrl={phraseAudioUrls.get('გამარჯობა')}
                 large
               />
             </div>
@@ -1272,7 +1294,14 @@ function Marketing({
               <em>madloba</em>
               <p>{locale === 'ru' ? 'Спасибо' : 'Thank you'}</p>
             </div>
-            <AudioButton id="demo" playing={playing} onPlay={play} large />
+            <AudioButton
+              id="demo"
+              playing={playing}
+              onPlay={play}
+              text="მადლობა"
+              audioUrl={phraseAudioUrls.get('მადლობა')}
+              large
+            />
           </div>
           <p className="demo-caption">
             <Mic2 /> {t('audioNote')}
@@ -1462,17 +1491,20 @@ function AppShell({
   }, []);
   const play = (id: string, text?: string, audioUrl?: string | null) => {
     setPlaying(id);
-    if (audioUrl) {
-      const audio = new Audio(audioUrl);
-      void audio.play().catch(() => undefined);
-    } else if (text && 'speechSynthesis' in window) {
+    const speakFallback = () => {
+      if (!text || !('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'ka-GE';
       utterance.rate = 0.82;
       window.speechSynthesis.speak(utterance);
-    }
-    window.setTimeout(() => setPlaying(null), 1400);
+    };
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      audio.addEventListener('ended', () => setPlaying(null), { once: true });
+      void audio.play().catch(speakFallback);
+    } else speakFallback();
+    window.setTimeout(() => setPlaying(null), 5000);
   };
   const phraseKey = (phrase: Phrase) => phrase.id ?? phrase.ka;
   const allPhrases = useMemo(() => Object.values(library).flat(), [library]);
@@ -1862,7 +1894,7 @@ function AppShell({
               playing={playing}
               onPlay={play}
               text={p.ka}
-              audioUrl={p.audio_url}
+              audioUrl={p.audio_url ?? phraseAudioUrls.get(p.ka)}
             />
           </div>
         </article>
@@ -2467,6 +2499,8 @@ function AppShell({
                     id="lesson"
                     playing={playing}
                     onPlay={play}
+                    text="გამარჯობა"
+                    audioUrl={phraseAudioUrls.get('გამარჯობა')}
                     large
                   />
                   <i />

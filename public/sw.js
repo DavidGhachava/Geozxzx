@@ -1,4 +1,4 @@
-const CACHE = 'geo-pwa-v3';
+const CACHE = 'geo-pwa-v4';
 const CORE = [
   '/',
   '/offline.html',
@@ -64,7 +64,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (['style', 'script', 'image', 'font'].includes(request.destination)) {
+  if (
+    ['style', 'script', 'image', 'font', 'audio'].includes(request.destination)
+  ) {
     event.respondWith(
       caches.match(request).then((cached) => {
         const fresh = fetch(request)
