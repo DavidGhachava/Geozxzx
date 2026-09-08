@@ -59,7 +59,7 @@ import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
-import { beginnerLessons } from '@/lib/beginner-lessons';
+import { speakingUnit } from '@/lib/speaking-unit';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -1458,13 +1458,21 @@ function AppShell({
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
   const [previewMeaningShown, setPreviewMeaningShown] = useState(false);
-  const [previewMode, setPreviewMode] = useState<'learn' | 'test'>('learn');
-  const [previewSegment, setPreviewSegment] = useState<0 | 1>(0);
+  const [previewMode, setPreviewMode] = useState<'learn' | 'test' | 'scenario'>(
+    'learn',
+  );
   const [previewTestIndex, setPreviewTestIndex] = useState(0);
   const [previewAnswer, setPreviewAnswer] = useState('');
   const [previewResult, setPreviewResult] = useState<
     'idle' | 'correct' | 'wrong'
   >('idle');
+  const [previewScenarioIndex, setPreviewScenarioIndex] = useState(0);
+  const [previewScenarioChoice, setPreviewScenarioChoice] = useState<
+    number | null
+  >(null);
+  const [completedSpeakingSteps, setCompletedSpeakingSteps] = useState<
+    number[]
+  >([]);
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
   const [saved, setSaved] = useState<string[]>([]);
@@ -1515,6 +1523,17 @@ function AppShell({
         setSavedWords(JSON.parse(stored));
       } catch {
         localStorage.removeItem('geo-saved-words');
+      }
+    }, 0);
+  }, []);
+  useEffect(() => {
+    const stored = localStorage.getItem('geo-speaking-unit-progress');
+    window.setTimeout(() => {
+      if (!stored) return;
+      try {
+        setCompletedSpeakingSteps(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem('geo-speaking-unit-progress');
       }
     }, 0);
   }, []);
@@ -2486,64 +2505,99 @@ function AppShell({
                       ? 'Путь для начинающих · 10 уроков'
                       : locale === 'ka'
                         ? 'დამწყების გზა · 10 გაკვეთილი'
-                        : 'Beginner path · 10 lessons'}
+                        : 'Unit 1 · Survival Georgian'}
                   </span>
                   <h1>
                     {locale === 'ru'
                       ? 'Говорите с первого дня'
                       : locale === 'ka'
                         ? 'ისაუბრეთ პირველივე დღიდან'
-                        : 'Speak from day one'}
+                        : 'Your first real conversation'}
                   </h1>
                   <p>
                     {locale === 'ru'
                       ? 'Короткие уроки соединяют полезные слова в настоящую речь.'
                       : locale === 'ka'
                         ? 'მოკლე გაკვეთილები საჭირო სიტყვებს რეალურ საუბრად აერთიანებს.'
-                        : 'Short lessons turn useful words into real conversations.'}
+                        : 'Learn, retrieve, review, and use Georgian in everyday missions.'}
                   </p>
                 </div>
                 <span className="lesson-path-count">
-                  <BookOpen /> 3 / 10
+                  <BookOpen /> {completedSpeakingSteps.length} / 10
                 </span>
               </div>
 
               <div className="lesson-path-list">
-                {beginnerLessons.slice(0, 3).map((lesson) => (
+                {speakingUnit.map((lesson) => (
                   <button
-                    className="lesson-path-card"
+                    className={`lesson-path-card ${lesson.kind} ${completedSpeakingSteps.includes(lesson.number) ? 'complete' : ''}`}
                     key={lesson.number}
                     onClick={() => {
                       setPreviewLessonNumber(lesson.number);
                       setPreviewWordIndex(0);
                       setPreviewMeaningShown(false);
-                      setPreviewMode('learn');
-                      setPreviewSegment(0);
+                      setPreviewMode(
+                        lesson.kind === 'review'
+                          ? 'test'
+                          : lesson.kind === 'scenario' ||
+                              lesson.kind === 'mission'
+                            ? 'scenario'
+                            : 'learn',
+                      );
                       setPreviewTestIndex(0);
                       setPreviewAnswer('');
                       setPreviewResult('idle');
+                      setPreviewScenarioIndex(0);
+                      setPreviewScenarioChoice(null);
                       setScreen('lesson-preview');
                       window.scrollTo(0, 0);
                     }}
                   >
-                    <span className="lesson-path-number">{lesson.number}</span>
+                    <span className="lesson-path-number">
+                      {completedSpeakingSteps.includes(lesson.number) ? (
+                        <Check />
+                      ) : lesson.kind === 'review' ? (
+                        <Brain />
+                      ) : lesson.kind === 'mission' ? (
+                        <Trophy />
+                      ) : lesson.kind === 'scenario' ? (
+                        <Coffee />
+                      ) : (
+                        lesson.number
+                      )}
+                    </span>
                     <span className="lesson-path-copy">
                       <b>{lesson.title[locale]}</b>
                       <small>
-                        {lesson.minutes} min · {lesson.words.length}{' '}
-                        {locale === 'ru'
-                          ? 'слов'
-                          : locale === 'ka'
-                            ? 'სიტყვა'
-                            : 'words'}
+                        {lesson.minutes} min ·{' '}
+                        {lesson.kind === 'review'
+                          ? locale === 'ru'
+                            ? 'повторение'
+                            : locale === 'ka'
+                              ? 'გამეორება'
+                              : 'memory review'
+                          : lesson.kind === 'scenario' ||
+                              lesson.kind === 'mission'
+                            ? locale === 'ru'
+                              ? 'разговор'
+                              : locale === 'ka'
+                                ? 'საუბარი'
+                                : 'speaking mission'
+                            : `${lesson.words.length} ${locale === 'ru' ? 'слова' : locale === 'ka' ? 'სიტყვა' : 'new items'}`}
                       </small>
                     </span>
                     <span className="lesson-path-action">
-                      {locale === 'ru'
-                        ? 'Начать'
-                        : locale === 'ka'
-                          ? 'დაწყება'
-                          : 'Start lesson'}
+                      {lesson.kind === 'review'
+                        ? locale === 'ru'
+                          ? 'Повторить'
+                          : locale === 'ka'
+                            ? 'გამეორება'
+                            : 'Review'
+                        : locale === 'ru'
+                          ? 'Начать'
+                          : locale === 'ka'
+                            ? 'დაწყება'
+                            : 'Start'}
                       <ChevronRight />
                     </span>
                   </button>
@@ -2553,10 +2607,10 @@ function AppShell({
               <div className="lesson-path-footer">
                 <span>
                   {locale === 'ru'
-                    ? 'Ещё 7 уроков уже запланированы'
+                    ? 'Проверки памяти возвращают старые слова до того, как они забудутся.'
                     : locale === 'ka'
-                      ? 'შემდეგი 7 გაკვეთილი უკვე დაგეგმილია'
-                      : 'The next 7 lessons are already mapped out'}
+                      ? 'მეხსიერების შემოწმება ძველ სიტყვებს დავიწყებამდე აბრუნებს.'
+                      : 'Memory checks return older language before it fades.'}
                 </span>
               </div>
             </section>
@@ -2564,20 +2618,13 @@ function AppShell({
           {screen === 'lesson-preview' &&
             (() => {
               const lesson =
-                beginnerLessons.find(
+                speakingUnit.find(
                   (item) => item.number === previewLessonNumber,
-                ) ?? beginnerLessons[0];
-              const previewWords: WordEntry[] = (lesson.previewWords ?? []).map(
-                (item, index) =>
-                  allWords.find((word) => word.ka === item.ka) ?? {
-                    id: `lesson-${lesson.number}-${index + 1}`,
-                    ...item,
-                  },
-              );
-              const segmentWords = previewWords.slice(
-                previewSegment * 5,
-                previewSegment * 5 + 5,
-              );
+                ) ?? speakingUnit[0];
+              const previewWords = lesson.words
+                .map((ka) => allWords.find((word) => word.ka === ka))
+                .filter((word): word is WordEntry => Boolean(word));
+              const segmentWords = previewWords;
               const currentWord =
                 segmentWords[
                   previewMode === 'learn' ? previewWordIndex : previewTestIndex
@@ -2589,11 +2636,31 @@ function AppShell({
               const hasAudio = currentWord
                 ? wordAudioIds.has(currentWord.id)
                 : false;
+              const progressTotal =
+                previewMode === 'scenario'
+                  ? (lesson.scenarios?.length ?? 1)
+                  : lesson.kind === 'review'
+                    ? previewWords.length
+                    : previewWords.length * 2;
               const progressStep =
-                previewSegment * 10 +
-                (previewMode === 'learn'
-                  ? previewWordIndex + 1
-                  : 5 + previewTestIndex + 1);
+                previewMode === 'scenario'
+                  ? previewScenarioIndex + 1
+                  : lesson.kind === 'review'
+                    ? previewTestIndex + 1
+                    : previewMode === 'learn'
+                      ? previewWordIndex + 1
+                      : previewWords.length + previewTestIndex + 1;
+              const finishStep = () => {
+                const next = Array.from(
+                  new Set([...completedSpeakingSteps, lesson.number]),
+                );
+                setCompletedSpeakingSteps(next);
+                localStorage.setItem(
+                  'geo-speaking-unit-progress',
+                  JSON.stringify(next),
+                );
+                setScreen('learn');
+              };
               const continueLearning = () => {
                 if (!isLastLearningWord) {
                   setPreviewWordIndex((index) => index + 1);
@@ -2612,34 +2679,25 @@ function AppShell({
                   setPreviewResult('idle');
                   return;
                 }
-                if (previewSegment === 0) {
-                  setPreviewSegment(1);
-                  setPreviewMode('learn');
-                  setPreviewWordIndex(0);
-                  setPreviewMeaningShown(false);
-                  setPreviewTestIndex(0);
-                  setPreviewAnswer('');
-                  setPreviewResult('idle');
-                  return;
-                }
-                if (lesson.number < 3) {
-                  setPreviewLessonNumber((number) => number + 1);
-                  setPreviewSegment(0);
-                  setPreviewMode('learn');
-                  setPreviewWordIndex(0);
-                  setPreviewMeaningShown(false);
-                  setPreviewTestIndex(0);
-                  setPreviewAnswer('');
-                  setPreviewResult('idle');
-                  return;
-                }
-                setScreen('learn');
+                finishStep();
               };
               const answerLabel = currentWord
                 ? locale === 'ru'
                   ? currentWord.ru
                   : currentWord.en
                 : '';
+              const currentScenario = lesson.scenarios?.[previewScenarioIndex];
+              const continueScenario = () => {
+                if (
+                  previewScenarioIndex <
+                  (lesson.scenarios?.length ?? 1) - 1
+                ) {
+                  setPreviewScenarioIndex((index) => index + 1);
+                  setPreviewScenarioChoice(null);
+                  return;
+                }
+                finishStep();
+              };
               return (
                 <section className="screen lesson-preview-screen">
                   <div className="lesson-focus-topbar">
@@ -2655,18 +2713,20 @@ function AppShell({
                     >
                       <X />
                     </button>
-                    <Progress value={(progressStep / 20) * 100} />
-                    <span>{progressStep}/20</span>
+                    <Progress value={(progressStep / progressTotal) * 100} />
+                    <span>
+                      {progressStep}/{progressTotal}
+                    </span>
                   </div>
 
                   {currentWord && previewMode === 'learn' && (
                     <div className="lesson-focus-stage">
                       <span className="lesson-focus-label">
                         {locale === 'ru'
-                          ? `Урок ${lesson.number} · Блок ${previewSegment + 1}`
+                          ? `Урок ${lesson.number} · Новое`
                           : locale === 'ka'
-                            ? `გაკვეთილი ${lesson.number} · ნაწილი ${previewSegment + 1}`
-                            : `Lesson ${lesson.number} · Set ${previewSegment + 1}`}
+                            ? `გაკვეთილი ${lesson.number} · ახალი`
+                            : `Lesson ${lesson.number} · Learn`}
                       </span>
                       <h1>{currentWord.ka}</h1>
                       <p>{currentWord.tr}</p>
@@ -2709,10 +2769,16 @@ function AppShell({
                     <div className="lesson-focus-stage lesson-test-stage">
                       <span className="lesson-focus-label">
                         {locale === 'ru'
-                          ? `Проверка ${previewSegment + 1} из 2`
+                          ? lesson.kind === 'review'
+                            ? 'Проверка памяти'
+                            : 'Закрепление'
                           : locale === 'ka'
-                            ? `ტესტი ${previewSegment + 1} / 2`
-                            : `Test ${previewSegment + 1} of 2`}
+                            ? lesson.kind === 'review'
+                              ? 'მეხსიერების შემოწმება'
+                              : 'გამყარება'
+                            : lesson.kind === 'review'
+                              ? 'Memory check'
+                              : 'Lock it in'}
                       </span>
                       <h2>
                         {locale === 'ru'
@@ -2819,6 +2885,68 @@ function AppShell({
                     </div>
                   )}
 
+                  {currentScenario && previewMode === 'scenario' && (
+                    <div className="lesson-focus-stage scenario-stage">
+                      <span className="lesson-focus-label">
+                        {lesson.kind === 'mission'
+                          ? locale === 'ru'
+                            ? 'Финальный разговор'
+                            : locale === 'ka'
+                              ? 'საბოლოო საუბარი'
+                              : 'Final conversation'
+                          : locale === 'ru'
+                            ? 'Ситуация в кафе'
+                            : locale === 'ka'
+                              ? 'სიტუაცია კაფეში'
+                              : 'Café situation'}
+                      </span>
+                      <h2>{currentScenario.prompt[locale]}</h2>
+                      <div className="scenario-options">
+                        {currentScenario.options.map((option, index) => (
+                          <button
+                            key={option}
+                            className={
+                              previewScenarioChoice === null
+                                ? ''
+                                : index === currentScenario.correct
+                                  ? 'correct'
+                                  : previewScenarioChoice === index
+                                    ? 'wrong'
+                                    : ''
+                            }
+                            disabled={previewScenarioChoice !== null}
+                            onClick={() => setPreviewScenarioChoice(index)}
+                          >
+                            <span>{option}</span>
+                            {previewScenarioChoice !== null &&
+                              index === currentScenario.correct && <Check />}
+                          </button>
+                        ))}
+                      </div>
+                      {previewScenarioChoice !== null && (
+                        <div
+                          className={`scenario-feedback ${previewScenarioChoice === currentScenario.correct ? 'correct' : 'wrong'}`}
+                          aria-live="polite"
+                        >
+                          <strong>
+                            {previewScenarioChoice === currentScenario.correct
+                              ? locale === 'ru'
+                                ? 'Отлично!'
+                                : locale === 'ka'
+                                  ? 'შესანიშნავია!'
+                                  : 'Great choice!'
+                              : locale === 'ru'
+                                ? 'Попробуйте запомнить этот вариант:'
+                                : locale === 'ka'
+                                  ? 'დაიმახსოვრეთ ეს ვარიანტი:'
+                                  : 'Remember this response:'}
+                          </strong>
+                          <span>{currentScenario.meaning[locale]}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="lesson-focus-actions">
                     {previewMode === 'learn' && !previewMeaningShown ? (
                       <button
@@ -2849,34 +2977,44 @@ function AppShell({
                               : 'Next word'}
                         <ChevronRight />
                       </button>
-                    ) : previewResult !== 'idle' ? (
+                    ) : previewMode === 'test' && previewResult !== 'idle' ? (
                       <button
                         className="lesson-next-button"
                         onClick={continueTest}
                       >
                         {locale === 'ru'
                           ? isLastTestWord
-                            ? previewSegment === 0
-                              ? 'Следующие 5 слов'
-                              : lesson.number < 3
-                                ? 'Следующий урок'
-                                : 'Завершить'
+                            ? 'Завершить этап'
                             : 'Следующий вопрос'
                           : locale === 'ka'
                             ? isLastTestWord
-                              ? previewSegment === 0
-                                ? 'შემდეგი 5 სიტყვა'
-                                : lesson.number < 3
-                                  ? 'შემდეგი გაკვეთილი'
-                                  : 'დასრულება'
+                              ? 'ეტაპის დასრულება'
                               : 'შემდეგი კითხვა'
                             : isLastTestWord
-                              ? previewSegment === 0
-                                ? 'Learn the next 5'
-                                : lesson.number < 3
-                                  ? 'Next lesson'
-                                  : 'Finish'
+                              ? 'Complete step'
                               : 'Next question'}
+                        <ChevronRight />
+                      </button>
+                    ) : previewMode === 'scenario' &&
+                      previewScenarioChoice !== null ? (
+                      <button
+                        className="lesson-next-button"
+                        onClick={continueScenario}
+                      >
+                        {locale === 'ru'
+                          ? previewScenarioIndex ===
+                            (lesson.scenarios?.length ?? 1) - 1
+                            ? 'Завершить миссию'
+                            : 'Продолжить разговор'
+                          : locale === 'ka'
+                            ? previewScenarioIndex ===
+                              (lesson.scenarios?.length ?? 1) - 1
+                              ? 'მისიის დასრულება'
+                              : 'საუბრის გაგრძელება'
+                            : previewScenarioIndex ===
+                                (lesson.scenarios?.length ?? 1) - 1
+                              ? 'Complete mission'
+                              : 'Continue conversation'}
                         <ChevronRight />
                       </button>
                     ) : null}
