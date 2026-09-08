@@ -1457,7 +1457,6 @@ function AppShell({
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
-  const [previewMeaningShown, setPreviewMeaningShown] = useState(false);
   const [previewMode, setPreviewMode] = useState<'learn' | 'test' | 'scenario'>(
     'learn',
   );
@@ -2535,7 +2534,6 @@ function AppShell({
                     onClick={() => {
                       setPreviewLessonNumber(lesson.number);
                       setPreviewWordIndex(0);
-                      setPreviewMeaningShown(false);
                       setPreviewMode(
                         lesson.kind === 'review'
                           ? 'test'
@@ -2664,7 +2662,6 @@ function AppShell({
               const continueLearning = () => {
                 if (!isLastLearningWord) {
                   setPreviewWordIndex((index) => index + 1);
-                  setPreviewMeaningShown(false);
                   return;
                 }
                 setPreviewMode('test');
@@ -2728,6 +2725,18 @@ function AppShell({
                             ? `გაკვეთილი ${lesson.number} · ახალი`
                             : `Lesson ${lesson.number} · Learn`}
                       </span>
+                      <div className="lesson-native-meaning">
+                        <small>
+                          {locale === 'ru'
+                            ? 'Значение'
+                            : locale === 'ka'
+                              ? 'მნიშვნელობა'
+                              : 'Meaning'}
+                        </small>
+                        <strong>
+                          {locale === 'ru' ? currentWord.ru : currentWord.en}
+                        </strong>
+                      </div>
                       <h1>{currentWord.ka}</h1>
                       <p>{currentWord.tr}</p>
                       {hasAudio ? (
@@ -2750,18 +2759,13 @@ function AppShell({
                           <Volume2 />
                         </button>
                       )}
-                      <div
-                        className={`lesson-focus-meaning ${previewMeaningShown ? 'shown' : ''}`}
-                        aria-live="polite"
-                      >
-                        {previewMeaningShown
-                          ? locale === 'ru'
-                            ? currentWord.ru
-                            : locale === 'ka'
-                              ? currentWord.ka
-                              : currentWord.en
-                          : '••••••'}
-                      </div>
+                      <small className="lesson-learn-audio-hint">
+                        {locale === 'ru'
+                          ? 'Послушайте грузинское произношение'
+                          : locale === 'ka'
+                            ? 'მოუსმინეთ ქართულ გამოთქმას'
+                            : 'Listen to the Georgian pronunciation'}
+                      </small>
                     </div>
                   )}
 
@@ -2814,41 +2818,39 @@ function AppShell({
                             ? 'კიდევ მოსასმენად დააჭირეთ'
                             : 'Tap to hear it again'}
                       </small>
-                      <form
-                        className="lesson-answer-form"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          if (!previewAnswer.trim() || previewResult !== 'idle')
-                            return;
-                          setPreviewResult(
-                            isLessonAnswerCorrect(
-                              previewAnswer,
-                              currentWord,
-                              locale,
-                            )
-                              ? 'correct'
-                              : 'wrong',
-                          );
-                        }}
-                      >
-                        <input
-                          value={previewAnswer}
-                          onChange={(event) =>
-                            setPreviewAnswer(event.target.value)
-                          }
-                          disabled={previewResult !== 'idle'}
-                          placeholder={
-                            locale === 'ru'
-                              ? 'Введите значение по-русски'
-                              : 'Type the meaning in English'
-                          }
-                          aria-label={
-                            locale === 'ru'
-                              ? 'Значение слова'
-                              : 'Meaning of the word'
-                          }
-                        />
-                        {previewResult === 'idle' && (
+                      {previewResult === 'idle' && (
+                        <form
+                          className="lesson-answer-form"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            if (!previewAnswer.trim()) return;
+                            setPreviewResult(
+                              isLessonAnswerCorrect(
+                                previewAnswer,
+                                currentWord,
+                                locale,
+                              )
+                                ? 'correct'
+                                : 'wrong',
+                            );
+                          }}
+                        >
+                          <input
+                            value={previewAnswer}
+                            onChange={(event) =>
+                              setPreviewAnswer(event.target.value)
+                            }
+                            placeholder={
+                              locale === 'ru'
+                                ? 'Введите значение по-русски'
+                                : 'Type the meaning in English'
+                            }
+                            aria-label={
+                              locale === 'ru'
+                                ? 'Значение слова'
+                                : 'Meaning of the word'
+                            }
+                          />
                           <button
                             type="submit"
                             disabled={!previewAnswer.trim()}
@@ -2859,27 +2861,36 @@ function AppShell({
                                 ? 'შემოწმება'
                                 : 'Check'}
                           </button>
-                        )}
-                      </form>
+                        </form>
+                      )}
                       {previewResult !== 'idle' && (
                         <div
                           className={`lesson-answer-result ${previewResult}`}
                           aria-live="polite"
                         >
-                          <strong>
-                            {previewResult === 'correct'
-                              ? locale === 'ru'
-                                ? 'Правильно!'
-                                : locale === 'ka'
-                                  ? 'სწორია!'
-                                  : 'Correct!'
-                              : locale === 'ru'
-                                ? 'Почти! Правильный ответ:'
-                                : locale === 'ka'
-                                  ? 'თითქმის! სწორი პასუხია:'
-                                  : 'Almost! The answer is:'}
-                          </strong>
-                          <span>{answerLabel}</span>
+                          <span className="lesson-result-icon">
+                            {previewResult === 'correct' ? (
+                              <CheckCircle2 />
+                            ) : (
+                              <X />
+                            )}
+                          </span>
+                          <span className="lesson-result-copy">
+                            <strong>
+                              {previewResult === 'correct'
+                                ? locale === 'ru'
+                                  ? 'Правильно!'
+                                  : locale === 'ka'
+                                    ? 'სწორია!'
+                                    : 'Correct!'
+                                : locale === 'ru'
+                                  ? 'Почти — запомните ответ'
+                                  : locale === 'ka'
+                                    ? 'თითქმის — დაიმახსოვრეთ პასუხი'
+                                    : 'Not quite — remember this'}
+                            </strong>
+                            <span>{answerLabel}</span>
+                          </span>
                         </div>
                       )}
                     </div>
@@ -2948,18 +2959,7 @@ function AppShell({
                   )}
 
                   <div className="lesson-focus-actions">
-                    {previewMode === 'learn' && !previewMeaningShown ? (
-                      <button
-                        className="lesson-reveal-button"
-                        onClick={() => setPreviewMeaningShown(true)}
-                      >
-                        {locale === 'ru'
-                          ? 'Показать значение'
-                          : locale === 'ka'
-                            ? 'მნიშვნელობის ჩვენება'
-                            : 'Show meaning'}
-                      </button>
-                    ) : previewMode === 'learn' ? (
+                    {previewMode === 'learn' ? (
                       <button
                         className="lesson-next-button"
                         onClick={continueLearning}

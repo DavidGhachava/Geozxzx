@@ -5818,16 +5818,43 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-focus-stage > p {
-  margin: 10px 0 26px;
+  margin: 8px 0 22px;
   color: #8b737b;
   font-size: 1.15rem;
+}
+
+.lesson-native-meaning {
+  margin-bottom: 24px;
+  display: grid;
+  gap: 5px;
+}
+
+.lesson-native-meaning small {
+  color: #927a82;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lesson-native-meaning strong {
+  color: #28171c;
+  font-size: clamp(1.8rem, 5vw, 2.7rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
 }
 
 .lesson-focus-stage .audio-large {
   width: 70px;
   height: 70px;
-  margin: 0 0 24px;
+  margin: 0 0 10px;
   box-shadow: 0 12px 30px rgba(178, 13, 47, 0.18);
+}
+
+.lesson-learn-audio-hint {
+  color: #806a71;
+  font-size: 0.8rem;
+  font-weight: 750;
 }
 
 .lesson-test-stage h2 {
@@ -5888,14 +5915,12 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-answer-result {
   width: min(480px, 100%);
-  margin-top: 12px;
-  padding: 13px 16px;
-  border-radius: 14px;
+  padding: 18px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
-  font-size: 0.94rem;
+  gap: 13px;
+  text-align: left;
 }
 
 .lesson-answer-result.correct {
@@ -5908,6 +5933,37 @@ html[data-app-mode='true'] .marketing {
   border: 1px solid #efc9cf;
   background: #fff0f2;
   color: #8e1830;
+}
+
+.lesson-result-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  place-items: center;
+}
+
+.lesson-result-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.lesson-result-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.lesson-result-copy strong {
+  font-size: 0.87rem;
+}
+
+.lesson-result-copy > span {
+  color: #28171c;
+  font-size: 1.2rem;
+  font-weight: 850;
 }
 
 .scenario-stage h2 {
@@ -5975,25 +6031,11 @@ html[data-app-mode='true'] .marketing {
   color: #8e1830;
 }
 
-.lesson-focus-meaning {
-  min-height: 45px;
-  padding: 8px 20px;
-  border-radius: 14px;
-  color: #d9c9cd;
-  font-size: 1.35rem;
-  font-weight: 850;
-}
-
-.lesson-focus-meaning.shown {
-  color: #24161a;
-  background: #fff1f3;
-}
-
 .lesson-focus-actions {
   width: min(520px, 100%);
-  margin: 0 auto;
+  margin: 18px auto 0;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .lesson-reveal-button,
@@ -6246,9 +6288,7 @@ html[data-app-mode='true'] .marketing {
     grid-template-columns: 1fr;
   }
   .lesson-answer-result {
-    align-items: flex-start;
-    flex-direction: column;
-    text-align: left;
+    padding: 16px;
   }
   .library-overview {
     display: grid;
