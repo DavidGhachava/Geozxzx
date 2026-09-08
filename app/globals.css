@@ -6203,6 +6203,14 @@ html[data-app-mode='true'] .marketing {
   width: 19px;
 }
 
+.lesson-next-button:disabled,
+.lesson-next-button.waiting-for-audio {
+  background: #e7dde0;
+  color: #7e6f74;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .lesson-leave-button {
   min-height: 42px;
   border: 0;

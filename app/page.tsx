@@ -1457,6 +1457,7 @@ function AppShell({
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
+  const [previewAudioHeard, setPreviewAudioHeard] = useState(false);
   const [previewMode, setPreviewMode] = useState<'learn' | 'test' | 'scenario'>(
     'learn',
   );
@@ -2094,6 +2095,7 @@ function AppShell({
   const openSpeakingStep = (lesson: (typeof speakingUnit)[number]) => {
     setPreviewLessonNumber(lesson.number);
     setPreviewWordIndex(0);
+    setPreviewAudioHeard(false);
     setPreviewMode(
       lesson.kind === 'review'
         ? 'test'
@@ -2757,6 +2759,7 @@ function AppShell({
                 setScreen('learn');
               };
               const continueLearning = () => {
+                setPreviewAudioHeard(false);
                 if (!isLastLearningWord) {
                   setPreviewWordIndex((index) => index + 1);
                   return;
@@ -2840,7 +2843,10 @@ function AppShell({
                         <AudioButton
                           id={`lesson-preview-${currentWord.id}`}
                           playing={playing}
-                          onPlay={play}
+                          onPlay={(id, text, audioUrl) => {
+                            setPreviewAudioHeard(true);
+                            void play(id, text, audioUrl);
+                          }}
                           onPrime={primeAudio}
                           text={currentWord.ka}
                           audioUrl={`/audio/words/${currentWord.id}.mp3`}
@@ -2858,10 +2864,10 @@ function AppShell({
                       )}
                       <small className="lesson-learn-audio-hint">
                         {locale === 'ru'
-                          ? 'Послушайте грузинское произношение'
+                          ? 'Послушайте и повторите два раза'
                           : locale === 'ka'
-                            ? 'მოუსმინეთ ქართულ გამოთქმას'
-                            : 'Listen to the Georgian pronunciation'}
+                            ? 'მოუსმინეთ და ორჯერ გაიმეორეთ'
+                            : 'Listen and repeat it twice'}
                       </small>
                     </div>
                   )}
@@ -3058,21 +3064,32 @@ function AppShell({
                   <div className="lesson-focus-actions">
                     {previewMode === 'learn' ? (
                       <button
-                        className="lesson-next-button"
+                        className={`lesson-next-button ${hasAudio && !previewAudioHeard ? 'waiting-for-audio' : ''}`}
+                        disabled={hasAudio && !previewAudioHeard}
                         onClick={continueLearning}
                       >
-                        {locale === 'ru'
-                          ? isLastLearningWord
-                            ? 'Начать проверку'
-                            : 'Следующее слово'
-                          : locale === 'ka'
+                        {hasAudio && !previewAudioHeard
+                          ? locale === 'ru'
+                            ? 'Сначала послушайте'
+                            : locale === 'ka'
+                              ? 'ჯერ მოუსმინეთ'
+                              : 'Listen first'
+                          : locale === 'ru'
                             ? isLastLearningWord
-                              ? 'ტესტის დაწყება'
-                              : 'შემდეგი სიტყვა'
-                            : isLastLearningWord
-                              ? 'Start test'
-                              : 'Next word'}
-                        <ChevronRight />
+                              ? 'Начать проверку'
+                              : 'Следующее слово'
+                            : locale === 'ka'
+                              ? isLastLearningWord
+                                ? 'ტესტის დაწყება'
+                                : 'შემდეგი სიტყვა'
+                              : isLastLearningWord
+                                ? 'Start test'
+                                : 'Next word'}
+                        {hasAudio && !previewAudioHeard ? (
+                          <Volume2 />
+                        ) : (
+                          <ChevronRight />
+                        )}
                       </button>
                     ) : previewMode === 'test' && previewResult !== 'idle' ? (
                       <button
