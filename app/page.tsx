@@ -59,7 +59,7 @@ import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
-import { speakingUnit } from '@/lib/speaking-unit';
+import { speakingUnit, speakingUnitTitles } from '@/lib/speaking-unit';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -1526,13 +1526,13 @@ function AppShell({
     }, 0);
   }, []);
   useEffect(() => {
-    const stored = localStorage.getItem('geo-speaking-unit-progress');
+    const stored = localStorage.getItem('geo-speaking-unit-progress-v2');
     window.setTimeout(() => {
       if (!stored) return;
       try {
         setCompletedSpeakingSteps(JSON.parse(stored));
       } catch {
-        localStorage.removeItem('geo-speaking-unit-progress');
+        localStorage.removeItem('geo-speaking-unit-progress-v2');
       }
     }, 0);
   }, []);
@@ -1985,7 +1985,7 @@ function AppShell({
           name: 'start_daily_lesson',
           title: 'Start daily lesson',
           description:
-            'Open the five-minute Georgian lesson when the signed-in user has an active Guided Learning subscription.',
+            'Open the guided Georgian beta course at the learner’s next available step.',
           inputSchema: {
             type: 'object',
             properties: {},
@@ -1993,16 +1993,8 @@ function AppShell({
           },
           annotations: { readOnlyHint: false, untrustedContentHint: false },
           execute() {
-            if (!hasLearningAccess) {
-              setScreen('premium');
-              return {
-                screen: 'premium',
-                locked: true,
-                requiredPlan: 'guided_learning',
-              };
-            }
-            setScreen('lesson');
-            return { screen: 'lesson', lesson: 3, total: 10 };
+            setScreen('learn');
+            return { screen: 'learn', total: speakingUnit.length };
           },
         },
         { signal: lifecycle.signal },
@@ -2099,6 +2091,27 @@ function AppShell({
     }
     exitToSite();
   };
+  const openSpeakingStep = (lesson: (typeof speakingUnit)[number]) => {
+    setPreviewLessonNumber(lesson.number);
+    setPreviewWordIndex(0);
+    setPreviewMode(
+      lesson.kind === 'review'
+        ? 'test'
+        : lesson.kind === 'scenario' || lesson.kind === 'mission'
+          ? 'scenario'
+          : 'learn',
+    );
+    setPreviewTestIndex(0);
+    setPreviewAnswer('');
+    setPreviewResult('idle');
+    setPreviewScenarioIndex(0);
+    setPreviewScenarioChoice(null);
+    setScreen('lesson-preview');
+    window.scrollTo(0, 0);
+  };
+  const nextSpeakingStep = speakingUnit.find(
+    (lesson) => !completedSpeakingSteps.includes(lesson.number),
+  );
   return (
     <main
       className={`app-view ${screen === 'lesson-preview' ? 'immersive-lesson' : ''}`}
@@ -2501,10 +2514,10 @@ function AppShell({
                 <div>
                   <span className="app-eyebrow">
                     {locale === 'ru'
-                      ? 'Путь для начинающих · 10 уроков'
+                      ? 'Бета-курс · 4 реальные ситуации'
                       : locale === 'ka'
-                        ? 'დამწყების გზა · 10 გაკვეთილი'
-                        : 'Unit 1 · Survival Georgian'}
+                        ? 'ბეტა კურსი · 4 რეალური სიტუაცია'
+                        : 'Beta course · 4 real-life units'}
                   </span>
                   <h1>
                     {locale === 'ru'
@@ -2522,84 +2535,168 @@ function AppShell({
                   </p>
                 </div>
                 <span className="lesson-path-count">
-                  <BookOpen /> {completedSpeakingSteps.length} / 10
+                  <BookOpen />{' '}
+                  {
+                    completedSpeakingSteps.filter(
+                      (step) => step <= speakingUnit.length,
+                    ).length
+                  }{' '}
+                  / {speakingUnit.length}
                 </span>
               </div>
 
-              <div className="lesson-path-list">
-                {speakingUnit.map((lesson) => (
-                  <button
-                    className={`lesson-path-card ${lesson.kind} ${completedSpeakingSteps.includes(lesson.number) ? 'complete' : ''}`}
-                    key={lesson.number}
-                    onClick={() => {
-                      setPreviewLessonNumber(lesson.number);
-                      setPreviewWordIndex(0);
-                      setPreviewMode(
-                        lesson.kind === 'review'
-                          ? 'test'
-                          : lesson.kind === 'scenario' ||
-                              lesson.kind === 'mission'
-                            ? 'scenario'
-                            : 'learn',
-                      );
-                      setPreviewTestIndex(0);
-                      setPreviewAnswer('');
-                      setPreviewResult('idle');
-                      setPreviewScenarioIndex(0);
-                      setPreviewScenarioChoice(null);
-                      setScreen('lesson-preview');
-                      window.scrollTo(0, 0);
-                    }}
-                  >
-                    <span className="lesson-path-number">
-                      {completedSpeakingSteps.includes(lesson.number) ? (
-                        <Check />
-                      ) : lesson.kind === 'review' ? (
-                        <Brain />
-                      ) : lesson.kind === 'mission' ? (
-                        <Trophy />
-                      ) : lesson.kind === 'scenario' ? (
-                        <Coffee />
-                      ) : (
-                        lesson.number
-                      )}
-                    </span>
-                    <span className="lesson-path-copy">
-                      <b>{lesson.title[locale]}</b>
-                      <small>
-                        {lesson.minutes} min ·{' '}
-                        {lesson.kind === 'review'
-                          ? locale === 'ru'
-                            ? 'повторение'
+              <div className="daily-learning-rhythm">
+                <span className="daily-learning-time">10 min</span>
+                <span>
+                  <b>
+                    {locale === 'ru'
+                      ? 'Ваш ежедневный цикл'
+                      : locale === 'ka'
+                        ? 'თქვენი ყოველდღიური ციკლი'
+                        : 'Your daily learning cycle'}
+                  </b>
+                  <small>
+                    {locale === 'ru'
+                      ? 'Вспомнить · Выучить · Произнести · Применить'
+                      : locale === 'ka'
+                        ? 'გახსენება · სწავლა · თქმა · გამოყენება'
+                        : 'Remember · Learn · Speak · Use'}
+                  </small>
+                </span>
+                <button
+                  disabled={!nextSpeakingStep}
+                  onClick={() =>
+                    nextSpeakingStep && openSpeakingStep(nextSpeakingStep)
+                  }
+                >
+                  {nextSpeakingStep
+                    ? locale === 'ru'
+                      ? 'Продолжить'
+                      : locale === 'ka'
+                        ? 'გაგრძელება'
+                        : 'Continue'
+                    : locale === 'ru'
+                      ? 'Готово'
+                      : locale === 'ka'
+                        ? 'დასრულებულია'
+                        : 'Complete'}
+                  {nextSpeakingStep ? <ChevronRight /> : <Check />}
+                </button>
+              </div>
+
+              <div className="lesson-units">
+                {Object.keys(speakingUnitTitles).map((unitKey) => {
+                  const unitNumber = Number(unitKey);
+                  const unitLessons = speakingUnit.filter(
+                    (lesson) => lesson.unit === unitNumber,
+                  );
+                  const firstStep = unitLessons[0]?.number ?? 1;
+                  const unitLocked =
+                    firstStep > 1 &&
+                    !completedSpeakingSteps.includes(firstStep - 1);
+
+                  return (
+                    <section
+                      className={`lesson-unit ${unitLocked ? 'locked' : ''}`}
+                      key={unitNumber}
+                    >
+                      <div className="lesson-unit-heading">
+                        <span>
+                          {locale === 'ru'
+                            ? `Раздел ${unitNumber}`
                             : locale === 'ka'
-                              ? 'გამეორება'
-                              : 'memory review'
-                          : lesson.kind === 'scenario' ||
-                              lesson.kind === 'mission'
-                            ? locale === 'ru'
-                              ? 'разговор'
-                              : locale === 'ka'
-                                ? 'საუბარი'
-                                : 'speaking mission'
-                            : `${lesson.words.length} ${locale === 'ru' ? 'слова' : locale === 'ka' ? 'სიტყვა' : 'new items'}`}
-                      </small>
-                    </span>
-                    <span className="lesson-path-action">
-                      {lesson.kind === 'review'
-                        ? locale === 'ru'
-                          ? 'Повторить'
-                          : locale === 'ka'
-                            ? 'გამეორება'
-                            : 'Review'
-                        : locale === 'ru'
-                          ? 'Начать'
-                          : locale === 'ka'
-                            ? 'დაწყება'
-                            : 'Start'}
-                      <ChevronRight />
-                    </span>
-                  </button>
-                ))}
+                              ? `ნაწილი ${unitNumber}`
+                              : `Unit ${unitNumber}`}
+                        </span>
+                        <b>{speakingUnitTitles[unitNumber][locale]}</b>
+                        {unitLocked && <LockKeyhole />}
+                      </div>
+                      <div className="lesson-path-list">
+                        {unitLessons.map((lesson) => {
+                          const complete = completedSpeakingSteps.includes(
+                            lesson.number,
+                          );
+                          const locked =
+                            !complete &&
+                            lesson.number > 1 &&
+                            !completedSpeakingSteps.includes(lesson.number - 1);
+                          const current = !complete && !locked;
+
+                          return (
+                            <button
+                              className={`lesson-path-card ${lesson.kind} ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${locked ? 'locked' : ''}`}
+                              key={lesson.number}
+                              disabled={locked}
+                              onClick={() => openSpeakingStep(lesson)}
+                            >
+                              <span className="lesson-path-number">
+                                {complete ? (
+                                  <Check />
+                                ) : locked ? (
+                                  <LockKeyhole />
+                                ) : lesson.kind === 'review' ? (
+                                  <Brain />
+                                ) : lesson.kind === 'mission' ? (
+                                  <Trophy />
+                                ) : lesson.kind === 'scenario' ? (
+                                  <Coffee />
+                                ) : (
+                                  lesson.number
+                                )}
+                              </span>
+                              <span className="lesson-path-copy">
+                                <b>{lesson.title[locale]}</b>
+                                <small>
+                                  {lesson.minutes} min ·{' '}
+                                  {lesson.kind === 'review'
+                                    ? locale === 'ru'
+                                      ? 'повторение'
+                                      : locale === 'ka'
+                                        ? 'გამეორება'
+                                        : 'memory review'
+                                    : lesson.kind === 'scenario' ||
+                                        lesson.kind === 'mission'
+                                      ? locale === 'ru'
+                                        ? 'разговор'
+                                        : locale === 'ka'
+                                          ? 'საუბარი'
+                                          : 'speaking mission'
+                                      : `${lesson.words.length} ${locale === 'ru' ? 'новых слов' : locale === 'ka' ? 'ახალი სიტყვა' : 'new items'}`}
+                                </small>
+                              </span>
+                              <span className="lesson-path-action">
+                                {locked
+                                  ? locale === 'ru'
+                                    ? 'Закрыто'
+                                    : locale === 'ka'
+                                      ? 'ჩაკეტილია'
+                                      : 'Locked'
+                                  : complete
+                                    ? locale === 'ru'
+                                      ? 'Ещё раз'
+                                      : locale === 'ka'
+                                        ? 'თავიდან'
+                                        : 'Replay'
+                                    : lesson.kind === 'review'
+                                      ? locale === 'ru'
+                                        ? 'Повторить'
+                                        : locale === 'ka'
+                                          ? 'გამეორება'
+                                          : 'Review'
+                                      : locale === 'ru'
+                                        ? 'Начать'
+                                        : locale === 'ka'
+                                          ? 'დაწყება'
+                                          : 'Start'}
+                                {locked ? <LockKeyhole /> : <ChevronRight />}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })}
               </div>
 
               <div className="lesson-path-footer">
@@ -2654,7 +2751,7 @@ function AppShell({
                 );
                 setCompletedSpeakingSteps(next);
                 localStorage.setItem(
-                  'geo-speaking-unit-progress',
+                  'geo-speaking-unit-progress-v2',
                   JSON.stringify(next),
                 );
                 setScreen('learn');

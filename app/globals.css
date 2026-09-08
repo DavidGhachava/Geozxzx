@@ -5450,6 +5450,116 @@ html[data-app-mode='true'] .marketing {
   width: 18px;
 }
 
+.daily-learning-rhythm {
+  margin: 0 0 24px;
+  padding: 14px 16px;
+  border: 1px solid rgba(178, 13, 47, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(120deg, #fff 0%, #fff1f3 100%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 28px rgba(94, 11, 30, 0.05);
+}
+
+.daily-learning-time {
+  min-width: 68px;
+  min-height: 48px;
+  padding: 0 10px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  font-weight: 900;
+  box-shadow: 0 8px 18px rgba(178, 13, 47, 0.2);
+}
+
+.daily-learning-rhythm > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.daily-learning-rhythm > button {
+  min-height: 42px;
+  margin-left: auto;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.daily-learning-rhythm > button:disabled {
+  background: #348a45;
+}
+
+.daily-learning-rhythm > button svg {
+  width: 17px;
+}
+
+.daily-learning-rhythm b {
+  font-size: 1rem;
+}
+
+.daily-learning-rhythm small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.lesson-units {
+  display: grid;
+  gap: 30px;
+}
+
+.lesson-unit {
+  min-width: 0;
+}
+
+.lesson-unit-heading {
+  min-height: 34px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.lesson-unit-heading > span {
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #f5e6e8;
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lesson-unit-heading > b {
+  color: #38252b;
+  font-size: 1.02rem;
+}
+
+.lesson-unit-heading > svg {
+  width: 17px;
+  margin-left: auto;
+  color: #9d8f93;
+}
+
+.lesson-unit.locked .lesson-unit-heading {
+  opacity: 0.62;
+}
+
 .lesson-path-list {
   display: grid;
   gap: 11px;
@@ -5479,6 +5589,39 @@ html[data-app-mode='true'] .marketing {
   border-color: rgba(178, 13, 47, 0.42);
   box-shadow: 0 13px 30px rgba(94, 11, 30, 0.09);
   transform: translateY(-2px);
+}
+
+.lesson-path-card.current {
+  border-color: rgba(178, 13, 47, 0.62);
+  box-shadow:
+    0 0 0 3px rgba(178, 13, 47, 0.08),
+    0 14px 32px rgba(94, 11, 30, 0.1);
+}
+
+.lesson-path-card.locked,
+.lesson-path-card.locked:hover {
+  border-color: #e5dfe1;
+  background: #f5f2f3;
+  color: #8c8185;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+  opacity: 0.74;
+}
+
+.lesson-path-card.locked .lesson-path-number {
+  background: #d9d2d4;
+  color: #786d71;
+  box-shadow: none;
+}
+
+.lesson-path-card.locked .lesson-path-copy small {
+  color: #9b9194;
+}
+
+.lesson-path-card.locked .lesson-path-action {
+  background: #e5dfe1;
+  color: #766b6f;
 }
 
 .lesson-path-card:nth-child(2) {
@@ -5546,6 +5689,7 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-path-card.complete {
   border-color: #b9ddbf;
+  background: linear-gradient(120deg, #fff 0%, #f0f9f1 100%);
 }
 
 .lesson-path-card.complete .lesson-path-number {
@@ -6215,6 +6359,25 @@ html[data-app-mode='true'] .marketing {
     padding-inline: 11px;
     font-size: 0.78rem;
   }
+  .daily-learning-rhythm {
+    padding: 12px;
+    gap: 10px;
+  }
+  .daily-learning-time {
+    min-width: 56px;
+    min-height: 44px;
+    font-size: 0.78rem;
+  }
+  .daily-learning-rhythm small {
+    display: none;
+  }
+  .daily-learning-rhythm > button {
+    min-height: 40px;
+    padding-inline: 10px;
+  }
+  .lesson-units {
+    gap: 25px;
+  }
   .lesson-path-card {
     min-height: 78px;
     padding: 12px;
@@ -6229,7 +6392,7 @@ html[data-app-mode='true'] .marketing {
     font-size: 1rem;
   }
   .lesson-path-copy small {
-    font-size: 0.61rem;
+    font-size: 0.72rem;
   }
   .lesson-path-copy b {
     font-size: 0.94rem;
