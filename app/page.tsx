@@ -59,7 +59,11 @@ import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
-import { speakingUnit, speakingUnitTitles } from '@/lib/speaking-unit';
+import {
+  speakingUnit,
+  speakingUnitTitles,
+  type SpeakingStep,
+} from '@/lib/speaking-unit';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -112,6 +116,20 @@ type Phrase = {
   ru: string;
   audio_url?: string | null;
 };
+
+type WordMemory = {
+  wordId: string;
+  unitNumber: number;
+  timesPracticed: number;
+  correctAnswers: number;
+  mistakeCount: number;
+  masteryLevel: number;
+  lastResult: boolean | null;
+  lastReviewedAt: string | null;
+  nextReviewAt: string | null;
+};
+
+const reviewIntervals = [1, 3, 7, 14, 30];
 
 function phraseMeaning(phrase: Phrase, locale: Locale) {
   return locale === 'ru' ? phrase.ru : phrase.en;
@@ -1455,6 +1473,11 @@ function AppShell({
 }) {
   const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
+  const [learnSection, setLearnSection] = useState<'today' | 'paths'>('today');
+  const [previewSource, setPreviewSource] = useState<'path' | 'today'>('path');
+  const [todayWordIds, setTodayWordIds] = useState<string[]>([]);
+  const [wordMemory, setWordMemory] = useState<Record<string, WordMemory>>({});
+  const [dailyPlanStartedAt] = useState(() => Date.now());
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
   const [previewAudioHeard, setPreviewAudioHeard] = useState(false);
@@ -1534,6 +1557,17 @@ function AppShell({
         setCompletedSpeakingSteps(JSON.parse(stored));
       } catch {
         localStorage.removeItem('geo-speaking-unit-progress-v2');
+      }
+    }, 0);
+  }, []);
+  useEffect(() => {
+    const stored = localStorage.getItem('geo-word-memory-v1');
+    window.setTimeout(() => {
+      if (!stored) return;
+      try {
+        setWordMemory(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem('geo-word-memory-v1');
       }
     }, 0);
   }, []);
@@ -1700,6 +1734,8 @@ function AppShell({
         progressResult,
         accessResult,
         phrasebookAccessResult,
+        wordMemoryResult,
+        pathProgressResult,
       ] = await Promise.all([
         supabase.from('saved_phrases').select('phrase_id'),
         supabase
@@ -1718,6 +1754,8 @@ function AppShell({
         supabase.from('learning_progress').select('phrase_id'),
         supabase.rpc('has_guided_learning_access'),
         supabase.rpc('has_phrasebook_pro_access'),
+        supabase.from('word_memory').select('*'),
+        supabase.from('learning_path_progress').select('step_number'),
       ]);
       setSaved((savedResult.data ?? []).map((item) => item.phrase_id));
       setDisplayName(profileResult.data?.display_name ?? null);
@@ -1728,6 +1766,39 @@ function AppShell({
         onLocaleChange(savedLocale);
       setHasLearningAccess(accessResult.data === true);
       setHasPhrasebookProAccess(phrasebookAccessResult.data === true);
+      if (wordMemoryResult.data) {
+        const remoteMemory = Object.fromEntries(
+          wordMemoryResult.data.map((item) => [
+            item.word_id,
+            {
+              wordId: item.word_id,
+              unitNumber: item.unit_number,
+              timesPracticed: item.times_practiced,
+              correctAnswers: item.correct_answers,
+              mistakeCount: item.mistake_count,
+              masteryLevel: item.mastery_level,
+              lastResult: item.last_result,
+              lastReviewedAt: item.last_reviewed_at,
+              nextReviewAt: item.next_review_at,
+            },
+          ]),
+        );
+        setWordMemory(remoteMemory);
+        localStorage.setItem(
+          'geo-word-memory-v1',
+          JSON.stringify(remoteMemory),
+        );
+      }
+      if (pathProgressResult.data) {
+        const remoteSteps = pathProgressResult.data.map(
+          (item) => item.step_number,
+        );
+        setCompletedSpeakingSteps(remoteSteps);
+        localStorage.setItem(
+          'geo-speaking-unit-progress-v2',
+          JSON.stringify(remoteSteps),
+        );
+      }
       const activity = activityResult.data ?? [];
       setStats({
         streak: streakResult.data?.current_streak ?? 0,
@@ -2093,6 +2164,7 @@ function AppShell({
     exitToSite();
   };
   const openSpeakingStep = (lesson: (typeof speakingUnit)[number]) => {
+    setPreviewSource('path');
     setPreviewLessonNumber(lesson.number);
     setPreviewWordIndex(0);
     setPreviewAudioHeard(false);
@@ -2111,9 +2183,129 @@ function AppShell({
     setScreen('lesson-preview');
     window.scrollTo(0, 0);
   };
-  const nextSpeakingStep = speakingUnit.find(
-    (lesson) => !completedSpeakingSteps.includes(lesson.number),
-  );
+  const learningWords = useMemo(() => {
+    const seen = new Set<string>();
+    return speakingUnit.flatMap((step) =>
+      step.words.flatMap((ka) => {
+        const word = allWords.find((entry) => entry.ka === ka);
+        if (!word || seen.has(word.id)) return [];
+        seen.add(word.id);
+        return [{ word, unitNumber: step.unit }];
+      }),
+    );
+  }, [allWords]);
+  const activeUnits = useMemo(() => {
+    const units = new Set(
+      speakingUnit
+        .filter((step) => completedSpeakingSteps.includes(step.number))
+        .map((step) => step.unit),
+    );
+    if (!units.size) units.add(1);
+    return units;
+  }, [completedSpeakingSteps]);
+  const dailyPlan = useMemo(() => {
+    const now = dailyPlanStartedAt;
+    const records = Object.values(wordMemory);
+    const weak = records
+      .filter(
+        (item) =>
+          item.lastResult === false ||
+          (item.mistakeCount > 0 && item.masteryLevel < 3),
+      )
+      .sort(
+        (a, b) =>
+          b.mistakeCount - a.mistakeCount || a.masteryLevel - b.masteryLevel,
+      );
+    const due = records
+      .filter(
+        (item) =>
+          item.nextReviewAt &&
+          new Date(item.nextReviewAt).getTime() <= now &&
+          !weak.some((weakItem) => weakItem.wordId === item.wordId),
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.nextReviewAt ?? 0).getTime() -
+          new Date(b.nextReviewAt ?? 0).getTime(),
+      );
+    const reviewIds = [...weak, ...due]
+      .map((item) => item.wordId)
+      .filter((id) => allWords.some((word) => word.id === id))
+      .slice(0, 6);
+    const preferredNew = learningWords.filter(
+      ({ word, unitNumber }) =>
+        activeUnits.has(unitNumber) && !wordMemory[word.id],
+    );
+    const fallbackNew = learningWords.filter(
+      ({ word }) =>
+        !wordMemory[word.id] &&
+        !preferredNew.some((item) => item.word.id === word.id),
+    );
+    const newIds = [...preferredNew, ...fallbackNew]
+      .map(({ word }) => word.id)
+      .slice(0, Math.max(2, 10 - reviewIds.length));
+    return {
+      ids: [...reviewIds, ...newIds].slice(0, 10),
+      reviewCount: reviewIds.length,
+      newCount: Math.min(newIds.length, 10 - reviewIds.length),
+    };
+  }, [activeUnits, allWords, dailyPlanStartedAt, learningWords, wordMemory]);
+  const startTodayLesson = () => {
+    if (!dailyPlan.ids.length) return;
+    setTodayWordIds(dailyPlan.ids);
+    setPreviewSource('today');
+    setPreviewLessonNumber(0);
+    setPreviewWordIndex(0);
+    setPreviewAudioHeard(false);
+    setPreviewMode('learn');
+    setPreviewTestIndex(0);
+    setPreviewAnswer('');
+    setPreviewResult('idle');
+    setScreen('lesson-preview');
+    window.scrollTo(0, 0);
+  };
+  const recordWordResult = (
+    word: WordEntry,
+    unitNumber: number,
+    correct: boolean,
+  ) => {
+    const now = new Date();
+    setWordMemory((current) => {
+      const previous = current[word.id];
+      const masteryLevel = Math.min(
+        5,
+        Math.max(0, (previous?.masteryLevel ?? 0) + (correct ? 1 : -1)),
+      );
+      const nextReview = new Date(now);
+      if (correct)
+        nextReview.setDate(
+          nextReview.getDate() + reviewIntervals[Math.max(0, masteryLevel - 1)],
+        );
+      else nextReview.setHours(nextReview.getHours() + 4);
+      const next: Record<string, WordMemory> = {
+        ...current,
+        [word.id]: {
+          wordId: word.id,
+          unitNumber,
+          timesPracticed: (previous?.timesPracticed ?? 0) + 1,
+          correctAnswers: (previous?.correctAnswers ?? 0) + (correct ? 1 : 0),
+          mistakeCount: (previous?.mistakeCount ?? 0) + (correct ? 0 : 1),
+          masteryLevel,
+          lastResult: correct,
+          lastReviewedAt: now.toISOString(),
+          nextReviewAt: nextReview.toISOString(),
+        },
+      };
+      localStorage.setItem('geo-word-memory-v1', JSON.stringify(next));
+      return next;
+    });
+    if (supabase && user)
+      void supabase.rpc('record_word_learning_activity', {
+        p_word_id: word.id,
+        p_unit_number: unitNumber,
+        p_correct: correct,
+      });
+  };
   return (
     <main
       className={`app-view ${screen === 'lesson-preview' ? 'immersive-lesson' : ''}`}
@@ -2519,21 +2711,21 @@ function AppShell({
                       ? 'Бета-курс · 4 реальные ситуации'
                       : locale === 'ka'
                         ? 'ბეტა კურსი · 4 რეალური სიტუაცია'
-                        : 'Beta course · 4 real-life units'}
+                        : 'Personalized speaking beta'}
                   </span>
                   <h1>
                     {locale === 'ru'
                       ? 'Говорите с первого дня'
                       : locale === 'ka'
                         ? 'ისაუბრეთ პირველივე დღიდან'
-                        : 'Your first real conversation'}
+                        : 'Learn what you need today'}
                   </h1>
                   <p>
                     {locale === 'ru'
                       ? 'Короткие уроки соединяют полезные слова в настоящую речь.'
                       : locale === 'ka'
                         ? 'მოკლე გაკვეთილები საჭირო სიტყვებს რეალურ საუბრად აერთიანებს.'
-                        : 'Learn, retrieve, review, and use Georgian in everyday missions.'}
+                        : 'Today strengthens weak words. Paths let you choose the situations that matter to you.'}
                   </p>
                 </div>
                 <span className="lesson-path-count">
@@ -2547,180 +2739,314 @@ function AppShell({
                 </span>
               </div>
 
-              <div className="daily-learning-rhythm">
-                <span className="daily-learning-time">10 min</span>
-                <span>
-                  <b>
-                    {locale === 'ru'
-                      ? 'Ваш ежедневный цикл'
-                      : locale === 'ka'
-                        ? 'თქვენი ყოველდღიური ციკლი'
-                        : 'Your daily learning cycle'}
-                  </b>
-                  <small>
-                    {locale === 'ru'
-                      ? 'Вспомнить · Выучить · Произнести · Применить'
-                      : locale === 'ka'
-                        ? 'გახსენება · სწავლა · თქმა · გამოყენება'
-                        : 'Remember · Learn · Speak · Use'}
-                  </small>
-                </span>
+              <div className="learn-section-tabs" role="tablist">
                 <button
-                  disabled={!nextSpeakingStep}
-                  onClick={() =>
-                    nextSpeakingStep && openSpeakingStep(nextSpeakingStep)
-                  }
+                  className={learnSection === 'today' ? 'active' : ''}
+                  onClick={() => setLearnSection('today')}
+                  role="tab"
+                  aria-selected={learnSection === 'today'}
                 >
-                  {nextSpeakingStep
-                    ? locale === 'ru'
-                      ? 'Продолжить'
-                      : locale === 'ka'
-                        ? 'გაგრძელება'
-                        : 'Continue'
-                    : locale === 'ru'
-                      ? 'Готово'
-                      : locale === 'ka'
-                        ? 'დასრულებულია'
-                        : 'Complete'}
-                  {nextSpeakingStep ? <ChevronRight /> : <Check />}
+                  <Brain />
+                  {locale === 'ru'
+                    ? 'Сегодня'
+                    : locale === 'ka'
+                      ? 'დღეს'
+                      : 'Today'}
+                </button>
+                <button
+                  className={learnSection === 'paths' ? 'active' : ''}
+                  onClick={() => setLearnSection('paths')}
+                  role="tab"
+                  aria-selected={learnSection === 'paths'}
+                >
+                  <Compass />
+                  {locale === 'ru'
+                    ? 'Направления'
+                    : locale === 'ka'
+                      ? 'მიმართულებები'
+                      : 'Paths'}
                 </button>
               </div>
 
-              <div className="lesson-units">
-                {Object.keys(speakingUnitTitles).map((unitKey) => {
-                  const unitNumber = Number(unitKey);
-                  const unitLessons = speakingUnit.filter(
-                    (lesson) => lesson.unit === unitNumber,
-                  );
-                  const firstStep = unitLessons[0]?.number ?? 1;
-                  const unitLocked =
-                    firstStep > 1 &&
-                    !completedSpeakingSteps.includes(firstStep - 1);
-
-                  return (
-                    <section
-                      className={`lesson-unit ${unitLocked ? 'locked' : ''}`}
-                      key={unitNumber}
-                    >
-                      <div className="lesson-unit-heading">
-                        <span>
-                          {locale === 'ru'
-                            ? `Раздел ${unitNumber}`
+              {learnSection === 'today' && (
+                <div className="today-learning-panel">
+                  <div className="today-learning-copy">
+                    <span className="today-learning-icon">
+                      <Brain />
+                    </span>
+                    <span>
+                      <small>
+                        {locale === 'ru'
+                          ? 'ПЕРСОНАЛЬНАЯ ПРАКТИКА'
+                          : locale === 'ka'
+                            ? 'პერსონალური პრაქტიკა'
+                            : 'PERSONAL PRACTICE'}
+                      </small>
+                      <b>
+                        {locale === 'ru'
+                          ? 'Урок на сегодня'
+                          : locale === 'ka'
+                            ? 'დღევანდელი გაკვეთილი'
+                            : "Today's lesson"}
+                      </b>
+                      <p>
+                        {dailyPlan.reviewCount
+                          ? locale === 'ru'
+                            ? 'Сначала сложные и просроченные слова, затем немного нового.'
                             : locale === 'ka'
-                              ? `ნაწილი ${unitNumber}`
-                              : `Unit ${unitNumber}`}
-                        </span>
-                        <b>{speakingUnitTitles[unitNumber][locale]}</b>
-                        {unitLocked && <LockKeyhole />}
-                      </div>
-                      <div className="lesson-path-list">
-                        {unitLessons.map((lesson) => {
-                          const complete = completedSpeakingSteps.includes(
-                            lesson.number,
-                          );
-                          const locked =
-                            !complete &&
-                            lesson.number > 1 &&
-                            !completedSpeakingSteps.includes(lesson.number - 1);
-                          const current = !complete && !locked;
+                              ? 'ჯერ რთული და გასამეორებელი სიტყვები, შემდეგ ცოტა ახალი.'
+                              : 'Weak and due words first, then a small amount of new language.'
+                          : locale === 'ru'
+                            ? 'Начните с полезных слов. Следующий урок подстроится под ваши ответы.'
+                            : locale === 'ka'
+                              ? 'დაიწყეთ საჭირო სიტყვებით. შემდეგი გაკვეთილი თქვენს პასუხებს მოერგება.'
+                              : 'Start with useful words. Your next lesson will adapt to your answers.'}
+                      </p>
+                    </span>
+                  </div>
+                  <div className="today-learning-mix">
+                    <span>
+                      <b>{dailyPlan.reviewCount}</b>
+                      {locale === 'ru'
+                        ? 'повторить'
+                        : locale === 'ka'
+                          ? 'გასამეორებელი'
+                          : 'review'}
+                    </span>
+                    <span>
+                      <b>{dailyPlan.newCount}</b>
+                      {locale === 'ru'
+                        ? 'новых'
+                        : locale === 'ka'
+                          ? 'ახალი'
+                          : 'new'}
+                    </span>
+                    <span>
+                      <b>~10</b>
+                      {locale === 'ru'
+                        ? 'минут'
+                        : locale === 'ka'
+                          ? 'წუთი'
+                          : 'minutes'}
+                    </span>
+                  </div>
+                  <button
+                    className="today-learning-start"
+                    onClick={startTodayLesson}
+                    disabled={!dailyPlan.ids.length}
+                  >
+                    {locale === 'ru'
+                      ? 'Начать урок на сегодня'
+                      : locale === 'ka'
+                        ? 'დღევანდელი გაკვეთილის დაწყება'
+                        : "Start today's lesson"}
+                    <ChevronRight />
+                  </button>
+                  <button
+                    className="today-view-paths"
+                    onClick={() => setLearnSection('paths')}
+                  >
+                    {locale === 'ru'
+                      ? 'Выбрать другое направление'
+                      : locale === 'ka'
+                        ? 'სხვა მიმართულების არჩევა'
+                        : 'Choose a different path'}
+                  </button>
+                </div>
+              )}
 
-                          return (
-                            <button
-                              className={`lesson-path-card ${lesson.kind} ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${locked ? 'locked' : ''}`}
-                              key={lesson.number}
-                              disabled={locked}
-                              onClick={() => openSpeakingStep(lesson)}
-                            >
-                              <span className="lesson-path-number">
-                                {complete ? (
-                                  <Check />
-                                ) : locked ? (
-                                  <LockKeyhole />
-                                ) : lesson.kind === 'review' ? (
-                                  <Brain />
-                                ) : lesson.kind === 'mission' ? (
-                                  <Trophy />
-                                ) : lesson.kind === 'scenario' ? (
-                                  <Coffee />
-                                ) : (
-                                  lesson.number
-                                )}
-                              </span>
-                              <span className="lesson-path-copy">
-                                <b>{lesson.title[locale]}</b>
-                                <small>
-                                  {lesson.minutes} min ·{' '}
-                                  {lesson.kind === 'review'
-                                    ? locale === 'ru'
-                                      ? 'повторение'
-                                      : locale === 'ka'
-                                        ? 'გამეორება'
-                                        : 'memory review'
-                                    : lesson.kind === 'scenario' ||
-                                        lesson.kind === 'mission'
+              {learnSection === 'today' && (
+                <div className="daily-learning-rhythm today-explainer">
+                  <span className="daily-learning-time">
+                    <Flame />
+                  </span>
+                  <span>
+                    <b>
+                      {locale === 'ru'
+                        ? 'Каждый ответ улучшает следующий урок'
+                        : locale === 'ka'
+                          ? 'ყოველი პასუხი შემდეგ გაკვეთილს აუმჯობესებს'
+                          : 'Every answer improves the next lesson'}
+                    </b>
+                    <small>
+                      {locale === 'ru'
+                        ? 'Ошибки возвращаются раньше. Уверенные слова — позже.'
+                        : locale === 'ka'
+                          ? 'შეცდომები მალე ბრუნდება. კარგად ნასწავლი სიტყვები — მოგვიანებით.'
+                          : 'Mistakes return sooner. Strong words wait longer.'}
+                    </small>
+                  </span>
+                </div>
+              )}
+
+              {learnSection === 'paths' && (
+                <div className="lesson-units">
+                  {Object.keys(speakingUnitTitles).map((unitKey) => {
+                    const unitNumber = Number(unitKey);
+                    const unitLessons = speakingUnit.filter(
+                      (lesson) => lesson.unit === unitNumber,
+                    );
+                    const firstStep = unitLessons[0]?.number ?? 1;
+
+                    return (
+                      <section className="lesson-unit" key={unitNumber}>
+                        <div className="lesson-unit-heading">
+                          <span>
+                            {locale === 'ru'
+                              ? `Раздел ${unitNumber}`
+                              : locale === 'ka'
+                                ? `ნაწილი ${unitNumber}`
+                                : `Unit ${unitNumber}`}
+                          </span>
+                          <b>{speakingUnitTitles[unitNumber][locale]}</b>
+                          <small>
+                            {
+                              completedSpeakingSteps.filter((stepNumber) =>
+                                unitLessons.some(
+                                  (step) => step.number === stepNumber,
+                                ),
+                              ).length
+                            }
+                            /{unitLessons.length}
+                          </small>
+                        </div>
+                        <div className="lesson-path-list">
+                          {unitLessons.map((lesson) => {
+                            const complete = completedSpeakingSteps.includes(
+                              lesson.number,
+                            );
+                            const locked =
+                              !complete &&
+                              lesson.number !== firstStep &&
+                              !completedSpeakingSteps.includes(
+                                lesson.number - 1,
+                              );
+                            const current = !complete && !locked;
+
+                            return (
+                              <button
+                                className={`lesson-path-card ${lesson.kind} ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${locked ? 'locked' : ''}`}
+                                key={lesson.number}
+                                disabled={locked}
+                                onClick={() => openSpeakingStep(lesson)}
+                              >
+                                <span className="lesson-path-number">
+                                  {complete ? (
+                                    <Check />
+                                  ) : locked ? (
+                                    <LockKeyhole />
+                                  ) : lesson.kind === 'review' ? (
+                                    <Brain />
+                                  ) : lesson.kind === 'mission' ? (
+                                    <Trophy />
+                                  ) : lesson.kind === 'scenario' ? (
+                                    <Coffee />
+                                  ) : (
+                                    lesson.number
+                                  )}
+                                </span>
+                                <span className="lesson-path-copy">
+                                  <b>{lesson.title[locale]}</b>
+                                  <small>
+                                    {lesson.minutes} min ·{' '}
+                                    {lesson.kind === 'review'
                                       ? locale === 'ru'
-                                        ? 'разговор'
-                                        : locale === 'ka'
-                                          ? 'საუბარი'
-                                          : 'speaking mission'
-                                      : `${lesson.words.length} ${locale === 'ru' ? 'новых слов' : locale === 'ka' ? 'ახალი სიტყვა' : 'new items'}`}
-                                </small>
-                              </span>
-                              <span className="lesson-path-action">
-                                {locked
-                                  ? locale === 'ru'
-                                    ? 'Закрыто'
-                                    : locale === 'ka'
-                                      ? 'ჩაკეტილია'
-                                      : 'Locked'
-                                  : complete
-                                    ? locale === 'ru'
-                                      ? 'Ещё раз'
-                                      : locale === 'ka'
-                                        ? 'თავიდან'
-                                        : 'Replay'
-                                    : lesson.kind === 'review'
-                                      ? locale === 'ru'
-                                        ? 'Повторить'
+                                        ? 'повторение'
                                         : locale === 'ka'
                                           ? 'გამეორება'
-                                          : 'Review'
-                                      : locale === 'ru'
-                                        ? 'Начать'
+                                          : 'memory review'
+                                      : lesson.kind === 'scenario' ||
+                                          lesson.kind === 'mission'
+                                        ? locale === 'ru'
+                                          ? 'разговор'
+                                          : locale === 'ka'
+                                            ? 'საუბარი'
+                                            : 'speaking mission'
+                                        : `${lesson.words.length} ${locale === 'ru' ? 'новых слов' : locale === 'ka' ? 'ახალი სიტყვა' : 'new items'}`}
+                                  </small>
+                                </span>
+                                <span className="lesson-path-action">
+                                  {locked
+                                    ? locale === 'ru'
+                                      ? 'Закрыто'
+                                      : locale === 'ka'
+                                        ? 'ჩაკეტილია'
+                                        : 'Locked'
+                                    : complete
+                                      ? locale === 'ru'
+                                        ? 'Ещё раз'
                                         : locale === 'ka'
-                                          ? 'დაწყება'
-                                          : 'Start'}
-                                {locked ? <LockKeyhole /> : <ChevronRight />}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  );
-                })}
-              </div>
+                                          ? 'თავიდან'
+                                          : 'Replay'
+                                      : lesson.kind === 'review'
+                                        ? locale === 'ru'
+                                          ? 'Повторить'
+                                          : locale === 'ka'
+                                            ? 'გამეორება'
+                                            : 'Review'
+                                        : locale === 'ru'
+                                          ? 'Начать'
+                                          : locale === 'ka'
+                                            ? 'დაწყება'
+                                            : 'Start'}
+                                  {locked ? <LockKeyhole /> : <ChevronRight />}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    );
+                  })}
+                </div>
+              )}
 
-              <div className="lesson-path-footer">
-                <span>
-                  {locale === 'ru'
-                    ? 'Проверки памяти возвращают старые слова до того, как они забудутся.'
-                    : locale === 'ka'
-                      ? 'მეხსიერების შემოწმება ძველ სიტყვებს დავიწყებამდე აბრუნებს.'
-                      : 'Memory checks return older language before it fades.'}
-                </span>
-              </div>
+              {learnSection === 'paths' && (
+                <div className="lesson-path-footer">
+                  <span>
+                    {locale === 'ru'
+                      ? 'Проверки памяти возвращают старые слова до того, как они забудутся.'
+                      : locale === 'ka'
+                        ? 'მეხსიერების შემოწმება ძველ სიტყვებს დავიწყებამდე აბრუნებს.'
+                        : 'Memory checks return older language before it fades.'}
+                  </span>
+                </div>
+              )}
             </section>
           )}
           {screen === 'lesson-preview' &&
             (() => {
+              const todayLesson: SpeakingStep = {
+                number: 0,
+                unit: 1,
+                kind: 'lesson',
+                minutes: 10,
+                title: {
+                  en: "Today's lesson",
+                  ru: 'Урок на сегодня',
+                  ka: 'დღევანდელი გაკვეთილი',
+                },
+                subtitle: {
+                  en: 'Personalized memory practice',
+                  ru: 'Персональная тренировка памяти',
+                  ka: 'პერსონალური მეხსიერების ვარჯიში',
+                },
+                words: [],
+              };
               const lesson =
-                speakingUnit.find(
-                  (item) => item.number === previewLessonNumber,
-                ) ?? speakingUnit[0];
-              const previewWords = lesson.words
-                .map((ka) => allWords.find((word) => word.ka === ka))
-                .filter((word): word is WordEntry => Boolean(word));
+                previewSource === 'today'
+                  ? todayLesson
+                  : (speakingUnit.find(
+                      (item) => item.number === previewLessonNumber,
+                    ) ?? speakingUnit[0]);
+              const previewWords =
+                previewSource === 'today'
+                  ? todayWordIds
+                      .map((id) => allWords.find((word) => word.id === id))
+                      .filter((word): word is WordEntry => Boolean(word))
+                  : lesson.words
+                      .map((ka) => allWords.find((word) => word.ka === ka))
+                      .filter((word): word is WordEntry => Boolean(word));
               const segmentWords = previewWords;
               const currentWord =
                 segmentWords[
@@ -2748,6 +3074,15 @@ function AppShell({
                       ? previewWordIndex + 1
                       : previewWords.length + previewTestIndex + 1;
               const finishStep = () => {
+                if (previewSource === 'today') {
+                  localStorage.setItem(
+                    'geo-last-daily-lesson',
+                    new Date().toISOString(),
+                  );
+                  setLearnSection('today');
+                  setScreen('learn');
+                  return;
+                }
                 const next = Array.from(
                   new Set([...completedSpeakingSteps, lesson.number]),
                 );
@@ -2756,6 +3091,15 @@ function AppShell({
                   'geo-speaking-unit-progress-v2',
                   JSON.stringify(next),
                 );
+                if (supabase && user)
+                  void supabase.from('learning_path_progress').upsert(
+                    {
+                      user_id: user.id,
+                      step_number: lesson.number,
+                      unit_number: lesson.unit,
+                    },
+                    { onConflict: 'user_id,step_number' },
+                  );
                 setScreen('learn');
               };
               const continueLearning = () => {
@@ -2819,11 +3163,17 @@ function AppShell({
                   {currentWord && previewMode === 'learn' && (
                     <div className="lesson-focus-stage">
                       <span className="lesson-focus-label">
-                        {locale === 'ru'
-                          ? `Урок ${lesson.number} · Новое`
-                          : locale === 'ka'
-                            ? `გაკვეთილი ${lesson.number} · ახალი`
-                            : `Lesson ${lesson.number} · Learn`}
+                        {previewSource === 'today'
+                          ? locale === 'ru'
+                            ? 'Сегодня · Практика'
+                            : locale === 'ka'
+                              ? 'დღეს · პრაქტიკა'
+                              : 'Today · Practice'
+                          : locale === 'ru'
+                            ? `Урок ${lesson.number} · Новое`
+                            : locale === 'ka'
+                              ? `გაკვეთილი ${lesson.number} · ახალი`
+                              : `Lesson ${lesson.number} · Learn`}
                       </span>
                       <div className="lesson-native-meaning">
                         <small>
@@ -2927,15 +3277,17 @@ function AppShell({
                           onSubmit={(event) => {
                             event.preventDefault();
                             if (!previewAnswer.trim()) return;
-                            setPreviewResult(
-                              isLessonAnswerCorrect(
-                                previewAnswer,
-                                currentWord,
-                                locale,
-                              )
-                                ? 'correct'
-                                : 'wrong',
+                            const correct = isLessonAnswerCorrect(
+                              previewAnswer,
+                              currentWord,
+                              locale,
                             );
+                            setPreviewResult(correct ? 'correct' : 'wrong');
+                            const wordUnit =
+                              learningWords.find(
+                                (item) => item.word.id === currentWord.id,
+                              )?.unitNumber ?? lesson.unit;
+                            recordWordResult(currentWord, wordUnit, correct);
                             if (hasAudio) {
                               void play(
                                 `lesson-test-${currentWord.id}`,

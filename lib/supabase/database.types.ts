@@ -235,6 +235,72 @@ export type Database = {
         };
         Relationships: [];
       };
+      word_memory: {
+        Row: {
+          user_id: string;
+          word_id: string;
+          unit_number: number;
+          times_practiced: number;
+          correct_answers: number;
+          mistake_count: number;
+          mastery_level: number;
+          last_result: boolean | null;
+          last_reviewed_at: string | null;
+          next_review_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          word_id: string;
+          unit_number: number;
+          times_practiced?: number;
+          correct_answers?: number;
+          mistake_count?: number;
+          mastery_level?: number;
+          last_result?: boolean | null;
+          last_reviewed_at?: string | null;
+          next_review_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          word_id?: string;
+          unit_number?: number;
+          times_practiced?: number;
+          correct_answers?: number;
+          mistake_count?: number;
+          mastery_level?: number;
+          last_result?: boolean | null;
+          last_reviewed_at?: string | null;
+          next_review_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      learning_path_progress: {
+        Row: {
+          user_id: string;
+          step_number: number;
+          unit_number: number;
+          completed_at: string;
+        };
+        Insert: {
+          user_id: string;
+          step_number: number;
+          unit_number: number;
+          completed_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          step_number?: number;
+          unit_number?: number;
+          completed_at?: string;
+        };
+        Relationships: [];
+      };
       daily_activity: {
         Row: {
           user_id: string;
@@ -318,6 +384,14 @@ export type Database = {
           longest_streak: number;
           total_xp: number;
         }[];
+      };
+      record_word_learning_activity: {
+        Args: {
+          p_word_id: string;
+          p_unit_number: number;
+          p_correct: boolean;
+        };
+        Returns: undefined;
       };
     };
     Enums: { [_ in never]: never };
