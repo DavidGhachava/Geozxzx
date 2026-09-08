@@ -2936,6 +2936,13 @@ function AppShell({
                                 ? 'correct'
                                 : 'wrong',
                             );
+                            if (hasAudio) {
+                              void play(
+                                `lesson-test-${currentWord.id}`,
+                                currentWord.ka,
+                                `/audio/words/${currentWord.id}.mp3`,
+                              );
+                            }
                           }}
                         >
                           <input
@@ -3093,21 +3100,32 @@ function AppShell({
                       </button>
                     ) : previewMode === 'test' && previewResult !== 'idle' ? (
                       <button
-                        className="lesson-next-button"
+                        className={`lesson-next-button ${playing === `lesson-test-${currentWord?.id}` ? 'waiting-for-audio' : ''}`}
+                        disabled={playing === `lesson-test-${currentWord?.id}`}
                         onClick={continueTest}
                       >
-                        {locale === 'ru'
-                          ? isLastTestWord
-                            ? 'Завершить этап'
-                            : 'Следующий вопрос'
-                          : locale === 'ka'
+                        {playing === `lesson-test-${currentWord?.id}`
+                          ? locale === 'ru'
+                            ? 'Слушайте ещё раз'
+                            : locale === 'ka'
+                              ? 'კიდევ ერთხელ მოუსმინეთ'
+                              : 'Listen once more'
+                          : locale === 'ru'
                             ? isLastTestWord
-                              ? 'ეტაპის დასრულება'
-                              : 'შემდეგი კითხვა'
-                            : isLastTestWord
-                              ? 'Complete step'
-                              : 'Next question'}
-                        <ChevronRight />
+                              ? 'Завершить этап'
+                              : 'Следующий вопрос'
+                            : locale === 'ka'
+                              ? isLastTestWord
+                                ? 'ეტაპის დასრულება'
+                                : 'შემდეგი კითხვა'
+                              : isLastTestWord
+                                ? 'Complete step'
+                                : 'Next question'}
+                        {playing === `lesson-test-${currentWord?.id}` ? (
+                          <Volume2 />
+                        ) : (
+                          <ChevronRight />
+                        )}
                       </button>
                     ) : previewMode === 'scenario' &&
                       previewScenarioChoice !== null ? (
