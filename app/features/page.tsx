@@ -15,16 +15,15 @@ export default function FeaturesPage() {
       intro="Search a trusted core, explore a broad reference dictionary, and learn three words at a time through situations that matter to you."
     >
       <section>
-        <h2>400 curated essentials</h2>
+        <h2>50 practical phrases, free</h2>
         <p>
-          The starter library is reviewed, translated, recorded, and searchable
-          by Georgian, transliteration, English, or Russian.
+          Start with the situations people need most: greetings, cafés,
+          transport, shopping, emergencies, and meeting people.
         </p>
         <h2>A 9,000-word reference dictionary</h2>
         <p>
-          Use the extended catalog to discover more language. It is labeled as
-          reference beta content rather than presented as fully curated
-          material.
+          Phrasebook Pro unlocks the broader catalog for fast lookup by
+          Georgian, transliteration, English, or Russian.
         </p>
         <h2>A learning plan built around you</h2>
         <p>
@@ -46,7 +45,8 @@ export default function FeaturesPage() {
         <h2>What is still being prepared</h2>
         <p>
           Extended-dictionary editorial review, complete native audio coverage,
-          social sign-in, and payment checkout remain launch-stage work.
+          social sign-in, and payment checkout remain launch-stage work. Paid
+          content is already hidden behind account entitlements.
         </p>
       </section>
     </InfoPage>

@@ -11,6 +11,14 @@ export default function ChangelogPage() {
         <h2>9 September 2026</h2>
         <ul>
           <li>
+            Defined the launch access model: 50 phrases free, Phrasebook Pro as
+            a lifetime dictionary unlock, and Guided Learning as a membership.
+          </li>
+          <li>
+            Connected every dictionary and learning entry point to the existing
+            account-entitlement checks.
+          </li>
+          <li>
             Added a first-sign-in questionnaire for goals, situations,
             experience, pace, and discovery source.
           </li>
@@ -30,8 +38,7 @@ export default function ChangelogPage() {
             local-to-account progress merging.
           </li>
           <li>
-            Separated the 400-word curated core from the 9,000-word reference
-            dictionary in product copy.
+            Separated the free starter from the 9,000-word reference dictionary.
           </li>
         </ul>
         <h2>4 September 2026</h2>
@@ -64,7 +71,7 @@ export default function ChangelogPage() {
             playback when native audio is not yet available.
           </li>
         </ul>
-        <h2>Public beta</h2>
+        <h2>Before checkout launches</h2>
         <p>
           Payment checkout, complete extended-dictionary editorial review,
           native recordings beyond the curated core, and self-service data

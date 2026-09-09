@@ -1,10 +1,10 @@
 /* eslint-disable next/no-html-link-for-pages */
-import { InfoPage } from "@/components/public-shell";
+import { InfoPage } from '@/components/public-shell';
 export const metadata = {
-  title: "Georgian Phrasebook with English & Russian",
+  title: 'Georgian Phrasebook with English & Russian',
   description:
-    "Browse practical Georgian phrases with transliteration, English, and Russian for cafés, transport, shopping, emergencies, and meeting people.",
-  alternates: { canonical: "/phrasebook" },
+    'Browse practical Georgian phrases with transliteration, English, and Russian for cafés, transport, shopping, emergencies, and meeting people.',
+  alternates: { canonical: '/phrasebook' },
 };
 export default function PhrasebookPage() {
   return (
@@ -43,13 +43,13 @@ export default function PhrasebookPage() {
         </div>
         <h2>Content standard</h2>
         <p>
-          The 400-word speaking core is curated with audio and powers the
-          learning path. A separate 9,000-word beta dictionary provides broader
-          reference search in Georgian, English, Russian, and transliteration.
+          The 50-phrase practical starter is free. Phrasebook Pro unlocks a
+          separate 9,000-word beta dictionary for broader reference search in
+          Georgian, English, Russian, and transliteration.
         </p>
         <p>
           <a className="inline-cta" href="/#app">
-            Browse Georgian words →
+            Browse the free phrasebook →
           </a>
         </p>
       </section>

@@ -11,7 +11,7 @@ export const metadata = {
 export default function GuidedLearningPage() {
   return (
     <InfoPage
-      eyebrow="Guided Learning · public beta"
+      eyebrow="Guided Learning"
       title="Build speaking confidence three words at a time."
       intro="Choose your goals and pace. GEO balances your priority situations with everyday speaking and memory review."
     >
@@ -33,14 +33,16 @@ export default function GuidedLearningPage() {
           Practice first conversations, cafés, shopping, transport, home, work
           and services, health, and making plans with friends.
         </p>
-        <h2>Free during beta</h2>
+        <h2>Built for consistent learners</h2>
         <p>
-          Guided Learning is currently open. Paid access will only be introduced
-          after content, recovery, and entitlement protection are complete.
+          Guided Learning is the ₾19 monthly membership. It includes the
+          personalized eight-unit course, synchronized progress, and the
+          extended dictionary. Checkout is coming next; access is already
+          protected by account entitlement.
         </p>
         <p>
           <a className="inline-cta" href="/#app">
-            Build your learning plan →
+            Preview Guided Learning →
           </a>
         </p>
       </section>

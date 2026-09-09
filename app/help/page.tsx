@@ -15,21 +15,22 @@ export default function HelpPage() {
       <section>
         <h2>Free accounts</h2>
         <p>
-          You can browse the dictionary and try learning as a guest. Sign in to
-          synchronize saved words, memory, completed lessons, and your learning
-          plan.
+          You can browse 50 practical phrases as a guest. Phrasebook Pro and
+          Guided Learning require an account with the matching access. Sign in
+          to synchronize saved phrases, memory, lessons, and your learning plan.
         </p>
         <h2>Curated and extended words</h2>
         <p>
-          The first 400 words are the curated core with complete translations
-          and audio. The larger 9,000-word dictionary is reference beta content
-          and does not yet have the same editorial and audio coverage.
+          The free starter contains 50 practical phrases. Phrasebook Pro opens
+          the broader 9,000-word reference dictionary, whose extended entries do
+          not yet have the same editorial and audio coverage as the curated
+          core.
         </p>
         <h2>Guided Learning</h2>
         <p>
-          Guided Learning is open during beta. After signing in, answer the
-          short learning-plan questions so daily lessons can prioritize your
-          situations and pace.
+          Guided Learning is the planned ₾19 monthly membership. Its short
+          learning-plan questions personalize daily lessons around your
+          situations and pace without neglecting general speaking ability.
         </p>
         <h2>Install GEO</h2>
         <p>
@@ -51,10 +52,10 @@ export default function HelpPage() {
         </p>
         <h2 id="status">System status</h2>
         <p>
-          The website, 400-word curated core, extended dictionary, personalized
-          eight-unit course, account sync, password recovery, and installable
-          PWA are online. Payments, full extended-dictionary review, social
-          sign-in, and the editorial CMS are not yet launched.
+          The website, 50-phrase free starter, protected extended dictionary,
+          protected eight-unit course, account sync, password recovery, and
+          installable PWA are online. Checkout, full extended-dictionary review,
+          social sign-in, and the editorial CMS are not yet launched.
         </p>
       </section>
     </InfoPage>

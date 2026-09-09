@@ -2,56 +2,56 @@
 import { InfoPage } from '@/components/public-shell';
 
 export const metadata = {
-  title: 'Georgian Learning App Beta Access',
+  title: 'Georgian Learning App Pricing',
   description:
-    'Use the curated Georgian starter, extended dictionary, and personalized learning course during the free public beta.',
+    'Start with 50 Georgian phrases free, unlock the 9,000-word dictionary for life, or follow personalized guided lessons.',
   alternates: { canonical: '/pricing' },
 };
 
 export default function PricingPage() {
   return (
     <InfoPage
-      eyebrow="Free public beta"
-      title="Learn freely while we finish the launch experience."
-      intro="Payments are not active. The current beta lets you test the complete learning loop and tell us what needs improving."
+      eyebrow="Simple access"
+      title="Start free. Unlock the part that moves you forward."
+      intro="Use the practical starter forever. Choose the complete dictionary when you need instant answers, or Guided Learning when you want a daily speaking system."
     >
       <section>
         <div className="legal-plans three-plans">
           <article>
-            <span>Curated core</span>
-            <h2>400 essentials</h2>
-            <strong>Included</strong>
+            <span>Free forever</span>
+            <h2>Practical starter</h2>
+            <strong>50 phrases</strong>
             <p>
-              Reviewed Georgian words with transliteration, English and Russian
-              meanings, pronunciation, search, and saved favorites.
+              Useful Georgian for greetings, cafés, transport, shopping,
+              emergencies, and meeting people—with pronunciation.
             </p>
             <a href="/#app">Open the app</a>
           </article>
           <article className="phrasebook-plan">
-            <span>Reference beta</span>
-            <h2>Extended dictionary</h2>
-            <strong>9,000 words</strong>
+            <span>Pay once</span>
+            <h2>Phrasebook Pro</h2>
+            <strong>₾60 lifetime</strong>
             <p>
-              A broad searchable reference for discovery. Extended entries are
-              clearly separated from the 400-word curated and recorded core.
+              Search 9,000 Georgian words by Georgian, English, Russian, or
+              transliteration. Keep access without a recurring fee.
             </p>
           </article>
           <article>
-            <span>Personalized beta</span>
+            <span>Complete learning</span>
             <h2>Guided Learning</h2>
-            <strong>8 units</strong>
+            <strong>₾19 / month</strong>
             <p>
               Three-word mini-lessons, learner goals, focus-weighted daily
               plans, memory review, speaking missions, synchronized progress,
-              and XP.
+              XP, and access to the extended dictionary.
             </p>
           </article>
         </div>
-        <h2>No payment is collected</h2>
+        <h2>Checkout is the next launch step</h2>
         <p>
-          Pricing and paid entitlements will be announced only after the course,
-          account recovery, content review, and mobile experience are ready.
-          Existing beta access does not create a subscription or future charge.
+          Paid areas are already protected by account entitlements. Checkout is
+          not connected yet, so the app cannot charge anyone today. The prices
+          above describe the intended product structure before payment launch.
         </p>
       </section>
     </InfoPage>

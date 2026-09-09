@@ -1,15 +1,15 @@
-const CACHE = "geo-pwa-v7";
+const CACHE = 'geo-pwa-v8';
 const CORE = [
-  "/",
-  "/offline.html",
-  "/manifest.webmanifest",
-  "/favicon.svg",
-  "/pwa-192.png",
-  "/pwa-512.png",
-  "/data/word-library-extended.json",
+  '/',
+  '/offline.html',
+  '/manifest.webmanifest',
+  '/favicon.svg',
+  '/pwa-192.png',
+  '/pwa-512.png',
+  '/data/word-library-extended.json',
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
@@ -18,7 +18,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     Promise.all([
       caches
@@ -26,7 +26,7 @@ self.addEventListener("activate", (event) => {
         .then((keys) =>
           Promise.all(
             keys
-              .filter((key) => key.startsWith("geo-pwa-") && key !== CACHE)
+              .filter((key) => key.startsWith('geo-pwa-') && key !== CACHE)
               .map((key) => caches.delete(key)),
           ),
         ),
@@ -35,14 +35,14 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
   const request = event.request;
-  if (request.method !== "GET") return;
+  if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/"))
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api/'))
     return;
 
-  if (request.mode === "navigate") {
+  if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
         try {
@@ -57,8 +57,8 @@ self.addEventListener("fetch", (event) => {
         } catch {
           return (
             (await caches.match(request)) ||
-            (await caches.match("/")) ||
-            (await caches.match("/offline.html"))
+            (await caches.match('/')) ||
+            (await caches.match('/offline.html'))
           );
         }
       })(),
@@ -67,8 +67,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (
-    url.pathname.startsWith("/data/") ||
-    ["style", "script", "image", "font", "audio"].includes(request.destination)
+    url.pathname.startsWith('/data/') ||
+    ['style', 'script', 'image', 'font', 'audio'].includes(request.destination)
   ) {
     event.respondWith(
       (async () => {
