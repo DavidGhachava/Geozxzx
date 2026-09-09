@@ -8,6 +8,32 @@ export default function ChangelogPage() {
       intro="A plain-language record of what is real in GEO today—and what is still being built."
     >
       <section>
+        <h2>9 September 2026</h2>
+        <ul>
+          <li>
+            Added a first-sign-in questionnaire for goals, situations,
+            experience, pace, and discovery source.
+          </li>
+          <li>
+            Daily lessons now emphasize the learner’s focus while preserving
+            everyday speaking and memory review.
+          </li>
+          <li>
+            Expanded Guided Learning to eight complete situation-based units.
+          </li>
+          <li>
+            Added complete mobile app navigation, rebuilt mobile Explore, and
+            corrected mini-lesson progress.
+          </li>
+          <li>
+            Added password recovery, secure password updates, and
+            local-to-account progress merging.
+          </li>
+          <li>
+            Separated the 400-word curated core from the 9,000-word reference
+            dictionary in product copy.
+          </li>
+        </ul>
         <h2>4 September 2026</h2>
         <ul>
           <li>
@@ -27,15 +53,12 @@ export default function ChangelogPage() {
             Added the public product website, pricing explanation, usage guide,
             help content, and legal information.
           </li>
-          <li>Expanded the free practical phrasebook to 50 phrases.</li>
+          <li>Expanded the practical situation collection to 50 phrases.</li>
           <li>
-            Added secure ₾19/month Guided Learning entitlement checks for
-            lessons, quizzes, progress, XP, daily activity, and streaks.
+            Added the first server-side Guided Learning entitlement model for
+            future commercial access.
           </li>
-          <li>
-            Added the ₾60 one-time Phrasebook Pro tier and a separate secure
-            lifetime entitlement for its future 1,000+ lookup catalog.
-          </li>
+          <li>Added a separate future product-entitlement model.</li>
           <li>
             Improved four-way phrase search and added real browser pronunciation
             playback when native audio is not yet available.
@@ -43,8 +66,9 @@ export default function ChangelogPage() {
         </ul>
         <h2>Public beta</h2>
         <p>
-          Payment checkout, editorial review, native recordings, and
-          self-service data tools remain launch work.
+          Payment checkout, complete extended-dictionary editorial review,
+          native recordings beyond the curated core, and self-service data
+          export remain launch work.
         </p>
       </section>
     </InfoPage>

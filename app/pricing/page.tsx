@@ -1,61 +1,57 @@
 /* eslint-disable next/no-html-link-for-pages */
 import { InfoPage } from '@/components/public-shell';
+
 export const metadata = {
-  title: 'Georgian Learning App Pricing',
+  title: 'Georgian Learning App Beta Access',
   description:
-    'Search 50 Georgian phrases free, get a growing 1,000+ word and sentence Phrasebook Pro catalog for ₾60 once, or choose Guided Learning for ₾19 a month.',
+    'Use the curated Georgian starter, extended dictionary, and personalized learning course during the free public beta.',
   alternates: { canonical: '/pricing' },
 };
+
 export default function PricingPage() {
   return (
     <InfoPage
-      eyebrow="Simple pricing"
-      title="Start free. Pay once for lookup power—or monthly for a course."
-      intro="Phrasebook Pro and Guided Learning solve different needs: instant real-world answers versus a structured learning habit."
+      eyebrow="Free public beta"
+      title="Learn freely while we finish the launch experience."
+      intro="Payments are not active. The current beta lets you test the complete learning loop and tell us what needs improving."
     >
       <section>
         <div className="legal-plans three-plans">
           <article>
-            <span>Free forever</span>
-            <h2>Phrasebook</h2>
-            <strong>Free</strong>
+            <span>Curated core</span>
+            <h2>400 essentials</h2>
+            <strong>Included</strong>
             <p>
-              All 50 practical phrases, Georgian and transliteration search,
-              English and Russian meanings, category browsing, and saved
-              favorites with a free account.
+              Reviewed Georgian words with transliteration, English and Russian
+              meanings, pronunciation, search, and saved favorites.
             </p>
-            <a href="/#app">Open the free phrasebook</a>
+            <a href="/#app">Open the app</a>
           </article>
           <article className="phrasebook-plan">
-            <span>One-time purchase</span>
-            <h2>Phrasebook Pro</h2>
-            <strong>₾60 once</strong>
+            <span>Reference beta</span>
+            <h2>Extended dictionary</h2>
+            <strong>9,000 words</strong>
             <p>
-              Lifetime access to a growing catalog of 1,000+ useful Georgian
-              words and practical sentences, with four-way search, real-life
-              examples, richer usage notes, pronunciation, and downloadable
-              offline packs.
+              A broad searchable reference for discovery. Extended entries are
+              clearly separated from the 400-word curated and recorded core.
             </p>
           </article>
           <article>
-            <span>Subscription</span>
+            <span>Personalized beta</span>
             <h2>Guided Learning</h2>
-            <strong>₾19/month</strong>
+            <strong>8 units</strong>
             <p>
-              Daily lessons, quizzes, smart review, synchronized progress, XP,
-              daily activity, and streaks. Access requires a confirmed active
-              subscription.
+              Three-word mini-lessons, learner goals, focus-weighted daily
+              plans, memory review, speaking missions, synchronized progress,
+              and XP.
             </p>
           </article>
         </div>
-        <h2>No surprise charges</h2>
+        <h2>No payment is collected</h2>
         <p>
-          Both access gates are active, but checkout is still being connected,
-          so GEO does not currently collect payment details or process
-          purchases. The beta currently contains 50 searchable entries; the
-          expanded 1,000+ Pro catalog, purchase restoration, renewal,
-          cancellation, taxes, invoices, and refunds will be shown clearly
-          before payments launch.
+          Pricing and paid entitlements will be announced only after the course,
+          account recovery, content review, and mobile experience are ready.
+          Existing beta access does not create a subscription or future charge.
         </p>
       </section>
     </InfoPage>

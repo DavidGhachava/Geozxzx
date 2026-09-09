@@ -2,7 +2,7 @@
   "id": "/",
   "name": "GEO — Learn Georgian",
   "short_name": "GEO",
-  "description": "Practical Georgian phrases and five-minute learning for life in Batumi, Tbilisi, and across Georgia.",
+  "description": "Personalized three-word Georgian lessons, a curated starter, and a practical reference dictionary.",
   "lang": "en",
   "start_url": "/?mode=app#app",
   "scope": "/",

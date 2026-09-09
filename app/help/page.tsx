@@ -15,23 +15,21 @@ export default function HelpPage() {
       <section>
         <h2>Free accounts</h2>
         <p>
-          You can browse all 50 free phrases as a guest. Sign in with email to
-          synchronize saved favorites. If email confirmation is enabled, confirm
-          the message before signing in.
+          You can browse the dictionary and try learning as a guest. Sign in to
+          synchronize saved words, memory, completed lessons, and your learning
+          plan.
         </p>
-        <h2>Phrasebook Pro</h2>
+        <h2>Curated and extended words</h2>
         <p>
-          Phrasebook Pro is the ₾60 one-time lookup upgrade. It is designed for
-          a growing 1,000+ word and practical-sentence catalog, examples, richer
-          context, pronunciation, and downloadable offline packs. The current
-          beta has 50 searchable entries while the expanded catalog and checkout
-          are completed.
+          The first 400 words are the curated core with complete translations
+          and audio. The larger 9,000-word dictionary is reference beta content
+          and does not yet have the same editorial and audio coverage.
         </p>
         <h2>Guided Learning</h2>
         <p>
-          Lessons, quizzes, progress, XP, daily activity, and streaks require an
-          active ₾19/month subscription. The access gate is active; payment
-          checkout is still being connected.
+          Guided Learning is open during beta. After signing in, answer the
+          short learning-plan questions so daily lessons can prioritize your
+          situations and pace.
         </p>
         <h2>Install GEO</h2>
         <p>
@@ -41,8 +39,8 @@ export default function HelpPage() {
         </p>
         <h2>Saved phrases</h2>
         <p>
-          Open any category and select the bookmark. Signed-in saves are tied to
-          your account and protected so other users cannot read or change them.
+          Select the bookmark beside a word. Guest saves stay on that device;
+          after sign-in, local progress is merged with protected account data.
         </p>
         <h2 id="report">Report an incorrect phrase</h2>
         <p>
@@ -53,10 +51,10 @@ export default function HelpPage() {
         </p>
         <h2 id="status">System status</h2>
         <p>
-          The website, 50-phrase search, account sync, product entitlement
-          enforcement, and installable PWA are online. Payments, the 1,000+ Pro
-          catalog, a complete native-audio library, social sign-in, and the
-          editorial CMS are not yet launched.
+          The website, 400-word curated core, extended dictionary, personalized
+          eight-unit course, account sync, password recovery, and installable
+          PWA are online. Payments, full extended-dictionary review, social
+          sign-in, and the editorial CMS are not yet launched.
         </p>
       </section>
     </InfoPage>

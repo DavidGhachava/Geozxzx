@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: '%s | GEO',
   },
   description:
-    'Learn practical Georgian for life in Batumi, Tbilisi, and across Georgia. Search phrases in Georgian, English, Russian, or transliteration and practice in five minutes a day.',
+    'Learn practical Georgian three words at a time. Build a personalized daily plan, search a curated starter, and explore a broad reference dictionary.',
   keywords: [
     'learn Georgian',
     'Georgian language app',
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Learn Georgian in Batumi & Tbilisi | GEO',
     description:
-      'Practical Georgian phrases for international residents, Russian speakers, expats, and visitors in Georgia.',
+      'Personalized three-word Georgian lessons for real life in Georgia.',
     url: '/',
     siteName: 'GEO',
     locale: 'en_US',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Learn Georgian in Batumi & Tbilisi | GEO',
     description:
-      'Practical Georgian phrases and five-minute lessons for everyday life in Georgia.',
+      'Personalized three-word lessons, memory review, and practical Georgian for everyday life.',
   },
 };
 

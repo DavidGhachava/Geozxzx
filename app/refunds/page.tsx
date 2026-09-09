@@ -1,4 +1,4 @@
-import { InfoPage } from '@/components/public-shell';
+import { InfoPage } from "@/components/public-shell";
 export default function RefundsPage() {
   return (
     <InfoPage
@@ -14,12 +14,12 @@ export default function RefundsPage() {
           refund eligibility, statutory withdrawal rights, failed-payment
           handling, and purchase-restoration process.
         </p>
-        <h2>Intended products</h2>
+        <h2>Current beta access</h2>
         <p>
-          Phrasebook Pro is listed at ₾60 as a one-time lifetime-access
-          purchase. Guided Learning is listed at ₾19 per month. The 50-phrase
-          practical phrasebook remains free. These terms will be confirmed
-          before checkout launches.
+          The phrasebook, reference dictionary, and guided learning experience
+          are currently available as a public beta. No purchase can be made, so
+          there is no current charge to refund. Commercial terms will be
+          confirmed before checkout launches.
         </p>
         <h2>Consumer rights</h2>
         <p>

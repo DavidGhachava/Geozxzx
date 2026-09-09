@@ -1,40 +1,46 @@
 /* eslint-disable next/no-html-link-for-pages */
 import { InfoPage } from '@/components/public-shell';
+
 export const metadata = {
-  title: 'Five-Minute Georgian Lessons',
+  title: 'Personalized Georgian Lessons',
   description:
-    'Build a practical Georgian habit with short daily lessons, saved progress, activity tracking, quizzes, XP, and streaks.',
+    'Build practical Georgian with personalized three-word lessons, memory review, speaking missions, and adjustable pace.',
   alternates: { canonical: '/guided-learning' },
 };
+
 export default function GuidedLearningPage() {
   return (
     <InfoPage
-      eyebrow="Guided Learning · ₾19/month"
-      title="A daily habit that fits into real life."
-      intro="Guided Learning is GEO’s premium plan. An active subscription unlocks lessons, quizzes, smart review, progress, XP, and streaks."
+      eyebrow="Guided Learning · public beta"
+      title="Build speaking confidence three words at a time."
+      intro="Choose your goals and pace. GEO balances your priority situations with everyday speaking and memory review."
     >
       <section>
-        <h2>What subscribers unlock</h2>
-        <ol>
-          <li>Open a focused daily lesson.</li>
-          <li>Study a practical Georgian phrase and transliteration.</li>
-          <li>Answer a meaning check.</li>
-          <li>Save XP, progress, activity, and your timezone-aware streak.</li>
-        </ol>
-        <h2>Free still means useful</h2>
+        <h2>One small win at a time</h2>
         <p>
-          Everyone can browse and search the complete 50-phrase starter
-          phrasebook. Create a free account to save favorites across devices.
+          Each mini-lesson introduces no more than three words, lets you hear
+          and repeat them, checks recall gently, and finishes with a clear
+          stopping point.
         </p>
-        <h2>Secure access</h2>
+        <h2>Focused, not narrow</h2>
         <p>
-          The app verifies subscription access on the server before recording
-          lesson progress. Checkout is still being connected, so the current
-          beta does not collect payment details.
+          About two thirds of new language follows your chosen goal. The rest
+          maintains universal conversation skills and brings back weak or
+          overdue words.
+        </p>
+        <h2>Eight real-life units</h2>
+        <p>
+          Practice first conversations, cafés, shopping, transport, home, work
+          and services, health, and making plans with friends.
+        </p>
+        <h2>Free during beta</h2>
+        <p>
+          Guided Learning is currently open. Paid access will only be introduced
+          after content, recovery, and entitlement protection are complete.
         </p>
         <p>
           <a className="inline-cta" href="/#app">
-            Open GEO and view the plan →
+            Build your learning plan →
           </a>
         </p>
       </section>

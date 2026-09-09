@@ -1,4 +1,4 @@
-import { InfoPage } from '@/components/public-shell';
+import { InfoPage } from "@/components/public-shell";
 export default function TermsPage() {
   return (
     <InfoPage
@@ -25,12 +25,11 @@ export default function TermsPage() {
         </p>
         <h2>Accounts</h2>
         <p>
-          Guest access is available for the free phrasebook. Saved-phrase
-          synchronization requires an account. Phrasebook Pro content requires
-          its lifetime entitlement. Lessons, quizzes, progress, XP, activity,
-          and streaks require an active Guided Learning subscription. GEO may
-          suspend access needed to protect users, investigate abuse, comply with
-          law, or maintain the service.
+          Guest access is available for the phrasebook and reference dictionary.
+          An account is required to synchronize saved words, preferences,
+          lessons, progress, XP, activity, and streaks. GEO may suspend access
+          needed to protect users, investigate abuse, comply with law, or
+          maintain the service.
         </p>
         <h2>Content and intellectual property</h2>
         <p>
@@ -47,13 +46,12 @@ export default function TermsPage() {
           availability. To the extent permitted by law, GEO is not liable for
           indirect or consequential losses arising from use of the beta.
         </p>
-        <h2>Paid services</h2>
+        <h2>Public beta</h2>
         <p>
-          Phrasebook Pro is listed at ₾60 once and Guided Learning at ₾19 per
-          month, but checkout is not active and the beta does not accept
-          payments. Product scope, billing entity, taxes, cancellation controls,
-          refunds, and purchase restoration will be presented before paid
-          activation.
+          The current beta does not accept payment or collect card details.
+          Product scope, pricing, billing entity, taxes, cancellation controls,
+          refunds, and purchase restoration will be presented before any paid
+          service is activated.
         </p>
         <h2>Changes and termination</h2>
         <p>
