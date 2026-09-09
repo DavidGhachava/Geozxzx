@@ -129,6 +129,25 @@ type WordMemory = {
   nextReviewAt: string | null;
 };
 
+const DAILY_MICRO_LESSON_GOAL = 3;
+
+function splitIntoMicroLessons<T>(items: T[], maximum = 3) {
+  if (!items.length) return [[]] as T[][];
+  const lessonCount = Math.ceil(items.length / maximum);
+  const baseSize = Math.floor(items.length / lessonCount);
+  const largerLessons = items.length % lessonCount;
+  const lessons: T[][] = [];
+  let offset = 0;
+
+  for (let index = 0; index < lessonCount; index += 1) {
+    const size = baseSize + (index < largerLessons ? 1 : 0);
+    lessons.push(items.slice(offset, offset + size));
+    offset += size;
+  }
+
+  return lessons;
+}
+
 const reviewIntervals = [1, 3, 7, 14, 30];
 
 function phraseMeaning(phrase: Phrase, locale: Locale) {
@@ -1480,10 +1499,13 @@ function AppShell({
   const [dailyPlanStartedAt, setDailyPlanStartedAt] = useState(0);
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
+  const [previewMicroLesson, setPreviewMicroLesson] = useState(0);
   const [previewAudioHeard, setPreviewAudioHeard] = useState(false);
-  const [previewMode, setPreviewMode] = useState<'learn' | 'test' | 'scenario'>(
-    'learn',
-  );
+  const [previewMode, setPreviewMode] = useState<
+    'learn' | 'test' | 'scenario' | 'complete'
+  >('learn');
+  const [dailyMicroLessonsCompleted, setDailyMicroLessonsCompleted] =
+    useState(0);
   const [previewTestIndex, setPreviewTestIndex] = useState(0);
   const [previewAnswer, setPreviewAnswer] = useState('');
   const [previewResult, setPreviewResult] = useState<
@@ -1539,6 +1561,18 @@ function AppShell({
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
   const audioSources = useRef(new Map<string, Promise<string>>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    const stored = localStorage.getItem('geo-daily-micro-lessons-v1');
+    if (!stored) return;
+    try {
+      const progress = JSON.parse(stored) as { date?: string; count?: number };
+      if (progress.date === today && Number.isFinite(progress.count))
+        setDailyMicroLessonsCompleted(Math.max(0, progress.count ?? 0));
+    } catch {
+      localStorage.removeItem('geo-daily-micro-lessons-v1');
+    }
+  }, []);
   useEffect(() => {
     const stored = localStorage.getItem('geo-saved-words');
     window.setTimeout(() => {
@@ -2168,6 +2202,7 @@ function AppShell({
     setPreviewSource('path');
     setPreviewLessonNumber(lesson.number);
     setPreviewWordIndex(0);
+    setPreviewMicroLesson(0);
     setPreviewAudioHeard(false);
     setPreviewMode(
       lesson.kind === 'review'
@@ -2244,11 +2279,11 @@ function AppShell({
     );
     const newIds = [...preferredNew, ...fallbackNew]
       .map(({ word }) => word.id)
-      .slice(0, Math.max(2, 10 - reviewIds.length));
+      .slice(0, Math.max(2, 9 - reviewIds.length));
     return {
-      ids: [...reviewIds, ...newIds].slice(0, 10),
+      ids: [...reviewIds, ...newIds].slice(0, 9),
       reviewCount: reviewIds.length,
-      newCount: Math.min(newIds.length, 10 - reviewIds.length),
+      newCount: Math.min(newIds.length, 9 - reviewIds.length),
     };
   }, [activeUnits, allWords, dailyPlanStartedAt, learningWords, wordMemory]);
   const startTodayLesson = () => {
@@ -2257,6 +2292,7 @@ function AppShell({
     setPreviewSource('today');
     setPreviewLessonNumber(0);
     setPreviewWordIndex(0);
+    setPreviewMicroLesson(0);
     setPreviewAudioHeard(false);
     setPreviewMode('learn');
     setPreviewTestIndex(0);
@@ -2798,10 +2834,10 @@ function AppShell({
                               ? 'ჯერ რთული და გასამეორებელი სიტყვები, შემდეგ ცოტა ახალი.'
                               : 'Weak and due words first, then a small amount of new language.'
                           : locale === 'ru'
-                            ? 'Начните с полезных слов. Следующий урок подстроится под ваши ответы.'
+                            ? 'Три коротких урока. Выучите три слова, проверьте себя и продолжайте, когда будете готовы.'
                             : locale === 'ka'
-                              ? 'დაიწყეთ საჭირო სიტყვებით. შემდეგი გაკვეთილი თქვენს პასუხებს მოერგება.'
-                              : 'Start with useful words. Your next lesson will adapt to your answers.'}
+                              ? 'სამი მოკლე გაკვეთილი. ისწავლეთ სამი სიტყვა, შეამოწმეთ თავი და განაგრძეთ, როცა მზად იქნებით.'
+                              : 'Three tiny lessons. Learn three words, check them, then take the next one when you are ready.'}
                       </p>
                     </span>
                   </div>
@@ -2823,12 +2859,12 @@ function AppShell({
                           : 'new'}
                     </span>
                     <span>
-                      <b>~10</b>
+                      <b>3</b>
                       {locale === 'ru'
-                        ? 'минут'
+                        ? 'мини-урока'
                         : locale === 'ka'
-                          ? 'წუთი'
-                          : 'minutes'}
+                          ? 'მინი გაკვეთილი'
+                          : 'mini lessons'}
                     </span>
                   </div>
                   <button
@@ -2963,7 +2999,11 @@ function AppShell({
                                           : locale === 'ka'
                                             ? 'საუბარი'
                                             : 'speaking mission'
-                                        : `${lesson.words.length} ${locale === 'ru' ? 'новых слов' : locale === 'ka' ? 'ახალი სიტყვა' : 'new items'}`}
+                                        : locale === 'ru'
+                                          ? `${splitIntoMicroLessons(lesson.words).length} коротких урока · до 3 слов`
+                                          : locale === 'ka'
+                                            ? `${splitIntoMicroLessons(lesson.words).length} მოკლე გაკვეთილი · მაქს. 3 სიტყვა`
+                                            : `${splitIntoMicroLessons(lesson.words).length} short ${splitIntoMicroLessons(lesson.words).length === 1 ? 'lesson' : 'lessons'} · up to 3 words`}
                                   </small>
                                 </span>
                                 <span className="lesson-path-action">
@@ -3021,7 +3061,7 @@ function AppShell({
                 number: 0,
                 unit: 1,
                 kind: 'lesson',
-                minutes: 10,
+                minutes: 7,
                 title: {
                   en: "Today's lesson",
                   ru: 'Урок на сегодня',
@@ -3048,7 +3088,9 @@ function AppShell({
                   : lesson.words
                       .map((ka) => allWords.find((word) => word.ka === ka))
                       .filter((word): word is WordEntry => Boolean(word));
-              const segmentWords = previewWords;
+              const microLessons = splitIntoMicroLessons(previewWords);
+              const segmentWords =
+                microLessons[previewMicroLesson] ?? microLessons[0];
               const currentWord =
                 segmentWords[
                   previewMode === 'learn' ? previewWordIndex : previewTestIndex
@@ -3067,21 +3109,25 @@ function AppShell({
                     ? previewWords.length
                     : previewWords.length * 2;
               const progressStep =
-                previewMode === 'scenario'
+                previewMode === 'complete'
+                  ? progressTotal
+                  : previewMode === 'scenario'
                   ? previewScenarioIndex + 1
                   : lesson.kind === 'review'
                     ? previewTestIndex + 1
                     : previewMode === 'learn'
                       ? previewWordIndex + 1
                       : previewWords.length + previewTestIndex + 1;
-              const finishStep = () => {
+              const finishStep = (returnToLearn = true) => {
                 if (previewSource === 'today') {
                   localStorage.setItem(
                     'geo-last-daily-lesson',
                     new Date().toISOString(),
                   );
-                  setLearnSection('today');
-                  setScreen('learn');
+                  if (returnToLearn) {
+                    setLearnSection('today');
+                    setScreen('learn');
+                  }
                   return;
                 }
                 const next = Array.from(
@@ -3101,7 +3147,30 @@ function AppShell({
                     },
                     { onConflict: 'user_id,step_number' },
                   );
-                setScreen('learn');
+                if (returnToLearn) setScreen('learn');
+              };
+              const completeMicroLesson = () => {
+                const nextDailyCount = dailyMicroLessonsCompleted + 1;
+                setDailyMicroLessonsCompleted(nextDailyCount);
+                localStorage.setItem(
+                  'geo-daily-micro-lessons-v1',
+                  JSON.stringify({
+                    date: new Date().toISOString().slice(0, 10),
+                    count: nextDailyCount,
+                  }),
+                );
+                if (previewMicroLesson === microLessons.length - 1)
+                  finishStep(false);
+                setPreviewMode('complete');
+              };
+              const startNextMicroLesson = () => {
+                setPreviewMicroLesson((index) => index + 1);
+                setPreviewWordIndex(0);
+                setPreviewTestIndex(0);
+                setPreviewAnswer('');
+                setPreviewResult('idle');
+                setPreviewAudioHeard(false);
+                setPreviewMode(lesson.kind === 'review' ? 'test' : 'learn');
               };
               const continueLearning = () => {
                 setPreviewAudioHeard(false);
@@ -3121,7 +3190,7 @@ function AppShell({
                   setPreviewResult('idle');
                   return;
                 }
-                finishStep();
+                completeMicroLesson();
               };
               const answerLabel = currentWord
                 ? locale === 'ru'
@@ -3421,8 +3490,120 @@ function AppShell({
                     </div>
                   )}
 
+                  {previewMode === 'complete' && (
+                    <div className="lesson-focus-stage lesson-complete-stage">
+                      <span className="lesson-complete-mark">
+                        <Check />
+                      </span>
+                      <span className="lesson-focus-label">
+                        {dailyMicroLessonsCompleted >= DAILY_MICRO_LESSON_GOAL
+                          ? locale === 'ru'
+                            ? 'Цель на сегодня выполнена'
+                            : locale === 'ka'
+                              ? 'დღევანდელი მიზანი შესრულებულია'
+                              : "Today's goal is complete"
+                          : locale === 'ru'
+                            ? 'Мини-урок завершён'
+                            : locale === 'ka'
+                              ? 'მინი გაკვეთილი დასრულებულია'
+                              : 'Mini lesson complete'}
+                      </span>
+                      <h2>
+                        {locale === 'ru'
+                          ? `Вы закрепили ${segmentWords.length} слова.`
+                          : locale === 'ka'
+                            ? `${segmentWords.length} სიტყვა განამტკიცეთ.`
+                            : `You learned ${segmentWords.length} words.`}
+                      </h2>
+                      <p>
+                        {dailyMicroLessonsCompleted >= DAILY_MICRO_LESSON_GOAL
+                          ? locale === 'ru'
+                            ? 'На сегодня достаточно. Сложные слова вернутся в следующем уроке.'
+                            : locale === 'ka'
+                              ? 'დღეისთვის საკმარისია. რთული სიტყვები შემდეგ გაკვეთილზე დაბრუნდება.'
+                              : 'That is enough for today. Tricky words will return in your next lesson.'
+                          : locale === 'ru'
+                            ? 'Короткие уроки помогают запоминать без перегрузки.'
+                            : locale === 'ka'
+                              ? 'მოკლე გაკვეთილები გადატვირთვის გარეშე დამახსოვრებაში გეხმარებათ.'
+                              : 'Short lessons help the words stick without overload.'}
+                      </p>
+                      <small>
+                        {Math.min(
+                          dailyMicroLessonsCompleted,
+                          DAILY_MICRO_LESSON_GOAL,
+                        )}
+                        /{DAILY_MICRO_LESSON_GOAL}{' '}
+                        {locale === 'ru'
+                          ? 'мини-урока сегодня'
+                          : locale === 'ka'
+                            ? 'მინი გაკვეთილი დღეს'
+                            : 'mini lessons today'}
+                      </small>
+                    </div>
+                  )}
+
                   <div className="lesson-focus-actions">
-                    {previewMode === 'learn' ? (
+                    {previewMode === 'complete' ? (
+                      <>
+                        {dailyMicroLessonsCompleted >=
+                        DAILY_MICRO_LESSON_GOAL ? (
+                          <button
+                            className="lesson-next-button"
+                            onClick={() => {
+                              setLearnSection('today');
+                              setScreen('learn');
+                            }}
+                          >
+                            {locale === 'ru'
+                              ? 'Закончить на сегодня'
+                              : locale === 'ka'
+                                ? 'დღეისთვის დასრულება'
+                                : 'Finish for today'}
+                            <Check />
+                          </button>
+                        ) : previewMicroLesson <
+                          microLessons.length - 1 ? (
+                          <button
+                            className="lesson-next-button"
+                            onClick={startNextMicroLesson}
+                          >
+                            {locale === 'ru'
+                              ? 'Следующий мини-урок'
+                              : locale === 'ka'
+                                ? 'შემდეგი მინი გაკვეთილი'
+                                : 'Next mini lesson'}
+                            <ChevronRight />
+                          </button>
+                        ) : (
+                          <button
+                            className="lesson-next-button"
+                            onClick={() => setScreen('learn')}
+                          >
+                            {locale === 'ru'
+                              ? 'Вернуться к урокам'
+                              : locale === 'ka'
+                                ? 'გაკვეთილებზე დაბრუნება'
+                                : 'Back to lessons'}
+                            <ChevronRight />
+                          </button>
+                        )}
+                        {dailyMicroLessonsCompleted >=
+                          DAILY_MICRO_LESSON_GOAL &&
+                          previewMicroLesson < microLessons.length - 1 && (
+                            <button
+                              className="lesson-leave-button"
+                              onClick={startNextMicroLesson}
+                            >
+                              {locale === 'ru'
+                                ? 'Продолжить обучение'
+                                : locale === 'ka'
+                                  ? 'სწავლის გაგრძელება'
+                                  : 'Keep learning'}
+                            </button>
+                          )}
+                      </>
+                    ) : previewMode === 'learn' ? (
                       <button
                         className={`lesson-next-button ${hasAudio && !previewAudioHeard ? 'waiting-for-audio' : ''}`}
                         disabled={hasAudio && !previewAudioHeard}
