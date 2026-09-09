@@ -1477,7 +1477,7 @@ function AppShell({
   const [previewSource, setPreviewSource] = useState<'path' | 'today'>('path');
   const [todayWordIds, setTodayWordIds] = useState<string[]>([]);
   const [wordMemory, setWordMemory] = useState<Record<string, WordMemory>>({});
-  const [dailyPlanStartedAt] = useState(() => Date.now());
+  const [dailyPlanStartedAt, setDailyPlanStartedAt] = useState(0);
   const [previewLessonNumber, setPreviewLessonNumber] = useState(1);
   const [previewWordIndex, setPreviewWordIndex] = useState(0);
   const [previewAudioHeard, setPreviewAudioHeard] = useState(false);
@@ -1511,8 +1511,8 @@ function AppShell({
   const [settingsName, setSettingsName] = useState('');
   const [settingsStatus, setSettingsStatus] = useState('');
   const [settingsBusy, setSettingsBusy] = useState(false);
-  const [deviceLabel] = useState(() => {
-    if (typeof navigator === 'undefined') return 'This browser';
+  const [deviceLabel, setDeviceLabel] = useState('This browser');
+  useEffect(() => {
     const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
     const browser = /Edg\//.test(navigator.userAgent)
       ? 'Edge'
@@ -1521,8 +1521,9 @@ function AppShell({
         : /Safari\//.test(navigator.userAgent)
           ? 'Safari'
           : 'Browser';
-    return `${mobile ? 'Mobile device' : 'Computer'} · ${browser}`;
-  });
+    setDeviceLabel(`${mobile ? 'Mobile device' : 'Computer'} · ${browser}`);
+    setDailyPlanStartedAt(Date.now());
+  }, []);
   const [upgradeFocus, setUpgradeFocus] = useState<'phrasebook' | 'guided'>(
     'phrasebook',
   );

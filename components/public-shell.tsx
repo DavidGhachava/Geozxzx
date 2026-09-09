@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable next/no-html-link-for-pages */
 /* eslint-disable next/no-img-element */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { LanguageMenu, type InterfaceLocale } from '@/components/language-menu';
 
@@ -494,26 +494,30 @@ export function InfoPage({
   lang?: string;
   children: React.ReactNode;
 }) {
-  const [locale, setLocale] = useState<InterfaceLocale>(() => {
-    if (typeof window === 'undefined') return 'en';
+  const [locale, setLocale] = useState<InterfaceLocale>('en');
+  const [pathname, setPathname] = useState('');
+  useEffect(() => {
     const stored = window.localStorage.getItem('geo-interface-language');
-    if (stored === 'ru' || stored === 'ka' || stored === 'en') return stored;
+    let nextLocale: InterfaceLocale = 'en';
+    if (stored === 'ru' || stored === 'ka' || stored === 'en') {
+      nextLocale = stored;
+    } else {
     const browserLanguage = (
       window.navigator.languages?.[0] ?? window.navigator.language
     )
       .toLowerCase()
       .split('-')[0];
-    return browserLanguage === 'ru'
-      ? 'ru'
-      : browserLanguage === 'ka'
-        ? 'ka'
-        : 'en';
-  });
-  const [pathname] = useState(() =>
-    typeof window === 'undefined'
-      ? ''
-      : window.location.pathname.replace(/\/$/, '') || '/',
-  );
+      nextLocale =
+        browserLanguage === 'ru'
+          ? 'ru'
+          : browserLanguage === 'ka'
+            ? 'ka'
+            : 'en';
+    }
+    setLocale(nextLocale);
+    setPathname(window.location.pathname.replace(/\/$/, '') || '/');
+    document.documentElement.lang = nextLocale;
+  }, []);
   const changeLocale = (next: InterfaceLocale) => {
     setLocale(next);
     document.documentElement.lang = next;

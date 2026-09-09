@@ -1,4 +1,4 @@
-const CACHE = 'geo-pwa-v5';
+const CACHE = 'geo-pwa-v6';
 const CORE = [
   '/',
   '/offline.html',
@@ -49,8 +49,9 @@ self.addEventListener('fetch', (event) => {
           const response =
             (await event.preloadResponse) || (await fetch(request));
           if (response.ok) {
+            const responseForCache = response.clone();
             const cache = await caches.open(CACHE);
-            void cache.put(request, response.clone());
+            await cache.put(request, responseForCache);
           }
           return response;
         } catch {
@@ -70,18 +71,19 @@ self.addEventListener('fetch', (event) => {
     ['style', 'script', 'image', 'font', 'audio'].includes(request.destination)
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        const fresh = fetch(request)
-          .then((response) => {
-            if (response.ok)
-              void caches
-                .open(CACHE)
-                .then((cache) => cache.put(request, response.clone()));
-            return response;
-          })
-          .catch(() => cached);
-        return cached || fresh;
-      }),
+      (async () => {
+        try {
+          const response = await fetch(request);
+          if (response.ok) {
+            const responseForCache = response.clone();
+            const cache = await caches.open(CACHE);
+            await cache.put(request, responseForCache);
+          }
+          return response;
+        } catch {
+          return (await caches.match(request)) || Response.error();
+        }
+      })(),
     );
   }
 });
