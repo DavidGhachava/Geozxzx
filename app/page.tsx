@@ -2731,13 +2731,7 @@ function AppShell({
           >
             <Menu />
           </button>
-          <Brand onHome={appHome} />
           <div className="app-top-actions">
-            <LanguageMenu
-              locale={locale}
-              onChange={changeLocale}
-              label={t('language')}
-            />
             <button
               className="account-button"
               onClick={() => (user ? setScreen('settings') : openAuth())}
@@ -2813,6 +2807,23 @@ function AppShell({
                       : 'Settings'}
                 </button>
               </nav>
+              <div className="mobile-app-menu-language">
+                <span>
+                  <Globe2 /> {t('language')}
+                </span>
+                <fieldset aria-label={t('language')}>
+                  {(['en', 'ru', 'ka'] as Locale[]).map((item) => (
+                    <button
+                      key={item}
+                      className={locale === item ? 'active' : ''}
+                      aria-pressed={locale === item}
+                      onClick={() => changeLocale(item)}
+                    >
+                      {item === 'en' ? 'EN' : item === 'ru' ? 'RU' : 'KA'}
+                    </button>
+                  ))}
+                </fieldset>
+              </div>
               <div className="mobile-app-menu-secondary">
                 <button
                   onClick={() => {
@@ -5348,14 +5359,35 @@ function LearnerOnboardingDialog({
   );
 }
 
-function AuthDialog({
-  open,
-  onOpenChange,
+function GoogleMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285f4"
+        d="M21.6 12.23c0-.74-.07-1.45-.19-2.14H12v4.05h5.38a4.6 4.6 0 0 1-2 3.02v2.63h3.24c1.9-1.75 2.98-4.33 2.98-7.56Z"
+      />
+      <path
+        fill="#34a853"
+        d="M12 22c2.7 0 4.97-.9 6.63-2.42l-3.24-2.63c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.71A10 10 0 0 0 12 22Z"
+      />
+      <path
+        fill="#fbbc05"
+        d="M6.39 13.78A6 6 0 0 1 6.08 12c0-.62.11-1.22.31-1.78V7.51H3.04A10 10 0 0 0 2 12c0 1.61.39 3.14 1.04 4.49l3.35-2.71Z"
+      />
+      <path
+        fill="#ea4335"
+        d="M12 6.09c1.47 0 2.79.5 3.82 1.49l2.88-2.87A9.66 9.66 0 0 0 12 2a10 10 0 0 0-8.96 5.51l3.35 2.71C7.18 7.85 9.39 6.09 12 6.09Z"
+      />
+    </svg>
+  );
+}
+
+function AuthPage({
   locale,
+  onClose,
 }: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   locale: Locale;
+  onClose: () => void;
 }) {
   const t = (key: string) => getCopy(locale, key);
   const [mode, setMode] = useState<'signin' | 'signup' | 'recovery'>('signin');
@@ -5364,6 +5396,30 @@ function AuthDialog({
   const [name, setName] = useState('');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
+  const signInWithGoogle = async () => {
+    setStatus('');
+    const supabaseModule = await import('@/lib/supabase/client');
+    if (!supabaseModule.isSupabaseConfigured) {
+      setStatus('Google sign-in is not configured yet. Please use email.');
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabaseModule.createClient().auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/?mode=app#app`,
+        queryParams: { prompt: 'select_account' },
+      },
+    });
+    if (error) {
+      setBusy(false);
+      setStatus(
+        error.message.toLowerCase().includes('provider')
+          ? 'Google sign-in is being connected. Please use email for now.'
+          : error.message,
+      );
+    }
+  };
   const submit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     setStatus('');
@@ -5400,103 +5456,164 @@ function AuthDialog({
       return;
     }
     if (result.data.session) {
-      onOpenChange(false);
+      onClose();
       setStatus('');
       return;
     }
     setStatus('Check your email to confirm your account, then sign in.');
   };
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="auth-dialog">
-        <DialogHeader>
-          <span className="dialog-icon">
+    <main className="auth-page">
+      <section className="auth-showcase" aria-label="GEO account benefits">
+        <button className="auth-brand" onClick={onClose}>
+          <img src="/brand/geo-wave.svg" alt="" width="42" height="42" />
+          <span>GEO</span>
+        </button>
+        <div className="auth-showcase-copy">
+          <span className="auth-kicker">YOUR GEORGIAN, EVERYWHERE</span>
+          <h1>Keep every word you learn.</h1>
+          <p>
+            Save useful phrases, continue your personal lessons, and keep your
+            memory progress in sync on every device.
+          </p>
+          <div className="auth-benefits">
+            <span>
+              <CheckCircle2 /> Your personal three-word lesson plan
+            </span>
+            <span>
+              <CheckCircle2 /> Saved phrases and learning history
+            </span>
+            <span>
+              <CheckCircle2 /> Secure progress across devices
+            </span>
+          </div>
+        </div>
+        <p className="auth-showcase-note">
+          Start with 50 practical phrases free.
+        </p>
+      </section>
+      <section className="auth-panel">
+        <button
+          className="auth-close"
+          onClick={onClose}
+          aria-label="Close account page"
+        >
+          <X />
+        </button>
+        <div className="auth-card">
+          <div className="auth-mobile-brand">
+            <img src="/brand/geo-wave.svg" alt="" width="38" height="38" />
+            <b>GEO</b>
+          </div>
+          <span className="auth-account-icon">
             <UserRound />
           </span>
-          <DialogTitle>
+          <h2>
             {mode === 'signin'
               ? t('authTitleIn')
               : mode === 'signup'
                 ? t('authTitleUp')
                 : 'Reset your password'}
-          </DialogTitle>
-          <DialogDescription>
+          </h2>
+          <p className="auth-intro">
             {mode === 'recovery'
               ? 'We will email you a secure link. After returning, set a new password in Account settings.'
               : 'Save words, sync progress, and keep your personalized learning plan on every device.'}
-          </DialogDescription>
-        </DialogHeader>
-        <form className="auth-form" onSubmit={submit}>
-          {mode === 'signup' && (
-            <label>
-              {t('displayName')}
-              <input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                autoComplete="name"
-                maxLength={80}
-              />
-            </label>
-          )}
-          <label>
-            {t('email')}
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
-              required
-            />
-          </label>
+          </p>
           {mode !== 'recovery' && (
+            <>
+              <button
+                className="google-auth-button"
+                type="button"
+                disabled={busy}
+                onClick={() => void signInWithGoogle()}
+              >
+                <GoogleMark />{' '}
+                {mode === 'signup'
+                  ? 'Sign up with Google'
+                  : 'Sign in with Google'}
+              </button>
+              <div className="auth-divider">
+                <span>or continue with email</span>
+              </div>
+            </>
+          )}
+          <form className="auth-form" onSubmit={submit}>
+            {mode === 'signup' && (
+              <label>
+                {t('displayName')}
+                <input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  autoComplete="name"
+                  maxLength={80}
+                />
+              </label>
+            )}
             <label>
-              {t('password')}
+              {t('email')}
               <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete={
-                  mode === 'signin' ? 'current-password' : 'new-password'
-                }
-                minLength={8}
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                autoComplete="email"
                 required
               />
             </label>
-          )}
-          {mode === 'signin' && (
-            <button
-              type="button"
-              className="forgot-password"
-              onClick={() => {
-                setMode('recovery');
-                setStatus('');
-              }}
-            >
-              Forgot your password?
-            </button>
-          )}
-          {status && <output className="auth-status">{status}</output>}
-          <Button type="submit" disabled={busy}>
-            {busy
-              ? t('pleaseWait')
-              : mode === 'signin'
-                ? t('signIn')
-                : mode === 'signup'
-                  ? t('createAccount')
-                  : 'Email reset link'}
-          </Button>
-        </form>
-        <button
-          className="auth-switch"
-          onClick={() => {
-            setMode((value) => (value === 'signin' ? 'signup' : 'signin'));
-            setStatus('');
-          }}
-        >
-          {mode === 'signin' ? t('newAccount') : t('existingAccount')}
-        </button>
-      </DialogContent>
-    </Dialog>
+            {mode !== 'recovery' && (
+              <label>
+                {t('password')}
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete={
+                    mode === 'signin' ? 'current-password' : 'new-password'
+                  }
+                  minLength={8}
+                  required
+                />
+              </label>
+            )}
+            {mode === 'signin' && (
+              <button
+                type="button"
+                className="forgot-password"
+                onClick={() => {
+                  setMode('recovery');
+                  setStatus('');
+                }}
+              >
+                Forgot your password?
+              </button>
+            )}
+            {status && <output className="auth-status">{status}</output>}
+            <Button type="submit" disabled={busy}>
+              {busy
+                ? t('pleaseWait')
+                : mode === 'signin'
+                  ? t('signIn')
+                  : mode === 'signup'
+                    ? t('createAccount')
+                    : 'Email reset link'}
+            </Button>
+          </form>
+          <button
+            className="auth-switch"
+            onClick={() => {
+              setMode((value) => (value === 'signin' ? 'signup' : 'signin'));
+              setStatus('');
+            }}
+          >
+            {mode === 'signin' ? t('newAccount') : t('existingAccount')}
+          </button>
+          <p className="auth-legal">
+            By continuing, you agree to our <a href="/terms">Terms</a> and
+            acknowledge our <a href="/privacy">Privacy Policy</a>.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -5694,7 +5811,9 @@ export default function HomePage() {
   };
   return (
     <>
-      {mode === 'marketing' ? (
+      {authOpen ? (
+        <AuthPage locale={locale} onClose={() => setAuthOpen(false)} />
+      ) : mode === 'marketing' ? (
         <Marketing
           openApp={openApp}
           installApp={() => void installApp()}
@@ -5846,7 +5965,6 @@ export default function HomePage() {
           </div>
         </DialogContent>
       </Dialog>
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} locale={locale} />
       <Dialog open={languageChoiceOpen}>
         <DialogContent
           className="language-choice-dialog"
