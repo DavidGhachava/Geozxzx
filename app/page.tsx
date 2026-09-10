@@ -22,6 +22,7 @@ import {
   Heart,
   Home,
   LockKeyhole,
+  MapPin,
   Menu,
   Mic2,
   Plane,
@@ -1205,6 +1206,13 @@ function Marketing({
       const audio = new Audio(audioUrl);
       audio.addEventListener('ended', () => setPlaying(null), { once: true });
       void audio.play().catch(() => setPlaying(null));
+    } else if (text && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ka-GE';
+      utterance.rate = 0.82;
+      utterance.addEventListener('end', () => setPlaying(null), { once: true });
+      window.speechSynthesis.speak(utterance);
     }
     window.setTimeout(() => setPlaying(null), 5000);
   };
@@ -1283,9 +1291,11 @@ function Marketing({
           </nav>
         )}
       </header>
-      <section className="hero">
+      <section className="hero home-v2-hero">
         <div className="hero-copy">
-          <span className="eyebrow">{t('heroEyebrow')}</span>
+          <span className="eyebrow">
+            <MapPin /> {t('heroEyebrow')}
+          </span>
           <h1>{t('heroTitle')}</h1>
           <p>{t('heroBody')}</p>
           <div className="hero-buttons">
@@ -1307,29 +1317,94 @@ function Marketing({
               <Globe2 /> {t('threeLanguages')}
             </span>
           </div>
-        </div>
-        <div className="hero-visual" aria-label="GEO app preview">
-          <div className="phone phone-front">
-            <div className="phone-notch" />
-            <div className="mini-status">
-              9:41 <span>•••</span>
-            </div>
-            <span className="mini-back">
-              ‹ {categoryLabels[locale].Essentials}
+          <div className="home-v2-signals" aria-label="What makes GEO useful">
+            <span>
+              <Mic2 />
+              <b>Native audio</b>
+              <small>Hear every new word</small>
             </span>
-            <span className="mini-pill">{t('audioNote')}</span>
-            <div className="mini-phrase">
-              <strong>გამარჯობა</strong>
-              <em>gamarjoba</em>
-              <p>{locale === 'ru' ? 'Привет' : 'Hello'}</p>
-              <AudioButton
-                id="hero-phone"
-                playing={playing}
-                onPlay={play}
-                large
-              />
-            </div>
+            <span>
+              <Brain />
+              <b>3 at a time</b>
+              <small>Small enough to remember</small>
+            </span>
+            <span>
+              <Compass />
+              <b>Real situations</b>
+              <small>Use it around Georgia</small>
+            </span>
           </div>
+        </div>
+        <div
+          className="hero-visual home-v2-visual"
+          aria-label="A three-word GEO lesson preview"
+        >
+          <div className="home-v2-board">
+            <header>
+              <span>
+                <BookOpen /> Today’s tiny lesson
+              </span>
+              <b>1 of 2</b>
+            </header>
+            <div className="home-v2-progress">
+              <i />
+            </div>
+            <div className="home-v2-word-list">
+              {[
+                [
+                  'გამარჯობა',
+                  'gamarjoba',
+                  locale === 'ru' ? 'Привет' : 'Hello',
+                  '/audio/words/word-035.mp3',
+                ],
+                [
+                  'მადლობა',
+                  'madloba',
+                  locale === 'ru' ? 'Спасибо' : 'Thank you',
+                  '/audio/words/word-036.mp3',
+                ],
+                [
+                  'გთხოვთ',
+                  'gtkhovt',
+                  locale === 'ru' ? 'Пожалуйста' : 'Please',
+                  '/audio/words/word-037.mp3',
+                ],
+              ].map(([ka, tr, meaning, audioUrl], index) => (
+                <article key={ka}>
+                  <span className="home-v2-number">0{index + 1}</span>
+                  <span className="home-v2-word">
+                    <strong>{ka}</strong>
+                    <em>{tr}</em>
+                    <small>{meaning}</small>
+                  </span>
+                  <AudioButton
+                    id={`hero-word-${index}`}
+                    playing={playing}
+                    onPlay={play}
+                    text={ka}
+                    audioUrl={audioUrl}
+                  />
+                </article>
+              ))}
+            </div>
+            <footer>
+              <span>
+                <CheckCircle2 /> Listen first
+              </span>
+              <span>
+                <Mic2 /> Say it aloud
+              </span>
+              <span>
+                <Brain /> Recall it
+              </span>
+            </footer>
+          </div>
+          <span className="home-v2-float home-v2-float-one">
+            <Volume2 /> Audio included
+          </span>
+          <span className="home-v2-float home-v2-float-two">
+            <Flame /> 5 minute routine
+          </span>
         </div>
       </section>
       <section className="audience-section" id="why">
@@ -1453,7 +1528,14 @@ function Marketing({
               <em>madloba</em>
               <p>{locale === 'ru' ? 'Спасибо' : 'Thank you'}</p>
             </div>
-            <AudioButton id="demo" playing={playing} onPlay={play} large />
+            <AudioButton
+              id="demo"
+              playing={playing}
+              onPlay={play}
+              text="მადლობა"
+              audioUrl="/audio/words/word-036.mp3"
+              large
+            />
           </div>
           <p className="demo-caption">
             <Mic2 /> {t('audioNote')}
@@ -1602,7 +1684,6 @@ function AppShell({
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
-  const googleAuthReady = false;
   const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [learnSection, setLearnSection] = useState<'today' | 'paths'>('today');
@@ -1668,8 +1749,11 @@ function AppShell({
         : /Safari\//.test(navigator.userAgent)
           ? 'Safari'
           : 'Browser';
-    setDeviceLabel(`${mobile ? 'Mobile device' : 'Computer'} · ${browser}`);
-    setDailyPlanStartedAt(Date.now());
+    const timer = window.setTimeout(() => {
+      setDeviceLabel(`${mobile ? 'Mobile device' : 'Computer'} · ${browser}`);
+      setDailyPlanStartedAt(Date.now());
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
   const [upgradeFocus, setUpgradeFocus] = useState<'phrasebook' | 'guided'>(
     'phrasebook',
@@ -1692,13 +1776,19 @@ function AppShell({
     const today = new Date().toISOString().slice(0, 10);
     const stored = localStorage.getItem('geo-daily-micro-lessons-v1');
     if (!stored) return;
+    let progress: { date?: string; count?: number };
     try {
-      const progress = JSON.parse(stored) as { date?: string; count?: number };
-      if (progress.date === today && Number.isFinite(progress.count))
-        setDailyMicroLessonsCompleted(Math.max(0, progress.count ?? 0));
+      progress = JSON.parse(stored) as { date?: string; count?: number };
     } catch {
       localStorage.removeItem('geo-daily-micro-lessons-v1');
+      return;
     }
+    if (progress.date !== today || !Number.isFinite(progress.count)) return;
+    const timer = window.setTimeout(
+      () => setDailyMicroLessonsCompleted(Math.max(0, progress.count ?? 0)),
+      0,
+    );
+    return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
     const stored = localStorage.getItem('geo-saved-words');
@@ -2132,7 +2222,9 @@ function AppShell({
       (_event, session) => {
         if (!active) return;
         setUser(session?.user ?? null);
-        void loadUserData(session?.user ?? null);
+        window.setTimeout(() => {
+          if (active) void loadUserData(session?.user ?? null);
+        }, 0);
       },
     );
     return () => {
@@ -5082,24 +5174,26 @@ function LearnerOnboardingDialog({
                   setDraft((current) => ({ ...current, primaryGoal: focus }))
                 }
               >
-                <span>
-                  {focus === 'general_speaking'
-                    ? '💬'
-                    : focus === 'cafe'
-                      ? '☕'
-                      : focus === 'work'
-                        ? '💼'
-                        : focus === 'health'
-                          ? '✚'
-                          : focus === 'transport'
-                            ? '🚌'
-                            : focus === 'shopping'
-                              ? '🛍️'
-                              : focus === 'home'
-                                ? '🏠'
-                                : focus === 'services'
-                                  ? '📅'
-                                  : '👋'}
+                <span aria-hidden="true">
+                  {focus === 'general_speaking' ? (
+                    <MessageCircle />
+                  ) : focus === 'cafe' ? (
+                    <Coffee />
+                  ) : focus === 'work' ? (
+                    <CreditCard />
+                  ) : focus === 'health' ? (
+                    <ShieldPlus />
+                  ) : focus === 'transport' ? (
+                    <Bus />
+                  ) : focus === 'shopping' ? (
+                    <ShoppingBag />
+                  ) : focus === 'home' ? (
+                    <Home />
+                  ) : focus === 'services' ? (
+                    <CalendarDays />
+                  ) : (
+                    <Users />
+                  )}
                 </span>
                 <b>{focusLabels[focus][locale]}</b>
               </button>
@@ -5390,6 +5484,7 @@ function AuthPage({
   locale: Locale;
   onClose: () => void;
 }) {
+  const googleAuthReady = false;
   const t = (key: string) => getCopy(locale, key);
   const [mode, setMode] = useState<'signin' | 'signup' | 'recovery'>('signin');
   const [email, setEmail] = useState('');
@@ -5730,7 +5825,9 @@ export default function HomePage() {
         await syncPublicAccount(data.user, client);
         const { data: listener } = client.auth.onAuthStateChange(
           (_event, session) => {
-            void syncPublicAccount(session?.user ?? null, client);
+            window.setTimeout(() => {
+              if (active) void syncPublicAccount(session?.user ?? null, client);
+            }, 0);
           },
         );
         unsubscribe = () => listener.subscription.unsubscribe();
