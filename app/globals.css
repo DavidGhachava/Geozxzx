@@ -7090,6 +7090,7 @@ html[data-app-mode='true'] .marketing {
   line-height: 1.55;
 }
 .google-auth-button {
+  position: relative;
   width: 100%;
   height: 52px;
   border: 1px solid #dcd5d7;
@@ -7109,11 +7110,24 @@ html[data-app-mode='true'] .marketing {
   background: #fffafa;
 }
 .google-auth-button:disabled {
-  opacity: 0.6;
+  cursor: not-allowed;
+  opacity: 0.72;
 }
 .google-auth-button svg {
   width: 21px;
   height: 21px;
+}
+.google-auth-button small {
+  position: absolute;
+  right: 12px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #8a5360;
+  background: #faedf0;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
 }
 .auth-divider {
   margin: 22px 0;

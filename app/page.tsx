@@ -1602,6 +1602,7 @@ function AppShell({
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
+  const googleAuthReady = false;
   const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [learnSection, setLearnSection] = useState<'today' | 'paths'>('today');
@@ -5525,13 +5526,14 @@ function AuthPage({
               <button
                 className="google-auth-button"
                 type="button"
-                disabled={busy}
+                disabled={busy || !googleAuthReady}
                 onClick={() => void signInWithGoogle()}
               >
                 <GoogleMark />{' '}
                 {mode === 'signup'
                   ? 'Sign up with Google'
                   : 'Sign in with Google'}
+                {!googleAuthReady && <small>Coming soon</small>}
               </button>
               <div className="auth-divider">
                 <span>or continue with email</span>
