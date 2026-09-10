@@ -588,7 +588,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     heroTitle: 'Speak Georgian for real life.',
     heroBody:
       'Learn three useful words at a time, then practice the situations you actually face in Georgia.',
-    openFree: 'Open the free phrasebook',
+    openFree: 'Open the app',
     installApp: 'Install the app',
     freeAccess: '50 practical phrases free',
     secureSync: 'Secure saved phrases',
@@ -740,7 +740,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     heroTitle: 'Говорите по-грузински в реальной жизни.',
     heroBody:
       'Найдите нужную фразу, послушайте произношение и сохраните её. Для русскоязычных жителей и гостей Грузии.',
-    openFree: 'Открыть бесплатный разговорник',
+    openFree: 'Открыть приложение',
     installApp: 'Установить приложение',
     freeAccess: '50 практических фраз бесплатно',
     secureSync: 'Безопасная синхронизация',
@@ -894,7 +894,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     heroTitle: 'ისაუბრეთ ქართულად ყოველდღიურ ცხოვრებაში.',
     heroBody:
       'იპოვეთ საჭირო ფრაზა, მოუსმინეთ გამოთქმას და შეინახეთ. შექმნილია საქართველოში მცხოვრები და ჩამოსული ადამიანებისთვის.',
-    openFree: 'გახსენით უფასო ფრაზები',
+    openFree: 'აპის გახსნა',
     installApp: 'აპის დაყენება',
     freeAccess: '50 პრაქტიკული ფრაზა უფასოდ',
     secureSync: 'უსაფრთხო სინქრონიზაცია',
