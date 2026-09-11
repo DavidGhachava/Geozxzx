@@ -1,4 +1,4 @@
-const CACHE = 'geo-pwa-v11';
+const CACHE = 'geo-pwa-v12';
 const CORE = [
   '/',
   '/offline.html',
@@ -66,9 +66,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Media elements commonly request byte ranges. Cache Storage rejects 206
+  // responses, which would make the service worker fail the entire audio
+  // request even though the network response was valid. Let the browser's
+  // normal HTTP cache and range handling serve audio instead.
+  if (request.destination === 'audio' || request.headers.has('range')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   if (
     url.pathname.startsWith('/data/') ||
-    ['style', 'script', 'image', 'font', 'audio'].includes(request.destination)
+    ['style', 'script', 'image', 'font'].includes(request.destination)
   ) {
     event.respondWith(
       (async () => {
