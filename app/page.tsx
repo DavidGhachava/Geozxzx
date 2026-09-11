@@ -2188,10 +2188,13 @@ function AppShell({
     setCategory(name);
     setScreen('category');
   };
+  const wordsNav =
+    screen === 'words' ||
+    (screen === 'premium' && upgradeFocus === 'phrasebook');
   const learnNav =
     screen === 'learn' ||
     screen === 'lesson-preview' ||
-    screen === 'premium' ||
+    (screen === 'premium' && upgradeFocus === 'guided') ||
     screen === 'daily' ||
     screen === 'lesson' ||
     screen === 'quiz';
@@ -3023,7 +3026,7 @@ function AppShell({
             {t('explore')}
           </button>
           <button
-            className={screen === 'words' ? 'active' : ''}
+            className={wordsNav ? 'active' : ''}
             onClick={openWords}
           >
             <Search />
@@ -5380,7 +5383,7 @@ function AppShell({
             <span>{t('explore')}</span>
           </button>
           <button
-            className={screen === 'words' ? 'active' : ''}
+            className={wordsNav ? 'active' : ''}
             onClick={openWords}
           >
             <Search />
