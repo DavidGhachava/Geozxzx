@@ -7098,8 +7098,23 @@ html[data-app-mode='true'] .marketing {
   max-width: 760px;
   max-height: min(860px, calc(100dvh - 28px));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 28px;
   border-radius: 28px;
+  background: #fffdf9 !important;
+  opacity: 1;
+  isolation: isolate;
+  backdrop-filter: none;
+  box-shadow: 0 26px 80px rgba(45, 10, 20, 0.28);
+}
+
+[data-slot='dialog-overlay'] {
+  z-index: 2000;
+  background: rgba(32, 12, 18, 0.46);
+}
+
+[data-slot='dialog-content'] {
+  z-index: 2001;
 }
 .onboarding-progress {
   display: grid;
@@ -7131,6 +7146,7 @@ html[data-app-mode='true'] .marketing {
 .onboarding-choice-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 10px;
   margin-top: 4px;
 }
@@ -7139,7 +7155,9 @@ html[data-app-mode='true'] .marketing {
 .onboarding-two-columns fieldset button {
   border: 1px solid #eadde0;
   color: #30272a;
-  background: #fffdfd;
+  background: #fff;
+  opacity: 1;
+  box-shadow: 0 7px 18px rgba(63, 25, 36, 0.06);
   transition: 150ms ease;
 }
 .onboarding-choice-grid button:hover,
@@ -7153,7 +7171,9 @@ html[data-app-mode='true'] .marketing {
 .onboarding-two-columns fieldset button.selected {
   border-color: #ba0d35;
   background: #fff0f3;
-  box-shadow: 0 0 0 2px rgba(186, 13, 53, 0.08);
+  box-shadow:
+    0 0 0 2px rgba(186, 13, 53, 0.08),
+    0 8px 20px rgba(112, 11, 38, 0.08);
 }
 .onboarding-choice-grid button {
   display: grid;
@@ -7269,12 +7289,15 @@ html[data-app-mode='true'] .marketing {
 }
 .onboarding-actions {
   display: flex;
+  align-items: stretch;
   justify-content: space-between;
   gap: 10px;
   margin-top: 4px;
+  background: #fffdf9;
 }
-.onboarding-actions .button {
+.onboarding-actions [data-slot='button'] {
   min-width: 145px;
+  min-height: 50px;
 }
 .onboarding-later {
   border: 0;
@@ -7415,14 +7438,22 @@ html[data-app-mode='true'] .marketing {
     display: grid;
   }
   .onboarding-dialog {
-    padding: 22px 18px 18px;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+    padding: 20px 18px 18px;
     border-radius: 22px;
   }
   .onboarding-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .onboarding-choice-grid button {
-    min-height: 82px;
+    min-height: 116px;
+    padding: 14px 10px;
+  }
+  .onboarding-choice-grid button b {
+    max-width: 9rem;
+    font-size: 0.93rem;
+    line-height: 1.25;
   }
   .onboarding-two-columns {
     grid-template-columns: 1fr;
@@ -7430,9 +7461,29 @@ html[data-app-mode='true'] .marketing {
   .onboarding-actions {
     position: sticky;
     bottom: -18px;
+    z-index: 4;
     margin: 0 -18px -18px;
-    padding: 12px 18px 18px;
-    background: linear-gradient(transparent, #fff 20%);
+    padding: 13px 18px calc(18px + env(safe-area-inset-bottom));
+    border-top: 1px solid #eee0e3;
+    background: #fffdf9;
+    box-shadow: 0 -12px 28px rgba(49, 18, 27, 0.08);
+  }
+  .onboarding-actions [data-slot='button'] {
+    min-width: 0;
+    flex: 1 1 54%;
+  }
+  .onboarding-later {
+    min-height: 50px;
+    flex: 1 1 42%;
+  }
+}
+
+@media (max-width: 350px) {
+  .onboarding-choice-grid {
+    grid-template-columns: 1fr;
+  }
+  .onboarding-choice-grid button {
+    min-height: 94px;
   }
 }
 
