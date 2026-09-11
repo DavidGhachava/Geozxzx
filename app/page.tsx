@@ -1125,6 +1125,26 @@ const structuredData = {
 
 const wordAudioIds = new Set(wordAudioManifest);
 
+function speakGeorgian(text: string | undefined, onDone: () => void) {
+  if (!text || !('speechSynthesis' in window)) {
+    onDone();
+    return false;
+  }
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  const georgianVoice = window.speechSynthesis
+    .getVoices()
+    .find((voice) => voice.lang.toLowerCase().startsWith('ka'));
+  if (georgianVoice) utterance.voice = georgianVoice;
+  utterance.lang = 'ka-GE';
+  utterance.rate = 0.82;
+  utterance.addEventListener('end', onDone, { once: true });
+  utterance.addEventListener('error', onDone, { once: true });
+  window.speechSynthesis.speak(utterance);
+  return true;
+}
+
 function Brand({ onHome }: { onHome: () => void }) {
   return (
     <button
@@ -1158,6 +1178,7 @@ function AudioButton({
   const active = playing === id;
   return (
     <button
+      type="button"
       className={`audio-button ${large ? 'audio-large' : ''} ${active ? 'is-playing' : ''}`}
       onClick={() => onPlay(id, text, audioUrl)}
       onFocus={() => audioUrl && onPrime?.(audioUrl)}
@@ -1199,22 +1220,37 @@ function Marketing({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
+  const currentAudio = useRef<HTMLAudioElement | null>(null);
   const t = (key: string) => getCopy(locale, key);
+  useEffect(
+    () => () => {
+      currentAudio.current?.pause();
+      window.speechSynthesis?.cancel();
+    },
+    [],
+  );
   const play = (id: string, text?: string, audioUrl?: string | null) => {
+    currentAudio.current?.pause();
+    window.speechSynthesis?.cancel();
     setPlaying(id);
+    const finish = () =>
+      setPlaying((current) => (current === id ? null : current));
+    let fallbackStarted = false;
+    const speakFallback = () => {
+      if (fallbackStarted) return;
+      fallbackStarted = true;
+      currentAudio.current = null;
+      speakGeorgian(text, finish);
+    };
     if (audioUrl) {
       const audio = new Audio(audioUrl);
-      audio.addEventListener('ended', () => setPlaying(null), { once: true });
-      void audio.play().catch(() => setPlaying(null));
-    } else if (text && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ka-GE';
-      utterance.rate = 0.82;
-      utterance.addEventListener('end', () => setPlaying(null), { once: true });
-      window.speechSynthesis.speak(utterance);
-    }
-    window.setTimeout(() => setPlaying(null), 5000);
+      audio.preload = 'auto';
+      currentAudio.current = audio;
+      audio.addEventListener('ended', finish, { once: true });
+      audio.addEventListener('error', speakFallback, { once: true });
+      void audio.play().catch(speakFallback);
+    } else speakFallback();
+    window.setTimeout(finish, 10000);
   };
   const goHome = () => {
     setMenuOpen(false);
@@ -1770,7 +1806,7 @@ function AppShell({
     activity: [] as { activity_date: string; xp_earned: number }[],
   });
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-  const audioSources = useRef(new Map<string, Promise<string>>());
+  const primedAudio = useRef(new Set<string>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -1872,47 +1908,44 @@ function AppShell({
     };
   }, []);
   const primeAudio = useCallback((audioUrl: string) => {
-    const existing = audioSources.current.get(audioUrl);
-    if (existing) return existing;
-    const source = fetch(audioUrl, { cache: 'force-cache' })
-      .then((response) => {
-        if (!response.ok) throw new Error('Audio unavailable');
-        return response.blob();
-      })
-      .then((blob) => URL.createObjectURL(blob))
-      .catch(() => audioUrl);
-    audioSources.current.set(audioUrl, source);
-    return source;
+    if (primedAudio.current.has(audioUrl)) return;
+    primedAudio.current.add(audioUrl);
+    void fetch(audioUrl, { cache: 'force-cache' }).catch(() => {
+      primedAudio.current.delete(audioUrl);
+    });
   }, []);
   useEffect(
     () => () => {
       currentAudio.current?.pause();
-      for (const source of audioSources.current.values()) {
-        void source.then((url) => {
-          if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-        });
-      }
+      window.speechSynthesis?.cancel();
     },
     [],
   );
-  const play = async (id: string, text?: string, audioUrl?: string | null) => {
+  const play = (id: string, text?: string, audioUrl?: string | null) => {
+    currentAudio.current?.pause();
+    window.speechSynthesis?.cancel();
     setPlaying(id);
+    const finish = () =>
+      setPlaying((current) => (current === id ? null : current));
+    let fallbackStarted = false;
     const speakFallback = () => {
-      if (!text || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'ka-GE';
-      utterance.rate = 0.82;
-      window.speechSynthesis.speak(utterance);
+      if (fallbackStarted) return;
+      fallbackStarted = true;
+      currentAudio.current = null;
+      speakGeorgian(text, finish);
     };
     if (audioUrl) {
-      currentAudio.current?.pause();
-      const audio = new Audio(await primeAudio(audioUrl));
+      primeAudio(audioUrl);
+      // Start playback directly from the click event so mobile browsers retain
+      // the user gesture. Awaiting a preload first can make playback get blocked.
+      const audio = new Audio(audioUrl);
+      audio.preload = 'auto';
       currentAudio.current = audio;
-      audio.addEventListener('ended', () => setPlaying(null), { once: true });
+      audio.addEventListener('ended', finish, { once: true });
+      audio.addEventListener('error', speakFallback, { once: true });
       void audio.play().catch(speakFallback);
     } else speakFallback();
-    window.setTimeout(() => setPlaying(null), 5000);
+    window.setTimeout(finish, 10000);
   };
   const phraseKey = (phrase: Phrase) => phrase.id ?? phrase.ka;
   const allPhrases = useMemo(() => Object.values(library).flat(), [library]);
@@ -1947,7 +1980,7 @@ function AppShell({
     const timer = window.setTimeout(() => {
       for (const word of filteredWords.slice(0, normalizedSearch ? 8 : 12)) {
         if (wordAudioIds.has(word.id))
-          void primeAudio(`/audio/words/${word.id}.mp3`);
+          primeAudio(`/audio/words/${word.id}.mp3`);
       }
     }, delay);
     return () => window.clearTimeout(timer);
@@ -2509,25 +2542,14 @@ function AppShell({
               >
                 <Bookmark />
               </button>
-              {hasAudio ? (
-                <AudioButton
-                  id={`word-audio-${word.id}`}
-                  playing={playing}
-                  onPlay={play}
-                  onPrime={primeAudio}
-                  text={word.ka}
-                  audioUrl={`/audio/words/${word.id}.mp3`}
-                />
-              ) : (
-                <button
-                  className="audio-button audio-pending"
-                  disabled
-                  title="Audio coming soon"
-                  aria-label="Audio coming soon"
-                >
-                  <Volume2 />
-                </button>
-              )}
+              <AudioButton
+                id={`word-audio-${word.id}`}
+                playing={playing}
+                onPlay={play}
+                onPrime={primeAudio}
+                text={word.ka}
+                audioUrl={hasAudio ? `/audio/words/${word.id}.mp3` : undefined}
+              />
             </div>
           </article>
         );
@@ -3890,29 +3912,22 @@ function AppShell({
                       </div>
                       <h1>{currentWord.ka}</h1>
                       <p>{currentWord.tr}</p>
-                      {hasAudio ? (
-                        <AudioButton
-                          id={`lesson-preview-${currentWord.id}`}
-                          playing={playing}
-                          onPlay={(id, text, audioUrl) => {
-                            setPreviewAudioHeard(true);
-                            void play(id, text, audioUrl);
-                          }}
-                          onPrime={primeAudio}
-                          text={currentWord.ka}
-                          audioUrl={`/audio/words/${currentWord.id}.mp3`}
-                          large
-                        />
-                      ) : (
-                        <button
-                          className="audio-button audio-large audio-pending"
-                          disabled
-                          title="Audio coming soon"
-                          aria-label="Audio coming soon"
-                        >
-                          <Volume2 />
-                        </button>
-                      )}
+                      <AudioButton
+                        id={`lesson-preview-${currentWord.id}`}
+                        playing={playing}
+                        onPlay={(id, text, audioUrl) => {
+                          setPreviewAudioHeard(true);
+                          play(id, text, audioUrl);
+                        }}
+                        onPrime={primeAudio}
+                        text={currentWord.ka}
+                        audioUrl={
+                          hasAudio
+                            ? `/audio/words/${currentWord.id}.mp3`
+                            : undefined
+                        }
+                        large
+                      />
                       <small className="lesson-learn-audio-hint">
                         {locale === 'ru'
                           ? 'Послушайте и повторите два раза'
@@ -3945,26 +3960,19 @@ function AppShell({
                             ? 'რას ნიშნავს ეს სიტყვა?'
                             : 'What does this word mean?'}
                       </h2>
-                      {hasAudio ? (
-                        <AudioButton
-                          id={`lesson-test-${currentWord.id}`}
-                          playing={playing}
-                          onPlay={play}
-                          onPrime={primeAudio}
-                          text={currentWord.ka}
-                          audioUrl={`/audio/words/${currentWord.id}.mp3`}
-                          large
-                        />
-                      ) : (
-                        <button
-                          className="audio-button audio-large audio-pending"
-                          disabled
-                          title="Audio coming soon"
-                          aria-label="Audio coming soon"
-                        >
-                          <Volume2 />
-                        </button>
-                      )}
+                      <AudioButton
+                        id={`lesson-test-${currentWord.id}`}
+                        playing={playing}
+                        onPlay={play}
+                        onPrime={primeAudio}
+                        text={currentWord.ka}
+                        audioUrl={
+                          hasAudio
+                            ? `/audio/words/${currentWord.id}.mp3`
+                            : undefined
+                        }
+                        large
+                      />
                       <small className="lesson-listen-hint">
                         {locale === 'ru'
                           ? 'Нажмите, чтобы услышать ещё раз'
@@ -3989,13 +3997,13 @@ function AppShell({
                                 (item) => item.word.id === currentWord.id,
                               )?.unitNumber ?? lesson.unit;
                             recordWordResult(currentWord, wordUnit, correct);
-                            if (hasAudio) {
-                              void play(
-                                `lesson-test-${currentWord.id}`,
-                                currentWord.ka,
-                                `/audio/words/${currentWord.id}.mp3`,
-                              );
-                            }
+                            play(
+                              `lesson-test-${currentWord.id}`,
+                              currentWord.ka,
+                              hasAudio
+                                ? `/audio/words/${currentWord.id}.mp3`
+                                : undefined,
+                            );
                           }}
                         >
                           <input
@@ -4608,6 +4616,8 @@ function AppShell({
                     id="lesson"
                     playing={playing}
                     onPlay={play}
+                    text="გამარჯობა"
+                    audioUrl="/audio/words/word-035.mp3"
                     large
                   />
                   <i />
