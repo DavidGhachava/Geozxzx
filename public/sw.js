@@ -1,4 +1,4 @@
-const CACHE = 'geo-pwa-v9';
+const CACHE = 'geo-pwa-v10';
 const CORE = [
   '/',
   '/offline.html',
