@@ -514,9 +514,12 @@ export function InfoPage({
             ? 'ka'
             : 'en';
     }
-    setLocale(nextLocale);
-    setPathname(window.location.pathname.replace(/\/$/, '') || '/');
+    const timer = window.setTimeout(() => {
+      setLocale(nextLocale);
+      setPathname(window.location.pathname.replace(/\/$/, '') || '/');
+    }, 0);
     document.documentElement.lang = nextLocale;
+    return () => window.clearTimeout(timer);
   }, []);
   const changeLocale = (next: InterfaceLocale) => {
     setLocale(next);
