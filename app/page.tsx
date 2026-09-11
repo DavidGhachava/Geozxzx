@@ -1124,6 +1124,11 @@ const structuredData = {
 };
 
 const wordAudioIds = new Set(wordAudioManifest);
+const recordedWordAudioByGeorgian = new Map(
+  wordLibrary
+    .filter((word) => wordAudioIds.has(word.id))
+    .map((word) => [word.ka, `/audio/words/${word.id}.mp3`]),
+);
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
@@ -2450,47 +2455,51 @@ function AppShell({
   }, []);
   const renderPhrases = (items: typeof allPhrases) => (
     <div className="phrase-list">
-      {items.map((p, i) => (
-        <article className="phrase-card" key={phraseKey(p)}>
-          <div>
-            <strong>{p.ka}</strong>
-            <em>{p.tr}</em>
-            <p>{phraseMeaning(p, locale)}</p>
-          </div>
-          <div className="phrase-actions">
-            <button
-              className={`save-button ${saved.includes(phraseKey(p)) ? 'saved' : ''}`}
-              onClick={() => void toggleSaved(p)}
-              aria-label={
-                saved.includes(phraseKey(p))
-                  ? t('removeSaved')
-                  : t('savePhrase')
-              }
-            >
-              <Bookmark />
-            </button>
-            {p.audio_url ? (
-              <AudioButton
-                id={`${p.ka}-${i}`}
-                playing={playing}
-                onPlay={play}
-                text={p.ka}
-                audioUrl={p.audio_url}
-              />
-            ) : (
+      {items.map((p, i) => {
+        const audioUrl = recordedWordAudioByGeorgian.get(p.ka) ?? p.audio_url;
+        return (
+          <article className="phrase-card" key={phraseKey(p)}>
+            <div>
+              <strong>{p.ka}</strong>
+              <em>{p.tr}</em>
+              <p>{phraseMeaning(p, locale)}</p>
+            </div>
+            <div className="phrase-actions">
               <button
-                type="button"
-                className="audio-button audio-pending"
-                disabled
-                title="Recorded audio loading"
-                aria-label="Recorded audio loading"
+                className={`save-button ${saved.includes(phraseKey(p)) ? 'saved' : ''}`}
+                onClick={() => void toggleSaved(p)}
+                aria-label={
+                  saved.includes(phraseKey(p))
+                    ? t('removeSaved')
+                    : t('savePhrase')
+                }
               >
-                <Volume2 />
+                <Bookmark />
               </button>
-            )}
-          </div>
-        </article>
-      ))}
+              {audioUrl ? (
+                <AudioButton
+                  id={`${p.ka}-${i}`}
+                  playing={playing}
+                  onPlay={play}
+                  onPrime={primeAudio}
+                  text={p.ka}
+                  audioUrl={audioUrl}
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="audio-button audio-pending"
+                  disabled
+                  title="Recorded audio loading"
+                  aria-label="Recorded audio loading"
+                >
+                  <Volume2 />
+                </button>
+              )}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
   const renderWords = (items: WordEntry[]) => (
