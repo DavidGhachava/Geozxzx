@@ -1021,6 +1021,55 @@ footer > button {
   display: grid;
   gap: 14px;
 }
+
+.audio-speed-control {
+  width: fit-content;
+  margin: 0 0 14px auto;
+  padding: 5px;
+  border: 1px solid #eadadd;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-speed-control > span {
+  padding-left: 7px;
+  color: #725f65;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.audio-speed-control > span svg {
+  width: 15px;
+  height: 15px;
+}
+
+.audio-speed-control > div {
+  display: flex;
+  gap: 3px;
+}
+
+.audio-speed-control button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #76676b;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+
+.audio-speed-control button.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 5px 14px rgba(178, 13, 47, 0.16);
+}
 .phrase-card {
   min-height: 128px;
   border: 1px solid var(--border);
@@ -6488,6 +6537,72 @@ html[data-app-mode='true'] .marketing {
   text-align: center;
 }
 
+.lesson-focus-stage > .audio-speed-control {
+  margin: -6px 0 18px;
+}
+
+.pronunciation-recorder {
+  width: min(480px, 100%);
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid #eadadd;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+  display: grid;
+  gap: 9px;
+  text-align: left;
+}
+
+.pronunciation-recorder > small {
+  color: #725f65;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.pronunciation-recorder > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.pronunciation-recorder button {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #dfcdd1;
+  border-radius: 11px;
+  background: #fff;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.pronunciation-recorder button.recording {
+  border-color: var(--primary);
+  background: #fff0f2;
+  animation: recorder-pulse 1s ease-in-out infinite alternate;
+}
+
+.pronunciation-recorder button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pronunciation-recorder > span {
+  color: #8e1830;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+@keyframes recorder-pulse {
+  to {
+    box-shadow: 0 0 0 5px rgba(178, 13, 47, 0.08);
+  }
+}
+
 .lesson-complete-stage {
   text-align: center;
 }
@@ -6649,6 +6764,40 @@ html[data-app-mode='true'] .marketing {
   opacity: 0.45;
 }
 
+.recognition-options {
+  width: min(480px, 100%);
+  display: grid;
+  gap: 9px;
+}
+
+.recognition-options button {
+  min-height: 54px;
+  padding: 11px 16px;
+  border: 2px solid #eadadd;
+  border-radius: 15px;
+  background: #fff;
+  color: #25171b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.recognition-options button.correct {
+  border-color: #81bf8b;
+  background: #eef9f0;
+  color: #24622f;
+}
+
+.recognition-options button.wrong {
+  border-color: #df7f90;
+  background: #fff0f2;
+  color: #8e1830;
+}
+
 .lesson-answer-result {
   width: min(480px, 100%);
   padding: 18px;
@@ -6765,6 +6914,48 @@ html[data-app-mode='true'] .marketing {
 .scenario-feedback.wrong {
   background: #fff0f2;
   color: #8e1830;
+}
+
+.scenario-audio-row {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #513e44;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.scenario-audio-row .audio-button {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+}
+
+.course-scope {
+  margin: 0 0 18px;
+  padding: 12px;
+  border: 1px solid #eadadd;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.course-scope span {
+  min-width: 0;
+  color: #756269;
+  display: grid;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.course-scope b {
+  color: #2d1a20;
+  font-size: 1.12rem;
 }
 
 .lesson-focus-actions {
@@ -7878,6 +8069,19 @@ html[data-app-mode='true'] .marketing {
   }
   .lesson-answer-result {
     padding: 16px;
+  }
+  .audio-speed-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .audio-speed-control > span {
+    font-size: 0.7rem;
+  }
+  .pronunciation-recorder {
+    margin-top: 14px;
+  }
+  .course-scope {
+    gap: 5px;
   }
   .library-overview {
     display: grid;

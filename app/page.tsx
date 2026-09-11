@@ -26,12 +26,15 @@ import {
   Menu,
   Mic2,
   Plane,
+  Play,
+  RotateCcw,
   Share2,
   Search,
   ShieldCheck,
   ShieldPlus,
   ShoppingBag,
   Star,
+  Square,
   Trophy,
   Users,
   LogIn,
@@ -59,6 +62,7 @@ import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
+import phraseAudioManifest from '@/lib/phrase-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
 import {
   speakingUnit,
@@ -637,7 +641,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     howTitle: 'Useful from the first minute.',
     stepFree: 'Start with trusted essentials',
     stepFreeBody:
-      'Use 50 practical phrases, with recorded pronunciation where available.',
+      'Use 50 practical phrases with clear Georgian recordings on every entry.',
     stepSave: 'Save what matters',
     stepSaveBody: 'Sign in only when you want your saved list on every device.',
     stepLearn: 'Follow your own plan',
@@ -1130,6 +1134,217 @@ const recordedWordAudioByGeorgian = new Map(
     .filter((word) => wordAudioIds.has(word.id))
     .map((word) => [word.ka, `/audio/words/${word.id}.mp3`]),
 );
+const normalizeGeorgianAudioText = (text: string) =>
+  text.trim().replace(/[.!?…]+$/u, '');
+const recordedPhraseAudioByGeorgian = new Map(
+  phraseAudioManifest.map((entry) => [
+    normalizeGeorgianAudioText(entry.ka),
+    entry.audio,
+  ]),
+);
+const getRecordedPhraseAudio = (text: string) =>
+  recordedPhraseAudioByGeorgian.get(normalizeGeorgianAudioText(text)) ?? null;
+const speakingCourseWordCount = new Set(
+  speakingUnit.flatMap((step) => step.words),
+).size;
+const speakingScenarioCount = speakingUnit.reduce(
+  (total, step) => total + (step.scenarios?.length ?? 0),
+  0,
+);
+
+function AudioSpeedControl({
+  rate,
+  onChange,
+  locale,
+}: {
+  rate: 1 | 0.75;
+  onChange: (rate: 1 | 0.75) => void;
+  locale: Locale;
+}) {
+  return (
+    <div className="audio-speed-control" aria-label="Pronunciation speed">
+      <span>
+        <Volume2 />
+        {locale === 'ru'
+          ? 'Скорость записи'
+          : locale === 'ka'
+            ? 'ჩანაწერის სიჩქარე'
+            : 'Audio speed'}
+      </span>
+      <div>
+        <button
+          type="button"
+          className={rate === 0.75 ? 'active' : ''}
+          onClick={() => onChange(0.75)}
+        >
+          {locale === 'ru' ? 'Медленно' : locale === 'ka' ? 'ნელა' : 'Slow'}
+        </button>
+        <button
+          type="button"
+          className={rate === 1 ? 'active' : ''}
+          onClick={() => onChange(1)}
+        >
+          {locale === 'ru'
+            ? 'Обычно'
+            : locale === 'ka'
+              ? 'ჩვეულებრივ'
+              : 'Normal'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PronunciationRecorder({ locale }: { locale: Locale }) {
+  const [status, setStatus] = useState<
+    'idle' | 'requesting' | 'recording' | 'ready' | 'error'
+  >('idle');
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const stream = useRef<MediaStream | null>(null);
+  const stopTimer = useRef<number | null>(null);
+
+  const clearRecording = useCallback(() => {
+    if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+    setRecordingUrl(null);
+    setStatus('idle');
+  }, [recordingUrl]);
+
+  useEffect(
+    () => () => {
+      if (stopTimer.current) window.clearTimeout(stopTimer.current);
+      if (recorder.current?.state === 'recording') recorder.current.stop();
+      stream.current?.getTracks().forEach((track) => track.stop());
+      if (recordingUrl) URL.revokeObjectURL(recordingUrl);
+    },
+    [recordingUrl],
+  );
+
+  const stopRecording = () => {
+    if (stopTimer.current) window.clearTimeout(stopTimer.current);
+    stopTimer.current = null;
+    if (recorder.current?.state === 'recording') recorder.current.stop();
+  };
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      setStatus('error');
+      return;
+    }
+    clearRecording();
+    setStatus('requesting');
+    try {
+      const microphone = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+      stream.current = microphone;
+      const chunks: Blob[] = [];
+      const nextRecorder = new MediaRecorder(microphone);
+      recorder.current = nextRecorder;
+      nextRecorder.addEventListener('dataavailable', (event) => {
+        if (event.data.size) chunks.push(event.data);
+      });
+      nextRecorder.addEventListener(
+        'stop',
+        () => {
+          microphone.getTracks().forEach((track) => track.stop());
+          stream.current = null;
+          if (!chunks.length) {
+            setStatus('error');
+            return;
+          }
+          const url = URL.createObjectURL(
+            new Blob(chunks, { type: nextRecorder.mimeType || 'audio/webm' }),
+          );
+          setRecordingUrl(url);
+          setStatus('ready');
+        },
+        { once: true },
+      );
+      nextRecorder.start();
+      setStatus('recording');
+      stopTimer.current = window.setTimeout(stopRecording, 5000);
+    } catch {
+      stream.current?.getTracks().forEach((track) => track.stop());
+      stream.current = null;
+      setStatus('error');
+    }
+  };
+
+  return (
+    <div className="pronunciation-recorder">
+      <small>
+        {locale === 'ru'
+          ? 'Сравните своё произношение с записью'
+          : locale === 'ka'
+            ? 'შეადარეთ თქვენი გამოთქმა ჩანაწერს'
+            : 'Record yourself, then compare'}
+      </small>
+      <div>
+        {status === 'recording' ? (
+          <button type="button" className="recording" onClick={stopRecording}>
+            <Square />
+            {locale === 'ru'
+              ? 'Остановить'
+              : locale === 'ka'
+                ? 'გაჩერება'
+                : 'Stop'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void startRecording()}
+            disabled={status === 'requesting'}
+          >
+            <Mic2 />
+            {status === 'requesting'
+              ? locale === 'ru'
+                ? 'Подключение…'
+                : locale === 'ka'
+                  ? 'მიკროფონი…'
+                  : 'Opening mic…'
+              : locale === 'ru'
+                ? 'Записать себя'
+                : locale === 'ka'
+                  ? 'ჩემი ხმის ჩაწერა'
+                  : 'Record myself'}
+          </button>
+        )}
+        {recordingUrl && status === 'ready' && (
+          <>
+            <button
+              type="button"
+              onClick={() => void new Audio(recordingUrl).play()}
+            >
+              <Play />
+              {locale === 'ru'
+                ? 'Моя запись'
+                : locale === 'ka'
+                  ? 'ჩემი ჩანაწერი'
+                  : 'Play mine'}
+            </button>
+            <button
+              type="button"
+              onClick={clearRecording}
+              aria-label="Record again"
+            >
+              <RotateCcw />
+            </button>
+          </>
+        )}
+      </div>
+      {status === 'error' && (
+        <output>
+          {locale === 'ru'
+            ? 'Разрешите доступ к микрофону в браузере и попробуйте снова.'
+            : locale === 'ka'
+              ? 'ბრაუზერში მიკროფონის წვდომა დაუშვით და ისევ სცადეთ.'
+              : 'Allow microphone access in your browser, then try again.'}
+        </output>
+      )}
+    </div>
+  );
+}
 
 function Brand({ onHome }: { onHome: () => void }) {
   return (
@@ -1727,6 +1942,7 @@ function AppShell({
   >([]);
   const [category, setCategory] = useState<CategoryName>('Essentials');
   const [playing, setPlaying] = useState<string | null>(null);
+  const [audioRate, setAudioRate] = useState<1 | 0.75>(1);
   const [saved, setSaved] = useState<string[]>([]);
   const [savedWords, setSavedWords] = useState<string[]>([]);
   const [search, setSearch] = useState('');
@@ -1753,6 +1969,17 @@ function AppShell({
         ? 3
         : 2;
   const dailyWordTarget = dailyMicroLessonGoal * 3;
+  useEffect(() => {
+    const storedRate = localStorage.getItem('geo-audio-rate');
+    if (storedRate === '0.75') {
+      const timer = window.setTimeout(() => setAudioRate(0.75), 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, []);
+  const changeAudioRate = (rate: 1 | 0.75) => {
+    setAudioRate(rate);
+    localStorage.setItem('geo-audio-rate', String(rate));
+  };
   useEffect(() => {
     const mobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
     const browser = /Edg\//.test(navigator.userAgent)
@@ -1897,24 +2124,28 @@ function AppShell({
     },
     [],
   );
-  const play = (id: string, _text?: string, audioUrl?: string | null) => {
-    currentAudio.current?.pause();
-    setPlaying(id);
-    const finish = () =>
-      setPlaying((current) => (current === id ? null : current));
-    if (audioUrl) {
-      primeAudio(audioUrl);
-      // Start playback directly from the click event so mobile browsers retain
-      // the user gesture. Awaiting a preload first can make playback get blocked.
-      const audio = new Audio(audioUrl);
-      audio.preload = 'auto';
-      currentAudio.current = audio;
-      audio.addEventListener('ended', finish, { once: true });
-      audio.addEventListener('error', finish, { once: true });
-      void audio.play().catch(finish);
-    } else finish();
-    window.setTimeout(finish, 10000);
-  };
+  const play = useCallback(
+    (id: string, _text?: string, audioUrl?: string | null) => {
+      currentAudio.current?.pause();
+      setPlaying(id);
+      const finish = () =>
+        setPlaying((current) => (current === id ? null : current));
+      if (audioUrl) {
+        primeAudio(audioUrl);
+        // Start playback directly from the click event so mobile browsers retain
+        // the user gesture. Awaiting a preload first can make playback get blocked.
+        const audio = new Audio(audioUrl);
+        audio.preload = 'auto';
+        audio.playbackRate = audioRate;
+        currentAudio.current = audio;
+        audio.addEventListener('ended', finish, { once: true });
+        audio.addEventListener('error', finish, { once: true });
+        void audio.play().catch(finish);
+      } else finish();
+      window.setTimeout(finish, 10000);
+    },
+    [audioRate, primeAudio],
+  );
   const phraseKey = (phrase: Phrase) => phrase.id ?? phrase.ka;
   const allPhrases = useMemo(() => Object.values(library).flat(), [library]);
   const normalizedSearch = search.trim().normalize('NFKC').toLocaleLowerCase();
@@ -2455,53 +2686,63 @@ function AppShell({
     return () => lifecycle.abort();
   }, []);
   const renderPhrases = (items: typeof allPhrases) => (
-    <div className="phrase-list">
-      {items.map((p, i) => {
-        const audioUrl = recordedWordAudioByGeorgian.get(p.ka) ?? p.audio_url;
-        return (
-          <article className="phrase-card" key={phraseKey(p)}>
-            <div>
-              <strong>{p.ka}</strong>
-              <em>{p.tr}</em>
-              <p>{phraseMeaning(p, locale)}</p>
-            </div>
-            <div className="phrase-actions">
-              <button
-                className={`save-button ${saved.includes(phraseKey(p)) ? 'saved' : ''}`}
-                onClick={() => void toggleSaved(p)}
-                aria-label={
-                  saved.includes(phraseKey(p))
-                    ? t('removeSaved')
-                    : t('savePhrase')
-                }
-              >
-                <Bookmark />
-              </button>
-              {audioUrl ? (
-                <AudioButton
-                  id={`${p.ka}-${i}`}
-                  playing={playing}
-                  onPlay={play}
-                  onPrime={primeAudio}
-                  text={p.ka}
-                  audioUrl={audioUrl}
-                />
-              ) : (
+    <>
+      <AudioSpeedControl
+        rate={audioRate}
+        onChange={changeAudioRate}
+        locale={locale}
+      />
+      <div className="phrase-list">
+        {items.map((p, i) => {
+          const audioUrl =
+            getRecordedPhraseAudio(p.ka) ??
+            recordedWordAudioByGeorgian.get(p.ka) ??
+            p.audio_url;
+          return (
+            <article className="phrase-card" key={phraseKey(p)}>
+              <div>
+                <strong>{p.ka}</strong>
+                <em>{p.tr}</em>
+                <p>{phraseMeaning(p, locale)}</p>
+              </div>
+              <div className="phrase-actions">
                 <button
-                  type="button"
-                  className="audio-button audio-pending"
-                  disabled
-                  title="Recording coming soon"
-                  aria-label="Recording coming soon"
+                  className={`save-button ${saved.includes(phraseKey(p)) ? 'saved' : ''}`}
+                  onClick={() => void toggleSaved(p)}
+                  aria-label={
+                    saved.includes(phraseKey(p))
+                      ? t('removeSaved')
+                      : t('savePhrase')
+                  }
                 >
-                  <Volume2 />
+                  <Bookmark />
                 </button>
-              )}
-            </div>
-          </article>
-        );
-      })}
-    </div>
+                {audioUrl ? (
+                  <AudioButton
+                    id={`${p.ka}-${i}`}
+                    playing={playing}
+                    onPlay={play}
+                    onPrime={primeAudio}
+                    text={p.ka}
+                    audioUrl={audioUrl}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    className="audio-button audio-pending"
+                    disabled
+                    title="Recording coming soon"
+                    aria-label="Recording coming soon"
+                  >
+                    <Volume2 />
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </>
   );
   const renderWords = (items: WordEntry[]) => (
     <div className="word-list">
@@ -3395,6 +3636,33 @@ function AppShell({
                 </span>
               </div>
 
+              <div className="course-scope" aria-label="Course contents">
+                <span>
+                  <b>{speakingUnit.length}</b>
+                  {locale === 'ru'
+                    ? 'этапов'
+                    : locale === 'ka'
+                      ? 'ეტაპი'
+                      : 'guided steps'}
+                </span>
+                <span>
+                  <b>{speakingCourseWordCount}</b>
+                  {locale === 'ru'
+                    ? 'ключевых слов'
+                    : locale === 'ka'
+                      ? 'ძირითადი სიტყვა'
+                      : 'speaking words'}
+                </span>
+                <span>
+                  <b>{speakingScenarioCount}</b>
+                  {locale === 'ru'
+                    ? 'реальных ситуаций'
+                    : locale === 'ka'
+                      ? 'რეალური სიტუაცია'
+                      : 'real-life prompts'}
+                </span>
+              </div>
+
               <div className="learn-section-tabs" role="tablist">
                 <button
                   className={learnSection === 'today' ? 'active' : ''}
@@ -3839,7 +4107,56 @@ function AppShell({
                   ? currentWord.ru
                   : currentWord.en
                 : '';
+              const recognitionOptions = currentWord
+                ? (() => {
+                    const currentIndex = Math.max(
+                      0,
+                      allWords.findIndex((word) => word.id === currentWord.id),
+                    );
+                    const candidates = [answerLabel];
+                    for (let offset = 1; candidates.length < 3; offset += 1) {
+                      const candidate =
+                        allWords[
+                          (currentIndex + offset * 17) % allWords.length
+                        ];
+                      if (!candidate) break;
+                      const meaning =
+                        locale === 'ru' ? candidate.ru : candidate.en;
+                      if (meaning && !candidates.includes(meaning))
+                        candidates.push(meaning);
+                    }
+                    const shift = currentIndex % candidates.length;
+                    return [
+                      ...candidates.slice(shift),
+                      ...candidates.slice(0, shift),
+                    ];
+                  })()
+                : [];
+              const submitWordAnswer = (answer: string, exact = false) => {
+                if (!currentWord) return;
+                const correct = exact
+                  ? answer === answerLabel
+                  : isLessonAnswerCorrect(answer, currentWord, locale);
+                setPreviewAnswer(answer);
+                setPreviewResult(correct ? 'correct' : 'wrong');
+                const wordUnit =
+                  learningWords.find((item) => item.word.id === currentWord.id)
+                    ?.unitNumber ?? lesson.unit;
+                recordWordResult(currentWord, wordUnit, correct);
+                if (hasAudio)
+                  // oxlint-disable-next-line react/react-compiler -- this callback only runs after a learner submits an answer
+                  play(
+                    `lesson-test-${currentWord.id}`,
+                    currentWord.ka,
+                    `/audio/words/${currentWord.id}.mp3`,
+                  );
+              };
               const currentScenario = lesson.scenarios?.[previewScenarioIndex];
+              const scenarioAudioUrl = currentScenario
+                ? getRecordedPhraseAudio(
+                    currentScenario.options[currentScenario.correct] ?? '',
+                  )
+                : null;
               const continueScenario = () => {
                 if (
                   previewScenarioIndex <
@@ -3894,6 +4211,11 @@ function AppShell({
                               ? `გაკვეთილი ${lesson.number} · ახალი`
                               : `Lesson ${lesson.number} · Learn`}
                       </span>
+                      <AudioSpeedControl
+                        rate={audioRate}
+                        onChange={changeAudioRate}
+                        locale={locale}
+                      />
                       <div className="lesson-native-meaning">
                         <small>
                           {locale === 'ru'
@@ -3939,6 +4261,7 @@ function AppShell({
                             ? 'მოუსმინეთ და ორჯერ გაიმეორეთ'
                             : 'Listen and repeat it twice'}
                       </small>
+                      <PronunciationRecorder locale={locale} />
                     </div>
                   )}
 
@@ -3957,6 +4280,11 @@ function AppShell({
                               ? 'Memory check'
                               : 'Lock it in'}
                       </span>
+                      <AudioSpeedControl
+                        rate={audioRate}
+                        onChange={changeAudioRate}
+                        locale={locale}
+                      />
                       <h2>
                         {locale === 'ru'
                           ? 'Что означает это слово?'
@@ -3992,29 +4320,38 @@ function AppShell({
                             ? 'კიდევ მოსასმენად დააჭირეთ'
                             : 'Tap to hear it again'}
                       </small>
-                      {previewResult === 'idle' && (
+                      {lesson.kind !== 'review' && (
+                        <div className="recognition-options">
+                          {recognitionOptions.map((option) => (
+                            <button
+                              type="button"
+                              key={option}
+                              disabled={previewResult !== 'idle'}
+                              className={
+                                previewResult === 'idle'
+                                  ? ''
+                                  : option === answerLabel
+                                    ? 'correct'
+                                    : option === previewAnswer
+                                      ? 'wrong'
+                                      : ''
+                              }
+                              onClick={() => submitWordAnswer(option, true)}
+                            >
+                              {option}
+                              {previewResult !== 'idle' &&
+                                option === answerLabel && <Check />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {lesson.kind === 'review' && previewResult === 'idle' && (
                         <form
                           className="lesson-answer-form"
                           onSubmit={(event) => {
                             event.preventDefault();
                             if (!previewAnswer.trim()) return;
-                            const correct = isLessonAnswerCorrect(
-                              previewAnswer,
-                              currentWord,
-                              locale,
-                            );
-                            setPreviewResult(correct ? 'correct' : 'wrong');
-                            const wordUnit =
-                              learningWords.find(
-                                (item) => item.word.id === currentWord.id,
-                              )?.unitNumber ?? lesson.unit;
-                            recordWordResult(currentWord, wordUnit, correct);
-                            if (hasAudio)
-                              play(
-                                `lesson-test-${currentWord.id}`,
-                                currentWord.ka,
-                                `/audio/words/${currentWord.id}.mp3`,
-                              );
+                            submitWordAnswer(previewAnswer);
                           }}
                         >
                           <input
@@ -4135,7 +4472,31 @@ function AppShell({
                                   : 'Remember this response:'}
                           </strong>
                           <span>{currentScenario.meaning[locale]}</span>
+                          {scenarioAudioUrl && (
+                            <span className="scenario-audio-row">
+                              <AudioButton
+                                id={`scenario-${lesson.number}-${previewScenarioIndex}`}
+                                playing={playing}
+                                onPlay={play}
+                                onPrime={primeAudio}
+                                text={
+                                  currentScenario.options[
+                                    currentScenario.correct
+                                  ]
+                                }
+                                audioUrl={scenarioAudioUrl}
+                              />
+                              {locale === 'ru'
+                                ? 'Послушайте правильный ответ'
+                                : locale === 'ka'
+                                  ? 'მოუსმინეთ სწორ პასუხს'
+                                  : 'Hear the natural answer'}
+                            </span>
+                          )}
                         </div>
+                      )}
+                      {previewScenarioChoice !== null && (
+                        <PronunciationRecorder locale={locale} />
                       )}
                     </div>
                   )}
@@ -4406,9 +4767,9 @@ function AppShell({
                       <div>
                         <CalendarDays />
                         <span>
-                          <b>Three-word mini lessons</b>
+                          <b>Complete A0 survival-speaking course</b>
                           <small>
-                            Choose a gentle, steady, or intensive pace
+                            48 guided steps across 8 practical units
                           </small>
                         </span>
                       </div>
@@ -4416,7 +4777,10 @@ function AppShell({
                         <Brain />
                         <span>
                           <b>Progress, XP, quizzes, and streaks</b>
-                          <small>Your learning record syncs securely</small>
+                          <small>
+                            148 core words, smart review, and 27 speaking
+                            prompts
+                          </small>
                         </span>
                       </div>
                       <div>
@@ -4469,9 +4833,9 @@ function AppShell({
                       </h2>
                       <h3>Guided Learning</h3>
                       <p>
-                        Daily lessons, quizzes, smart review, progress, XP, and
-                        streaks for learners who want structure. The full
-                        dictionary is included.
+                        Build practical A0 Georgian with daily three-word
+                        lessons, listening, speaking practice, smart review, and
+                        real-life missions. The full dictionary is included.
                       </p>
                       <Button
                         onClick={
