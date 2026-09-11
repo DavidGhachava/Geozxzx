@@ -73,14 +73,6 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{if(matchMedia('(display-mode: standalone)').matches||location.hash==='#app'||new URLSearchParams(location.search).get('mode')==='app')document.documentElement.dataset.appMode='true'}catch(e){}",
-          }}
-        />
-      </head>
       <body className={`${sans.variable} ${georgian.variable}`}>
         {children}
       </body>
