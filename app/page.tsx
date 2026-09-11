@@ -629,7 +629,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     searchTitle: 'Search the way you think.',
     searchBody:
       'Type Georgian, transliteration, English, or Russian. Every form stays together.',
-    audioNote: 'Tap the speaker to hear Georgian pronunciation.',
+    audioNote: 'Tap an active speaker to hear recorded Georgian pronunciation.',
     explorePhrasebook: 'Explore the phrasebook',
     situations: 'Six useful situations',
     situationsTitle: 'From your first hello to finding your way.',
@@ -637,7 +637,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     howTitle: 'Useful from the first minute.',
     stepFree: 'Start with trusted essentials',
     stepFreeBody:
-      'Use 50 practical phrases with translation and pronunciation.',
+      'Use 50 practical phrases, with recorded pronunciation where available.',
     stepSave: 'Save what matters',
     stepSaveBody: 'Sign in only when you want your saved list on every device.',
     stepLearn: 'Follow your own plan',
@@ -781,7 +781,8 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     searchTitle: 'Ищите так, как думаете.',
     searchBody:
       'Введите грузинский текст, транслитерацию, английское или русское значение.',
-    audioNote: 'Нажмите на динамик, чтобы услышать произношение.',
+    audioNote:
+      'Нажмите на активный динамик, чтобы услышать запись произношения.',
     explorePhrasebook: 'Открыть разговорник',
     situations: 'Шесть ситуаций',
     situationsTitle: 'От первого приветствия до поиска дороги.',
@@ -935,7 +936,7 @@ const localeCopy: Record<Locale, Record<string, string>> = {
     searchTitle: 'მოძებნეთ ისე, როგორც ფიქრობთ.',
     searchBody:
       'შეიყვანეთ ქართული, ტრანსლიტერაცია, ინგლისური ან რუსული მნიშვნელობა.',
-    audioNote: 'გამოთქმის მოსასმენად დააჭირეთ დინამიკს.',
+    audioNote: 'ჩანაწერის მოსასმენად დააჭირეთ აქტიურ დინამიკს.',
     explorePhrasebook: 'ფრაზების გახსნა',
     situations: 'ექვსი სიტუაცია',
     situationsTitle: 'პირველი მისალმებიდან გზის პოვნამდე.',
@@ -2490,8 +2491,8 @@ function AppShell({
                   type="button"
                   className="audio-button audio-pending"
                   disabled
-                  title="Recorded audio loading"
-                  aria-label="Recorded audio loading"
+                  title="Recording coming soon"
+                  aria-label="Recording coming soon"
                 >
                   <Volume2 />
                 </button>
@@ -3266,10 +3267,10 @@ function AppShell({
                   </h1>
                   <p>
                     {locale === 'ru'
-                      ? 'Нажмите на динамик, чтобы услышать грузинское произношение.'
+                      ? 'Нажмите на активный динамик, чтобы услышать запись грузинского произношения.'
                       : locale === 'ka'
-                        ? 'ქართული გამოთქმის მოსასმენად დააჭირეთ დინამიკს.'
-                        : 'Tap the speaker to hear the Georgian pronunciation.'}
+                        ? 'ქართული ჩანაწერის მოსასმენად დააჭირეთ აქტიურ დინამიკს.'
+                        : 'Tap an active speaker to hear the recorded Georgian pronunciation.'}
                   </p>
                 </div>
               </div>
