@@ -5932,7 +5932,10 @@ function AuthPage({
         : await client.auth.signUp({
             email,
             password,
-            options: { data: { display_name: name.trim() || undefined } },
+            options: {
+              emailRedirectTo: `${window.location.origin}/?mode=app#app`,
+              data: { display_name: name.trim() || undefined },
+            },
           });
     setBusy(false);
     if (result.error) {
