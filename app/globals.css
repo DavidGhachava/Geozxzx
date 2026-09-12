@@ -7305,10 +7305,12 @@ html[data-app-mode='true'] .marketing {
   margin-top: 4px;
   background: #fffdf9;
 }
-.onboarding-actions [data-slot='button'] {
+.onboarding-actions button {
   min-width: 145px;
   min-height: 50px;
+  pointer-events: auto;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .onboarding-later {
   border: 0;
@@ -7483,7 +7485,7 @@ html[data-app-mode='true'] .marketing {
     background: #fffdf9;
     box-shadow: 0 -12px 28px rgba(49, 18, 27, 0.08);
   }
-  .onboarding-actions [data-slot='button'] {
+  .onboarding-actions button {
     min-width: 0;
     flex: 1 1 54%;
   }

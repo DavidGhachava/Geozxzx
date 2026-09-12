@@ -1,4 +1,7 @@
-const CACHE = 'geo-pwa-v13';
+// Bump this whenever a release needs to evict an older installed app shell.
+// This is especially important on iOS, where a Home Screen app can keep an
+// existing service-worker cache alive longer than a normal Safari tab.
+const CACHE = 'geo-pwa-v14';
 const CORE = [
   '/',
   '/offline.html',

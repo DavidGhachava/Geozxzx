@@ -6190,8 +6190,37 @@ export default function HomePage() {
       new URLSearchParams(location.search).get('mode') === 'app'
     )
       window.setTimeout(() => setMode('app'), 0);
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production')
-      void navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    let removeServiceWorkerListener: (() => void) | undefined;
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+      const reloadKey = 'geo-sw-v14-reloaded';
+      const handleControllerChange = () => {
+        // A newly activated worker cannot replace code already executing in
+        // this document. Reload once so iOS/PWA users immediately receive the
+        // current app bundle instead of continuing in the stale shell.
+        if (window.sessionStorage.getItem(reloadKey)) return;
+        window.sessionStorage.setItem(reloadKey, '1');
+        window.location.reload();
+      };
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        handleControllerChange,
+      );
+      removeServiceWorkerListener = () =>
+        navigator.serviceWorker.removeEventListener(
+          'controllerchange',
+          handleControllerChange,
+        );
+      void navigator.serviceWorker
+        .register('/sw.js?v=14', {
+          scope: '/',
+          updateViaCache: 'none',
+        })
+        .then((registration) => registration.update())
+        .catch(() => {
+          // The app remains usable when registration is unavailable (private
+          // browsing, restricted storage, or a temporary network failure).
+        });
+    }
     const captureInstall = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as BeforeInstallPromptEvent);
@@ -6203,6 +6232,7 @@ export default function HomePage() {
     window.addEventListener('beforeinstallprompt', captureInstall);
     window.addEventListener('appinstalled', installed);
     return () => {
+      removeServiceWorkerListener?.();
       window.removeEventListener('beforeinstallprompt', captureInstall);
       window.removeEventListener('appinstalled', installed);
     };
