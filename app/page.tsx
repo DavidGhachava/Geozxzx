@@ -2541,7 +2541,9 @@ function AppShell({
   };
 
   const openLearning = () => {
-    setScreen('learn');
+    setLearnSection('today');
+    setScreen(canUseLearning ? 'daily' : 'learn');
+    window.scrollTo(0, 0);
   };
   const openWords = () => navigateInApp('words');
   const openProgress = () => {
@@ -4164,6 +4166,8 @@ function AppShell({
                       : previewMode === 'learn'
                         ? previewWordIndex + 1
                         : segmentWords.length + previewTestIndex + 1;
+              const lessonReturnScreen =
+                previewSource === 'today' ? 'daily' : 'learn';
               const finishStep = (returnToLearn = true) => {
                 if (previewSource === 'today') {
                   localStorage.setItem(
@@ -4172,7 +4176,7 @@ function AppShell({
                   );
                   if (returnToLearn) {
                     setLearnSection('today');
-                    setScreen('learn');
+                    setScreen('daily');
                   }
                   return;
                 }
@@ -4308,7 +4312,7 @@ function AppShell({
                 <section className="screen lesson-preview-screen">
                   <div className="lesson-focus-topbar">
                     <button
-                      onClick={() => setScreen('learn')}
+                      onClick={() => setScreen(lessonReturnScreen)}
                       aria-label={
                         locale === 'ru'
                           ? 'Выйти из урока'
@@ -4698,7 +4702,7 @@ function AppShell({
                             className="lesson-next-button"
                             onClick={() => {
                               setLearnSection('today');
-                              setScreen('learn');
+                              setScreen('daily');
                             }}
                           >
                             {locale === 'ru'
@@ -4723,7 +4727,7 @@ function AppShell({
                         ) : (
                           <button
                             className="lesson-next-button"
-                            onClick={() => setScreen('learn')}
+                            onClick={() => setScreen(lessonReturnScreen)}
                           >
                             {locale === 'ru'
                               ? 'Вернуться к урокам'
@@ -4830,7 +4834,7 @@ function AppShell({
                     ) : null}
                     <button
                       className="lesson-leave-button"
-                      onClick={() => setScreen('learn')}
+                      onClick={() => setScreen(lessonReturnScreen)}
                     >
                       {locale === 'ru'
                         ? 'Выйти из урока'
@@ -5061,17 +5065,28 @@ function AppShell({
               />
               <button
                 className="daily-lesson-card"
-                onClick={() => setScreen('lesson')}
+                onClick={startTodayLesson}
+                disabled={!dailyPlan.ids.length}
               >
                 <span className="daily-book">
                   <BookOpen />
                 </span>
                 <span>
-                  <b>5 min · 8 words</b>
-                  <small>Premium daily lesson</small>
+                  <b>
+                    {dailyMicroLessonGoal}{' '}
+                    {dailyMicroLessonGoal === 1
+                      ? 'tiny lesson'
+                      : 'tiny lessons'}{' '}
+                    · 3 words each
+                  </b>
+                  <small>
+                    {dailyPlan.reviewCount} to review · {dailyPlan.newCount} new
+                    · {dailyPlan.focusLabel}
+                  </small>
                 </span>
                 <span className="start-lesson">
-                  Start lesson <ChevronRight />
+                  {dailyPlan.ids.length ? 'Start lesson' : 'Done for today'}{' '}
+                  {dailyPlan.ids.length ? <ChevronRight /> : <Check />}
                 </span>
               </button>
               <div className="streak-card">
@@ -5099,6 +5114,22 @@ function AppShell({
                       : 'Practice your first phrase'}
                   </small>
                   <Progress value={basicsPercent} />
+                </span>
+                <ChevronRight />
+              </button>
+              <button
+                type="button"
+                className="daily-path-button"
+                onClick={() => {
+                  setLearnSection('paths');
+                  setScreen('learn');
+                  window.scrollTo(0, 0);
+                }}
+              >
+                <Compass />
+                <span>
+                  <b>Explore the complete course</b>
+                  <small>48 guided steps across 8 practical units</small>
                 </span>
                 <ChevronRight />
               </button>
@@ -6328,7 +6359,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v15-reloaded';
+      const reloadKey = 'geo-sw-v16-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -6347,7 +6378,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=15', {
+        .register('/sw.js?v=16', {
           scope: '/',
           updateViaCache: 'none',
         })
