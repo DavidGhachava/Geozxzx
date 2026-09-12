@@ -3025,10 +3025,7 @@ function AppShell({
             <Compass />
             {t('explore')}
           </button>
-          <button
-            className={wordsNav ? 'active' : ''}
-            onClick={openWords}
-          >
+          <button className={wordsNav ? 'active' : ''} onClick={openWords}>
             <Search />
             {locale === 'ru' ? 'Слова' : locale === 'ka' ? 'სიტყვები' : 'Words'}
           </button>
@@ -5370,46 +5367,47 @@ function AppShell({
             </section>
           )}
         </div>
-        <nav className="bottom-nav" aria-label="App navigation">
-          <button
-            className={
-              screen === 'explore' || screen === 'all' || screen === 'category'
-                ? 'active'
-                : ''
-            }
-            onClick={() => setScreen('explore')}
-          >
-            <Home />
-            <span>{t('explore')}</span>
-          </button>
-          <button
-            className={wordsNav ? 'active' : ''}
-            onClick={openWords}
-          >
-            <Search />
-            <span>
-              {locale === 'ru'
-                ? 'Слова'
-                : locale === 'ka'
-                  ? 'სიტყვები'
-                  : 'Words'}
-            </span>
-          </button>
-          <button
-            className={screen === 'saved' ? 'active' : ''}
-            onClick={() => setScreen('saved')}
-          >
-            <Bookmark />
-            <span>{t('saved')}</span>
-          </button>
-          <button
-            className={screen === 'progress' || learnNav ? 'active' : ''}
-            onClick={openLearning}
-          >
-            <BookOpen />
-            <span>{t('learn')}</span>
-          </button>
-        </nav>
+        {!onboardingOpen && (
+          <nav className="bottom-nav" aria-label="App navigation">
+            <button
+              className={
+                screen === 'explore' ||
+                screen === 'all' ||
+                screen === 'category'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() => setScreen('explore')}
+            >
+              <Home />
+              <span>{t('explore')}</span>
+            </button>
+            <button className={wordsNav ? 'active' : ''} onClick={openWords}>
+              <Search />
+              <span>
+                {locale === 'ru'
+                  ? 'Слова'
+                  : locale === 'ka'
+                    ? 'სიტყვები'
+                    : 'Words'}
+              </span>
+            </button>
+            <button
+              className={screen === 'saved' ? 'active' : ''}
+              onClick={() => setScreen('saved')}
+            >
+              <Bookmark />
+              <span>{t('saved')}</span>
+            </button>
+            <button
+              className={screen === 'progress' || learnNav ? 'active' : ''}
+              onClick={openLearning}
+            >
+              <BookOpen />
+              <span>{t('learn')}</span>
+            </button>
+          </nav>
+        )}
       </div>
       {onboardingOpen && (
         <LearnerOnboardingDialog
@@ -5441,6 +5439,7 @@ function LearnerOnboardingDialog({
   const [draft, setDraft] = useState(initialValue);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const copy = {
     en: {
       eyebrow: 'BUILD YOUR LEARNING PLAN',
@@ -5524,6 +5523,13 @@ function LearnerOnboardingDialog({
       };
     });
   };
+  const goToStep = (nextStep: number) => {
+    setStatus('');
+    setStep(nextStep);
+  };
+  useEffect(() => {
+    scrollAreaRef.current?.scrollTo({ top: 0 });
+  }, [step]);
   const finish = async () => {
     if (!draft.focusAreas.length) {
       setStatus('Choose at least one supporting interest.');
@@ -5537,290 +5543,311 @@ function LearnerOnboardingDialog({
   };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="onboarding-dialog">
-        <div
-          className="onboarding-progress"
-          aria-label={`Step ${step + 1} of 4`}
-        >
-          {[0, 1, 2, 3].map((index) => (
-            <span key={index} className={index <= step ? 'active' : ''} />
-          ))}
-        </div>
-        <DialogHeader>
-          <span className="onboarding-eyebrow">{copy.eyebrow}</span>
-          <DialogTitle>{copy.title[step]}</DialogTitle>
-          <DialogDescription>{copy.intro[step]}</DialogDescription>
-        </DialogHeader>
-
-        {step === 0 && (
-          <div className="onboarding-choice-grid primary-goal-grid">
-            {(Object.keys(focusLabels) as LearningFocus[]).map((focus) => (
-              <button
-                key={focus}
-                className={draft.primaryGoal === focus ? 'selected' : ''}
-                onClick={() =>
-                  setDraft((current) => ({ ...current, primaryGoal: focus }))
-                }
-              >
-                <span aria-hidden="true">
-                  {focus === 'general_speaking' ? (
-                    <MessageCircle />
-                  ) : focus === 'cafe' ? (
-                    <Coffee />
-                  ) : focus === 'work' ? (
-                    <CreditCard />
-                  ) : focus === 'health' ? (
-                    <ShieldPlus />
-                  ) : focus === 'transport' ? (
-                    <Bus />
-                  ) : focus === 'shopping' ? (
-                    <ShoppingBag />
-                  ) : focus === 'home' ? (
-                    <Home />
-                  ) : focus === 'services' ? (
-                    <CalendarDays />
-                  ) : (
-                    <Users />
-                  )}
-                </span>
-                <b>{focusLabels[focus][locale]}</b>
-              </button>
+      <DialogContent className="onboarding-dialog" showCloseButton={false}>
+        <div className="onboarding-scroll-area" ref={scrollAreaRef}>
+          <div
+            className="onboarding-progress"
+            aria-label={`Step ${step + 1} of 4`}
+          >
+            {[0, 1, 2, 3].map((index) => (
+              <span key={index} className={index <= step ? 'active' : ''} />
             ))}
           </div>
-        )}
+          <DialogHeader>
+            <span className="onboarding-eyebrow">{copy.eyebrow}</span>
+            <DialogTitle>{copy.title[step]}</DialogTitle>
+            <DialogDescription>{copy.intro[step]}</DialogDescription>
+          </DialogHeader>
 
-        {step === 1 && (
-          <div className="onboarding-fields">
-            <div className="onboarding-chip-grid">
-              {focusChoices.map((focus) => (
+          {step === 0 && (
+            <div className="onboarding-choice-grid primary-goal-grid">
+              {(Object.keys(focusLabels) as LearningFocus[]).map((focus) => (
                 <button
+                  type="button"
                   key={focus}
-                  className={draft.focusAreas.includes(focus) ? 'selected' : ''}
-                  onClick={() => toggleFocus(focus)}
+                  className={draft.primaryGoal === focus ? 'selected' : ''}
+                  onClick={() =>
+                    setDraft((current) => ({ ...current, primaryGoal: focus }))
+                  }
                 >
-                  {draft.focusAreas.includes(focus) && <Check />}
-                  {focusLabels[focus][locale]}
+                  <span aria-hidden="true">
+                    {focus === 'general_speaking' ? (
+                      <MessageCircle />
+                    ) : focus === 'cafe' ? (
+                      <Coffee />
+                    ) : focus === 'work' ? (
+                      <CreditCard />
+                    ) : focus === 'health' ? (
+                      <ShieldPlus />
+                    ) : focus === 'transport' ? (
+                      <Bus />
+                    ) : focus === 'shopping' ? (
+                      <ShoppingBag />
+                    ) : focus === 'home' ? (
+                      <Home />
+                    ) : focus === 'services' ? (
+                      <CalendarDays />
+                    ) : (
+                      <Users />
+                    )}
+                  </span>
+                  <b>{focusLabels[focus][locale]}</b>
                 </button>
               ))}
             </div>
-            <label>
-              {copy.custom}
-              <textarea
-                value={draft.customFocus}
-                maxLength={240}
-                placeholder={copy.customPlaceholder}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    customFocus: event.target.value,
-                  }))
-                }
-              />
-              <small>{draft.customFocus.length}/240</small>
-            </label>
-          </div>
-        )}
+          )}
 
-        {step === 2 && (
-          <div className="onboarding-fields onboarding-two-columns">
-            <fieldset>
-              <legend>
-                {locale === 'ru'
-                  ? 'Ваш уровень'
-                  : locale === 'ka'
-                    ? 'თქვენი დონე'
-                    : 'Your experience'}
-              </legend>
-              {(
-                [
-                  [
-                    'brand_new',
-                    locale === 'ru'
-                      ? 'Начинаю с нуля'
-                      : locale === 'ka'
-                        ? 'ნულიდან ვიწყებ'
-                        : 'Starting from zero',
-                  ],
-                  [
-                    'some_basics',
-                    locale === 'ru'
-                      ? 'Знаю основы'
-                      : locale === 'ka'
-                        ? 'საფუძვლები ვიცი'
-                        : 'I know some basics',
-                  ],
-                  [
-                    'conversational',
-                    locale === 'ru'
-                      ? 'Уже немного говорю'
-                      : locale === 'ka'
-                        ? 'უკვე ცოტას ვსაუბრობ'
-                        : 'I can already speak a little',
-                  ],
-                ] as [ExperienceLevel, string][]
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  className={draft.experienceLevel === value ? 'selected' : ''}
-                  onClick={() =>
+          {step === 1 && (
+            <div className="onboarding-fields">
+              <div className="onboarding-chip-grid">
+                {focusChoices.map((focus) => (
+                  <button
+                    type="button"
+                    key={focus}
+                    className={
+                      draft.focusAreas.includes(focus) ? 'selected' : ''
+                    }
+                    onClick={() => toggleFocus(focus)}
+                  >
+                    {draft.focusAreas.includes(focus) && <Check />}
+                    {focusLabels[focus][locale]}
+                  </button>
+                ))}
+              </div>
+              <label>
+                {copy.custom}
+                <textarea
+                  value={draft.customFocus}
+                  maxLength={240}
+                  placeholder={copy.customPlaceholder}
+                  onChange={(event) =>
                     setDraft((current) => ({
                       ...current,
-                      experienceLevel: value,
+                      customFocus: event.target.value,
+                    }))
+                  }
+                />
+                <small>{draft.customFocus.length}/240</small>
+              </label>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="onboarding-fields onboarding-two-columns">
+              <fieldset>
+                <legend>
+                  {locale === 'ru'
+                    ? 'Ваш уровень'
+                    : locale === 'ka'
+                      ? 'თქვენი დონე'
+                      : 'Your experience'}
+                </legend>
+                {(
+                  [
+                    [
+                      'brand_new',
+                      locale === 'ru'
+                        ? 'Начинаю с нуля'
+                        : locale === 'ka'
+                          ? 'ნულიდან ვიწყებ'
+                          : 'Starting from zero',
+                    ],
+                    [
+                      'some_basics',
+                      locale === 'ru'
+                        ? 'Знаю основы'
+                        : locale === 'ka'
+                          ? 'საფუძვლები ვიცი'
+                          : 'I know some basics',
+                    ],
+                    [
+                      'conversational',
+                      locale === 'ru'
+                        ? 'Уже немного говорю'
+                        : locale === 'ka'
+                          ? 'უკვე ცოტას ვსაუბრობ'
+                          : 'I can already speak a little',
+                    ],
+                  ] as [ExperienceLevel, string][]
+                ).map(([value, label]) => (
+                  <button
+                    type="button"
+                    key={value}
+                    className={
+                      draft.experienceLevel === value ? 'selected' : ''
+                    }
+                    onClick={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        experienceLevel: value,
+                      }))
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </fieldset>
+              <fieldset>
+                <legend>
+                  {locale === 'ru'
+                    ? 'Скорость'
+                    : locale === 'ka'
+                      ? 'სწავლის ტემპი'
+                      : 'Learning pace'}
+                </legend>
+                {(
+                  [
+                    [
+                      'gentle',
+                      locale === 'ru'
+                        ? 'Легко · 3 слова в день'
+                        : locale === 'ka'
+                          ? 'მსუბუქი · 3 სიტყვა დღეში'
+                          : 'Gentle · 3 words a day',
+                    ],
+                    [
+                      'steady',
+                      locale === 'ru'
+                        ? 'Ровно · 6 слов в день'
+                        : locale === 'ka'
+                          ? 'სტაბილური · 6 სიტყვა დღეში'
+                          : 'Steady · 6 words a day',
+                    ],
+                    [
+                      'intensive',
+                      locale === 'ru'
+                        ? 'Быстро · 9 слов в день'
+                        : locale === 'ka'
+                          ? 'სწრაფი · 9 სიტყვა დღეში'
+                          : 'Intensive · 9 words a day',
+                    ],
+                  ] as [LearningPace, string][]
+                ).map(([value, label]) => (
+                  <button
+                    type="button"
+                    key={value}
+                    className={draft.learningPace === value ? 'selected' : ''}
+                    onClick={() =>
+                      setDraft((current) => ({
+                        ...current,
+                        learningPace: value,
+                      }))
+                    }
+                  >
+                    {label}
+                  </button>
+                ))}
+              </fieldset>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="onboarding-fields">
+              <label>
+                {copy.discovery}
+                <select
+                  value={draft.discoverySource}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      discoverySource: event.target.value as
+                        | DiscoverySource
+                        | '',
                     }))
                   }
                 >
-                  {label}
-                </button>
-              ))}
-            </fieldset>
-            <fieldset>
-              <legend>
-                {locale === 'ru'
-                  ? 'Скорость'
-                  : locale === 'ka'
-                    ? 'სწავლის ტემპი'
-                    : 'Learning pace'}
-              </legend>
-              {(
-                [
-                  [
-                    'gentle',
-                    locale === 'ru'
-                      ? 'Легко · 3 слова в день'
+                  <option value="">
+                    {locale === 'ru'
+                      ? 'Выберите ответ'
                       : locale === 'ka'
-                        ? 'მსუბუქი · 3 სიტყვა დღეში'
-                        : 'Gentle · 3 words a day',
-                  ],
-                  [
-                    'steady',
-                    locale === 'ru'
-                      ? 'Ровно · 6 слов в день'
+                        ? 'აირჩიეთ პასუხი'
+                        : 'Choose an answer'}
+                  </option>
+                  <option value="search">
+                    {locale === 'ru'
+                      ? 'Поиск'
                       : locale === 'ka'
-                        ? 'სტაბილური · 6 სიტყვა დღეში'
-                        : 'Steady · 6 words a day',
-                  ],
-                  [
-                    'intensive',
-                    locale === 'ru'
-                      ? 'Быстро · 9 слов в день'
+                        ? 'ძიება'
+                        : 'Search'}
+                  </option>
+                  <option value="friend">
+                    {locale === 'ru'
+                      ? 'Друг'
                       : locale === 'ka'
-                        ? 'სწრაფი · 9 სიტყვა დღეში'
-                        : 'Intensive · 9 words a day',
-                  ],
-                ] as [LearningPace, string][]
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  className={draft.learningPace === value ? 'selected' : ''}
-                  onClick={() =>
-                    setDraft((current) => ({ ...current, learningPace: value }))
-                  }
-                >
-                  {label}
-                </button>
-              ))}
-            </fieldset>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="onboarding-fields">
-            <label>
-              {copy.discovery}
-              <select
-                value={draft.discoverySource}
-                onChange={(event) =>
-                  setDraft((current) => ({
-                    ...current,
-                    discoverySource: event.target.value as DiscoverySource | '',
-                  }))
-                }
-              >
-                <option value="">
-                  {locale === 'ru'
-                    ? 'Выберите ответ'
-                    : locale === 'ka'
-                      ? 'აირჩიეთ პასუხი'
-                      : 'Choose an answer'}
-                </option>
-                <option value="search">
-                  {locale === 'ru'
-                    ? 'Поиск'
-                    : locale === 'ka'
-                      ? 'ძიება'
-                      : 'Search'}
-                </option>
-                <option value="friend">
-                  {locale === 'ru'
-                    ? 'Друг'
-                    : locale === 'ka'
-                      ? 'მეგობარი'
-                      : 'Friend or family'}
-                </option>
-                <option value="social_media">
-                  {locale === 'ru'
-                    ? 'Социальные сети'
-                    : locale === 'ka'
-                      ? 'სოციალური ქსელი'
-                      : 'Social media'}
-                </option>
-                <option value="community">
-                  {locale === 'ru'
-                    ? 'Сообщество'
-                    : locale === 'ka'
-                      ? 'თემი'
-                      : 'Community group'}
-                </option>
-                <option value="work">
-                  {locale === 'ru'
-                    ? 'Работа'
-                    : locale === 'ka'
-                      ? 'სამსახური'
-                      : 'Work'}
-                </option>
-                <option value="other">
-                  {locale === 'ru'
-                    ? 'Другое'
-                    : locale === 'ka'
-                      ? 'სხვა'
-                      : 'Other'}
-                </option>
-              </select>
-            </label>
-            <div className="onboarding-summary">
-              <Brain />
-              <span>
-                <small>
-                  {locale === 'ru'
-                    ? 'ГЛАВНЫЙ ФОКУС'
-                    : locale === 'ka'
-                      ? 'მთავარი ფოკუსი'
-                      : 'MAIN FOCUS'}
-                </small>
-                <b>{focusLabels[draft.primaryGoal][locale]}</b>
-                <p>
-                  {locale === 'ru'
-                    ? 'Примерно две трети нового материала будут связаны с вашим фокусом. Остальное — основы речи и слова для повторения.'
-                    : locale === 'ka'
-                      ? 'ახალი მასალის დაახლოებით ორი მესამედი თქვენს ფოკუსს დაეთმობა. დანარჩენი — ზოგადი საუბარი და გამეორებაა.'
-                      : 'About two thirds of new material will follow your focus. The rest stays dedicated to everyday speaking and memory review.'}
-                </p>
-              </span>
+                        ? 'მეგობარი'
+                        : 'Friend or family'}
+                  </option>
+                  <option value="social_media">
+                    {locale === 'ru'
+                      ? 'Социальные сети'
+                      : locale === 'ka'
+                        ? 'სოციალური ქსელი'
+                        : 'Social media'}
+                  </option>
+                  <option value="community">
+                    {locale === 'ru'
+                      ? 'Сообщество'
+                      : locale === 'ka'
+                        ? 'თემი'
+                        : 'Community group'}
+                  </option>
+                  <option value="work">
+                    {locale === 'ru'
+                      ? 'Работа'
+                      : locale === 'ka'
+                        ? 'სამსახური'
+                        : 'Work'}
+                  </option>
+                  <option value="other">
+                    {locale === 'ru'
+                      ? 'Другое'
+                      : locale === 'ka'
+                        ? 'სხვა'
+                        : 'Other'}
+                  </option>
+                </select>
+              </label>
+              <div className="onboarding-summary">
+                <Brain />
+                <span>
+                  <small>
+                    {locale === 'ru'
+                      ? 'ГЛАВНЫЙ ФОКУС'
+                      : locale === 'ka'
+                        ? 'მთავარი ფოკუსი'
+                        : 'MAIN FOCUS'}
+                  </small>
+                  <b>{focusLabels[draft.primaryGoal][locale]}</b>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Примерно две трети нового материала будут связаны с вашим фокусом. Остальное — основы речи и слова для повторения.'
+                      : locale === 'ka'
+                        ? 'ახალი მასალის დაახლოებით ორი მესამედი თქვენს ფოკუსს დაეთმობა. დანარჩენი — ზოგადი საუბარი და გამეორებაა.'
+                        : 'About two thirds of new material will follow your focus. The rest stays dedicated to everyday speaking and memory review.'}
+                  </p>
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {status && <output className="auth-status">{status}</output>}
+          {status && (
+            <output className="auth-status" aria-live="polite">
+              {status}
+            </output>
+          )}
+        </div>
         <div className="onboarding-actions">
           {step > 0 ? (
             <Button
+              type="button"
               variant="outline"
-              onClick={() => setStep((value) => value - 1)}
+              onClick={() => goToStep(step - 1)}
             >
               {copy.back}
             </Button>
           ) : (
             <button
+              type="button"
               className="onboarding-later"
               onClick={() => onOpenChange(false)}
             >
@@ -5828,10 +5855,9 @@ function LearnerOnboardingDialog({
             </button>
           )}
           <Button
+            type="button"
             disabled={busy}
-            onClick={() =>
-              step < 3 ? setStep((value) => value + 1) : void finish()
-            }
+            onClick={() => (step < 3 ? goToStep(step + 1) : void finish())}
           >
             {busy ? '…' : step < 3 ? copy.next : copy.finish}
             <ChevronRight />

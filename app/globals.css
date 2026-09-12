@@ -7097,8 +7097,8 @@ html[data-app-mode='true'] .marketing {
   width: min(760px, calc(100vw - 28px));
   max-width: 760px;
   max-height: min(860px, calc(100dvh - 28px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
   padding: 28px;
   border-radius: 28px;
   background: #fffdf9 !important;
@@ -7106,6 +7106,16 @@ html[data-app-mode='true'] .marketing {
   isolation: isolate;
   backdrop-filter: none;
   box-shadow: 0 26px 80px rgba(45, 10, 20, 0.28);
+}
+
+.onboarding-scroll-area {
+  display: grid;
+  min-height: 0;
+  gap: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 [data-slot='dialog-overlay'] {
@@ -7298,6 +7308,7 @@ html[data-app-mode='true'] .marketing {
 .onboarding-actions [data-slot='button'] {
   min-width: 145px;
   min-height: 50px;
+  touch-action: manipulation;
 }
 .onboarding-later {
   border: 0;
@@ -7438,8 +7449,13 @@ html[data-app-mode='true'] .marketing {
     display: grid;
   }
   .onboarding-dialog {
-    width: calc(100vw - 16px);
-    max-height: calc(100dvh - 16px);
+    right: 8px;
+    left: 8px;
+    width: auto;
+    height: calc(100dvh - 16px);
+    max-height: none;
+    top: 8px;
+    translate: 0 0;
     padding: 20px 18px 18px;
     border-radius: 22px;
   }
@@ -7459,8 +7475,7 @@ html[data-app-mode='true'] .marketing {
     grid-template-columns: 1fr;
   }
   .onboarding-actions {
-    position: sticky;
-    bottom: -18px;
+    position: relative;
     z-index: 4;
     margin: 0 -18px -18px;
     padding: 13px 18px calc(18px + env(safe-area-inset-bottom));
