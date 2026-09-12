@@ -809,6 +809,188 @@ footer > button {
   margin: auto;
   animation: appear 0.24s ease;
 }
+
+.access-welcome-screen {
+  position: relative;
+  display: grid;
+  max-width: 900px;
+  gap: 22px;
+  overflow: hidden;
+  padding: clamp(24px, 5vw, 58px);
+  border: 1px solid #efd9df;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(239, 49, 90, 0.16), transparent 25%),
+    linear-gradient(145deg, #fffdfb 0%, #fff5f7 58%, #fffaf0 100%);
+  box-shadow: 0 28px 80px rgba(73, 19, 35, 0.12);
+}
+.access-welcome-celebration span {
+  position: absolute;
+  width: 10px;
+  height: 20px;
+  border-radius: 99px;
+  background: #ef315a;
+  transform: rotate(28deg);
+}
+.access-welcome-celebration span:nth-child(1) {
+  top: 7%;
+  left: 7%;
+}
+.access-welcome-celebration span:nth-child(2) {
+  top: 15%;
+  right: 8%;
+  background: #d8a33a;
+  transform: rotate(-34deg);
+}
+.access-welcome-celebration span:nth-child(3) {
+  top: 43%;
+  right: 3%;
+  width: 7px;
+  height: 14px;
+  background: #6b58cc;
+}
+.access-welcome-celebration span:nth-child(4) {
+  bottom: 11%;
+  left: 4%;
+  width: 7px;
+  height: 14px;
+  background: #4b9364;
+  transform: rotate(-24deg);
+}
+.access-welcome-celebration span:nth-child(5) {
+  top: 3%;
+  left: 31%;
+  width: 6px;
+  height: 12px;
+  background: #4b9364;
+  transform: rotate(65deg);
+}
+.access-welcome-hero {
+  position: relative;
+  display: grid;
+  max-width: 680px;
+  justify-items: start;
+}
+.access-welcome-icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+  place-items: center;
+  border-radius: 21px;
+  color: white;
+  background: linear-gradient(145deg, #b90e37, #ef315a);
+  box-shadow: 0 15px 30px rgba(185, 14, 55, 0.25);
+}
+.access-welcome-icon svg {
+  width: 29px;
+  height: 29px;
+}
+.access-welcome-hero h1 {
+  max-width: 720px;
+  margin: 10px 0 13px;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+.access-welcome-hero > p {
+  max-width: 650px;
+  margin: 0;
+  color: #65565b;
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+.access-welcome-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 20px;
+}
+.access-welcome-badges span {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid #cfe3d2;
+  border-radius: 99px;
+  color: #28603b;
+  background: #f2fbf3;
+  font-weight: 850;
+}
+.access-welcome-badges svg {
+  width: 18px;
+}
+.access-welcome-plan {
+  display: grid;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 30px);
+  border: 1px solid rgba(185, 14, 55, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.82);
+}
+.access-welcome-plan-heading > span {
+  color: #ac1235;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.11em;
+}
+.access-welcome-plan-heading h2 {
+  max-width: 650px;
+  margin: 6px 0 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  letter-spacing: -0.035em;
+}
+.access-welcome-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.access-welcome-steps article {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  padding: 16px;
+  border-radius: 17px;
+  background: #fff8f9;
+}
+.access-welcome-steps article > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 11px;
+  color: #b30d34;
+  background: #ffe8ee;
+  font-size: 0.75rem;
+  font-weight: 950;
+}
+.access-welcome-steps b {
+  display: block;
+  margin-bottom: 6px;
+}
+.access-welcome-steps p {
+  margin: 0;
+  color: #706267;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.access-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.access-welcome-actions [data-slot='button'] {
+  min-height: 54px;
+  padding-inline: 22px;
+}
+.access-welcome-actions > button:not([data-slot='button']) {
+  min-height: 48px;
+  border: 0;
+  color: #8e1431;
+  background: transparent;
+  font-weight: 850;
+}
 @keyframes appear {
   from {
     opacity: 0;
@@ -2210,6 +2392,36 @@ footer > button {
   }
   .app-content {
     padding: 28px 18px 105px;
+  }
+  .access-welcome-screen {
+    gap: 17px;
+    padding: 24px 18px;
+    border-radius: 22px;
+  }
+  .access-welcome-icon {
+    width: 54px;
+    height: 54px;
+    margin-bottom: 12px;
+    border-radius: 18px;
+  }
+  .access-welcome-hero h1 {
+    font-size: 2.35rem;
+  }
+  .access-welcome-hero > p {
+    font-size: 0.98rem;
+  }
+  .access-welcome-steps {
+    grid-template-columns: 1fr;
+  }
+  .access-welcome-steps article {
+    grid-template-columns: 34px 1fr;
+  }
+  .access-welcome-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .access-welcome-actions [data-slot='button'] {
+    width: 100%;
   }
   .screen-heading {
     align-items: flex-start;

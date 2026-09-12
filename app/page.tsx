@@ -91,6 +91,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 type Screen =
+  | 'access-welcome'
   | 'explore'
   | 'words'
   | 'all'
@@ -2002,6 +2003,10 @@ function AppShell({
   const canUseLearning = hasLearningAccess;
   const [hasPhrasebookProAccess, setHasPhrasebookProAccess] = useState(false);
   const canUseDictionary = hasPhrasebookProAccess || hasLearningAccess;
+  const [welcomeAccess, setWelcomeAccess] = useState<{
+    guided: boolean;
+    phrasebook: boolean;
+  } | null>(null);
   const [stats, setStats] = useState({
     streak: 0,
     longest: 0,
@@ -2223,6 +2228,7 @@ function AppShell({
         setSettingsName('');
         setHasLearningAccess(false);
         setHasPhrasebookProAccess(false);
+        setWelcomeAccess(null);
         setOnboardingOpen(false);
         setLearnerPreferences(defaultLearnerPreferences);
         setStats({ streak: 0, longest: 0, xp: 0, practiced: 0, activity: [] });
@@ -2268,8 +2274,25 @@ function AppShell({
       const savedLocale = profileResult.data?.interface_language;
       if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'ka')
         onLocaleChange(savedLocale);
-      setHasLearningAccess(accessResult.data === true);
-      setHasPhrasebookProAccess(phrasebookAccessResult.data === true);
+      const guidedAccess = accessResult.data === true;
+      const phrasebookAccess = phrasebookAccessResult.data === true;
+      setHasLearningAccess(guidedAccess);
+      setHasPhrasebookProAccess(phrasebookAccess);
+      if (guidedAccess || phrasebookAccess) {
+        const accessLevel = guidedAccess
+          ? phrasebookAccess
+            ? 'complete'
+            : 'guided'
+          : 'phrasebook';
+        const welcomeKey = `geo-access-welcome-v1:${activeUser.id}:${accessLevel}`;
+        if (!localStorage.getItem(welcomeKey)) {
+          setWelcomeAccess({
+            guided: guidedAccess,
+            phrasebook: phrasebookAccess,
+          });
+          setScreen('access-welcome');
+        }
+      }
       if (learnerPreferencesResult.data) {
         const preferences: LearnerPreferences = {
           primaryGoal: learnerPreferencesResult.data.primary_goal,
@@ -2407,6 +2430,23 @@ function AppShell({
     }
     setScreen(next);
     setMobileMenuOpen(false);
+    window.scrollTo(0, 0);
+  };
+
+  const completeAccessWelcome = (destination: 'daily' | 'words') => {
+    if (user && welcomeAccess) {
+      const accessLevel = welcomeAccess.guided
+        ? welcomeAccess.phrasebook
+          ? 'complete'
+          : 'guided'
+        : 'phrasebook';
+      localStorage.setItem(
+        `geo-access-welcome-v1:${user.id}:${accessLevel}`,
+        new Date().toISOString(),
+      );
+    }
+    setWelcomeAccess(null);
+    setScreen(destination);
     window.scrollTo(0, 0);
   };
 
@@ -3207,6 +3247,102 @@ function AppShell({
           </div>
         )}
         <div className="app-content">
+          {screen === 'access-welcome' && welcomeAccess && (
+            <section className="screen access-welcome-screen">
+              <div className="access-welcome-celebration" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="access-welcome-hero">
+                <span className="access-welcome-icon">
+                  <Trophy />
+                </span>
+                <span className="app-eyebrow">YOUR ACCESS IS READY</span>
+                <h1>Welcome to the full Georgian experience.</h1>
+                <p>
+                  You can now turn practical Georgian into a daily habit—three
+                  useful words at a time, with real audio and speaking practice.
+                </p>
+                <div className="access-welcome-badges">
+                  {welcomeAccess.guided && (
+                    <span>
+                      <CheckCircle2 /> Guided Learning
+                    </span>
+                  )}
+                  {(welcomeAccess.phrasebook || welcomeAccess.guided) && (
+                    <span>
+                      <CheckCircle2 /> Full dictionary
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="access-welcome-plan">
+                <div className="access-welcome-plan-heading">
+                  <span>WHAT HAPPENS NEXT</span>
+                  <h2>Your first week has one simple job: start speaking.</h2>
+                </div>
+                <div className="access-welcome-steps">
+                  <article>
+                    <span>01</span>
+                    <div>
+                      <b>Learn tiny, useful sets</b>
+                      <p>
+                        Meet three words at a time, hear them clearly, and use
+                        them before moving on.
+                      </p>
+                    </div>
+                  </article>
+                  <article>
+                    <span>02</span>
+                    <div>
+                      <b>Practice real situations</b>
+                      <p>
+                        Build confidence for cafés, transport, shopping,
+                        introductions, and everyday conversations.
+                      </p>
+                    </div>
+                  </article>
+                  <article>
+                    <span>03</span>
+                    <div>
+                      <b>Remember what you learn</b>
+                      <p>
+                        Quick reviews, quizzes, progress, and speaking missions
+                        bring words back before you forget them.
+                      </p>
+                    </div>
+                  </article>
+                </div>
+              </div>
+
+              <div className="access-welcome-actions">
+                <Button
+                  onClick={() =>
+                    completeAccessWelcome(
+                      welcomeAccess.guided ? 'daily' : 'words',
+                    )
+                  }
+                >
+                  {welcomeAccess.guided
+                    ? "Start today’s lesson"
+                    : 'Explore the full dictionary'}{' '}
+                  <ChevronRight />
+                </Button>
+                {welcomeAccess.guided && (
+                  <button
+                    type="button"
+                    onClick={() => completeAccessWelcome('words')}
+                  >
+                    Browse the dictionary first
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
           {screen === 'words' && canUseDictionary && (
             <section className="screen words-screen">
               <div className="words-heading">
@@ -5367,7 +5503,7 @@ function AppShell({
             </section>
           )}
         </div>
-        {!onboardingOpen && (
+        {!onboardingOpen && screen !== 'access-welcome' && (
           <nav className="bottom-nav" aria-label="App navigation">
             <button
               className={
@@ -6192,7 +6328,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v14-reloaded';
+      const reloadKey = 'geo-sw-v15-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -6211,7 +6347,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=14', {
+        .register('/sw.js?v=15', {
           scope: '/',
           updateViaCache: 'none',
         })
