@@ -337,6 +337,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      learning_completions: {
+        Row: {
+          user_id: string;
+          completion_key: string;
+          source: 'daily' | 'path';
+          step_number: number | null;
+          unit_number: number | null;
+          xp_earned: number;
+          completed_at: string;
+        };
+        Insert: {
+          user_id: string;
+          completion_key: string;
+          source: 'daily' | 'path';
+          step_number?: number | null;
+          unit_number?: number | null;
+          xp_earned?: number;
+          completed_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          completion_key?: string;
+          source?: 'daily' | 'path';
+          step_number?: number | null;
+          unit_number?: number | null;
+          xp_earned?: number;
+          completed_at?: string;
+        };
+        Relationships: [];
+      };
       streaks: {
         Row: {
           user_id: string;
@@ -371,6 +401,52 @@ export type Database = {
       has_phrasebook_pro_access: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      get_learning_dashboard: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          current_streak: number;
+          longest_streak: number;
+          total_xp: number;
+          practiced_words: number;
+          completed_steps: number;
+          lessons_completed: number;
+          today_daily_lessons: number;
+          activity: {
+            activity_date: string;
+            xp_earned: number;
+            phrases_practiced: number;
+            lessons_completed: number;
+            correct_answers: number;
+            minutes_spent: number;
+          }[];
+        }[];
+      };
+      complete_learning_session: {
+        Args: {
+          p_source: 'daily' | 'path';
+          p_step_number?: number | null;
+          p_unit_number?: number | null;
+          p_micro_lesson?: number;
+          p_minutes?: number;
+        };
+        Returns: {
+          current_streak: number;
+          longest_streak: number;
+          total_xp: number;
+          practiced_words: number;
+          completed_steps: number;
+          lessons_completed: number;
+          today_daily_lessons: number;
+          activity: {
+            activity_date: string;
+            xp_earned: number;
+            phrases_practiced: number;
+            lessons_completed: number;
+            correct_answers: number;
+            minutes_spent: number;
+          }[];
+        }[];
       };
       record_learning_activity: {
         Args: {

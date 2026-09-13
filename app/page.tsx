@@ -135,6 +135,46 @@ type WordMemory = {
   nextReviewAt: string | null;
 };
 
+type LearningActivityDay = {
+  activity_date: string;
+  xp_earned: number;
+  phrases_practiced: number;
+  lessons_completed: number;
+  correct_answers: number;
+  minutes_spent: number;
+};
+
+type LearningDashboard = {
+  current_streak: number;
+  longest_streak: number;
+  total_xp: number;
+  practiced_words: number;
+  completed_steps: number;
+  lessons_completed: number;
+  today_daily_lessons: number;
+  activity: LearningActivityDay[];
+};
+
+type LearningStats = {
+  streak: number;
+  longest: number;
+  xp: number;
+  practiced: number;
+  completedSteps: number;
+  lessons: number;
+  activity: LearningActivityDay[];
+};
+
+const emptyLearningStats = (): LearningStats => ({
+  streak: 0,
+  longest: 0,
+  xp: 0,
+  practiced: 0,
+  completedSteps: 0,
+  lessons: 0,
+  activity: [],
+});
+
 type LearningFocus =
   | 'general_speaking'
   | 'social'
@@ -2007,14 +2047,39 @@ function AppShell({
     guided: boolean;
     phrasebook: boolean;
   } | null>(null);
-  const [stats, setStats] = useState({
-    streak: 0,
-    longest: 0,
-    xp: 0,
-    practiced: 0,
-    activity: [] as { activity_date: string; xp_earned: number }[],
-  });
+  const [stats, setStats] = useState<LearningStats>(emptyLearningStats);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const applyLearningDashboard = useCallback(
+    (dashboard?: LearningDashboard | null) => {
+      if (!dashboard) {
+        setStats(emptyLearningStats());
+        setDailyMicroLessonsCompleted(0);
+        return;
+      }
+      setStats({
+        streak: dashboard.current_streak,
+        longest: dashboard.longest_streak,
+        xp: dashboard.total_xp,
+        practiced: dashboard.practiced_words,
+        completedSteps: dashboard.completed_steps,
+        lessons: dashboard.lessons_completed,
+        activity: dashboard.activity ?? [],
+      });
+      setDailyMicroLessonsCompleted(dashboard.today_daily_lessons);
+    },
+    [],
+  );
+  const refreshLearningDashboard = useCallback(
+    async (activeUser: User | null) => {
+      if (!supabase || !activeUser) {
+        applyLearningDashboard(null);
+        return;
+      }
+      const { data, error } = await supabase.rpc('get_learning_dashboard');
+      if (!error) applyLearningDashboard(data?.[0] ?? null);
+    },
+    [applyLearningDashboard, supabase],
+  );
   const primedAudio = useRef(new Set<string>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
@@ -2203,7 +2268,10 @@ function AppShell({
     screen === 'daily' ||
     screen === 'lesson' ||
     screen === 'quiz';
-  const basicsPercent = Math.min(100, Math.round((stats.practiced / 50) * 100));
+  const basicsPercent = Math.min(
+    100,
+    Math.round((stats.completedSteps / speakingUnit.length) * 100),
+  );
   const weekActivity = useMemo(() => {
     const byDate = new Map(
       stats.activity.map((day) => [day.activity_date, day.xp_earned]),
@@ -2231,15 +2299,13 @@ function AppShell({
         setWelcomeAccess(null);
         setOnboardingOpen(false);
         setLearnerPreferences(defaultLearnerPreferences);
-        setStats({ streak: 0, longest: 0, xp: 0, practiced: 0, activity: [] });
+        applyLearningDashboard(null);
         return;
       }
       const [
         savedResult,
         profileResult,
-        streakResult,
-        activityResult,
-        progressResult,
+        dashboardResult,
         accessResult,
         phrasebookAccessResult,
         wordMemoryResult,
@@ -2251,16 +2317,7 @@ function AppShell({
           .from('profiles')
           .select('display_name,interface_language,phone_number')
           .maybeSingle(),
-        supabase
-          .from('streaks')
-          .select('current_streak,longest_streak')
-          .maybeSingle(),
-        supabase
-          .from('daily_activity')
-          .select('activity_date,xp_earned')
-          .order('activity_date', { ascending: false })
-          .limit(30),
-        supabase.from('learning_progress').select('phrase_id'),
+        supabase.rpc('get_learning_dashboard'),
         supabase.rpc('has_guided_learning_access'),
         supabase.rpc('has_phrasebook_pro_access'),
         supabase.from('word_memory').select('*'),
@@ -2376,16 +2433,9 @@ function AppShell({
           return merged;
         });
       }
-      const activity = activityResult.data ?? [];
-      setStats({
-        streak: streakResult.data?.current_streak ?? 0,
-        longest: streakResult.data?.longest_streak ?? 0,
-        xp: activity.reduce((sum, day) => sum + day.xp_earned, 0),
-        practiced: progressResult.data?.length ?? 0,
-        activity,
-      });
+      applyLearningDashboard(dashboardResult.data?.[0] ?? null);
     },
-    [supabase, onLocaleChange],
+    [applyLearningDashboard, supabase, onLocaleChange],
   );
 
   const changeLocale = (nextLocale: Locale) => {
@@ -2993,7 +3043,11 @@ function AppShell({
       window.scrollTo(0, 0);
       return;
     }
-    if (!dailyPlan.ids.length) return;
+    if (
+      !dailyPlan.ids.length ||
+      dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+    )
+      return;
     setTodayWordIds(dailyPlan.ids);
     setPreviewSource('today');
     setPreviewLessonNumber(0);
@@ -3006,6 +3060,25 @@ function AppShell({
     setPreviewResult('idle');
     setScreen('lesson-preview');
     window.scrollTo(0, 0);
+  };
+  const completeLearningSession = async (
+    source: 'daily' | 'path',
+    options: {
+      stepNumber?: number;
+      unitNumber?: number;
+      microLesson?: number;
+      minutes?: number;
+    } = {},
+  ) => {
+    if (!supabase || !user) return;
+    const { data, error } = await supabase.rpc('complete_learning_session', {
+      p_source: source,
+      p_step_number: options.stepNumber ?? null,
+      p_unit_number: options.unitNumber ?? null,
+      p_micro_lesson: options.microLesson ?? 0,
+      p_minutes: options.minutes ?? 3,
+    });
+    if (!error) applyLearningDashboard(data?.[0] ?? null);
   };
   const recordWordResult = (
     word: WordEntry,
@@ -3043,11 +3116,14 @@ function AppShell({
       return next;
     });
     if (supabase && user)
-      void supabase.rpc('record_word_learning_activity', {
-        p_word_id: word.id,
-        p_unit_number: unitNumber,
-        p_correct: correct,
-      });
+      void (async () => {
+        const { error } = await supabase.rpc('record_word_learning_activity', {
+          p_word_id: word.id,
+          p_unit_number: unitNumber,
+          p_correct: correct,
+        });
+        if (!error) await refreshLearningDashboard(user);
+      })();
   };
   return (
     <main
@@ -3330,7 +3406,7 @@ function AppShell({
                   }
                 >
                   {welcomeAccess.guided
-                    ? "Start today’s lesson"
+                    ? 'Start today’s lesson'
                     : 'Explore the full dictionary'}{' '}
                   <ChevronRight />
                 </Button>
@@ -3904,7 +3980,11 @@ function AppShell({
                   <button
                     className="today-learning-start"
                     onClick={startTodayLesson}
-                    disabled={canUseLearning && !dailyPlan.ids.length}
+                    disabled={
+                      canUseLearning &&
+                      (!dailyPlan.ids.length ||
+                        dailyMicroLessonsCompleted >= dailyMicroLessonGoal)
+                    }
                   >
                     {!canUseLearning
                       ? locale === 'ru'
@@ -3912,11 +3992,17 @@ function AppShell({
                         : locale === 'ka'
                           ? 'სასწავლო კურსის გახსნა'
                           : 'Unlock my daily lessons'
-                      : locale === 'ru'
-                        ? 'Начать урок на сегодня'
-                        : locale === 'ka'
-                          ? 'დღევანდელი გაკვეთილის დაწყება'
-                          : "Start today's lesson"}
+                      : dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                        ? locale === 'ru'
+                          ? 'Цель на сегодня выполнена'
+                          : locale === 'ka'
+                            ? 'დღევანდელი მიზანი შესრულებულია'
+                            : 'Done for today'
+                        : locale === 'ru'
+                          ? 'Начать урок на сегодня'
+                          : locale === 'ka'
+                            ? 'დღევანდელი გაკვეთილის დაწყება'
+                            : "Start today's lesson"}
                     <ChevronRight />
                   </button>
                   <button
@@ -4168,6 +4254,11 @@ function AppShell({
                         : segmentWords.length + previewTestIndex + 1;
               const lessonReturnScreen =
                 previewSource === 'today' ? 'daily' : 'learn';
+              const isDailyLesson = previewSource === 'today';
+              const completedStepCount = new Set([
+                ...completedSpeakingSteps,
+                ...(lesson.number > 0 ? [lesson.number] : []),
+              ]).size;
               const finishStep = (returnToLearn = true) => {
                 if (previewSource === 'today') {
                   localStorage.setItem(
@@ -4188,27 +4279,32 @@ function AppShell({
                   'geo-speaking-unit-progress-v2',
                   JSON.stringify(next),
                 );
-                if (supabase && user)
-                  void supabase.from('learning_path_progress').upsert(
-                    {
-                      user_id: user.id,
-                      step_number: lesson.number,
-                      unit_number: lesson.unit,
-                    },
-                    { onConflict: 'user_id,step_number' },
-                  );
+                void completeLearningSession('path', {
+                  stepNumber: lesson.number,
+                  unitNumber: lesson.unit,
+                  minutes: lesson.minutes,
+                });
                 if (returnToLearn) setScreen('learn');
               };
               const completeMicroLesson = () => {
-                const nextDailyCount = dailyMicroLessonsCompleted + 1;
-                setDailyMicroLessonsCompleted(nextDailyCount);
-                localStorage.setItem(
-                  'geo-daily-micro-lessons-v1',
-                  JSON.stringify({
-                    date: new Date().toISOString().slice(0, 10),
-                    count: nextDailyCount,
-                  }),
-                );
+                if (isDailyLesson) {
+                  const nextDailyCount = dailyMicroLessonsCompleted + 1;
+                  setDailyMicroLessonsCompleted(nextDailyCount);
+                  localStorage.setItem(
+                    'geo-daily-micro-lessons-v1',
+                    JSON.stringify({
+                      date: new Date().toISOString().slice(0, 10),
+                      count: nextDailyCount,
+                    }),
+                  );
+                  void completeLearningSession('daily', {
+                    microLesson: previewMicroLesson,
+                    minutes: Math.max(
+                      1,
+                      Math.round(lesson.minutes / microLessons.length),
+                    ),
+                  });
+                }
                 if (previewMicroLesson === microLessons.length - 1)
                   finishStep(false);
                 setPreviewMode('complete');
@@ -4549,6 +4645,9 @@ function AppShell({
                                     : 'Not quite — remember this'}
                             </strong>
                             <span>{answerLabel}</span>
+                            <small>
+                              +{previewResult === 'correct' ? 10 : 2} XP
+                            </small>
                           </span>
                         </div>
                       )}
@@ -4647,49 +4746,78 @@ function AppShell({
                         <Check />
                       </span>
                       <span className="lesson-focus-label">
-                        {dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                        {!isDailyLesson
                           ? locale === 'ru'
-                            ? 'Цель на сегодня выполнена'
+                            ? 'Этап курса завершён'
                             : locale === 'ka'
-                              ? 'დღევანდელი მიზანი შესრულებულია'
-                              : "Today's goal is complete"
-                          : locale === 'ru'
-                            ? 'Мини-урок завершён'
-                            : locale === 'ka'
-                              ? 'მინი გაკვეთილი დასრულებულია'
-                              : 'Mini lesson complete'}
+                              ? 'კურსის ეტაპი დასრულებულია'
+                              : 'Course step complete'
+                          : dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                            ? locale === 'ru'
+                              ? 'Цель на сегодня выполнена'
+                              : locale === 'ka'
+                                ? 'დღევანდელი მიზანი შესრულებულია'
+                                : "Today's goal is complete"
+                            : locale === 'ru'
+                              ? 'Мини-урок завершён'
+                              : locale === 'ka'
+                                ? 'მინი გაკვეთილი დასრულებულია'
+                                : 'Mini lesson complete'}
                       </span>
                       <h2>
-                        {locale === 'ru'
-                          ? `Вы закрепили ${segmentWords.length} слова.`
-                          : locale === 'ka'
-                            ? `${segmentWords.length} სიტყვა განამტკიცეთ.`
-                            : `You learned ${segmentWords.length} words.`}
+                        {!isDailyLesson
+                          ? lesson.title[locale]
+                          : locale === 'ru'
+                            ? `Вы закрепили ${segmentWords.length} слова.`
+                            : locale === 'ka'
+                              ? `${segmentWords.length} სიტყვა განამტკიცეთ.`
+                              : `You learned ${segmentWords.length} words.`}
                       </h2>
                       <p>
-                        {dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                        {!isDailyLesson
                           ? locale === 'ru'
-                            ? 'На сегодня достаточно. Сложные слова вернутся в следующем уроке.'
+                            ? 'Прогресс сохранён, и следующий этап курса открыт.'
                             : locale === 'ka'
-                              ? 'დღეისთვის საკმარისია. რთული სიტყვები შემდეგ გაკვეთილზე დაბრუნდება.'
-                              : 'That is enough for today. Tricky words will return in your next lesson.'
-                          : locale === 'ru'
-                            ? 'Короткие уроки помогают запоминать без перегрузки.'
-                            : locale === 'ka'
-                              ? 'მოკლე გაკვეთილები გადატვირთვის გარეშე დამახსოვრებაში გეხმარებათ.'
-                              : 'Short lessons help the words stick without overload.'}
+                              ? 'პროგრესი შენახულია და კურსის შემდეგი ეტაპი გახსნილია.'
+                              : 'Progress saved. Your next course step is unlocked.'
+                          : dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                            ? locale === 'ru'
+                              ? 'На сегодня достаточно. Сложные слова вернутся в следующем уроке.'
+                              : locale === 'ka'
+                                ? 'დღეისთვის საკმარისია. რთული სიტყვები შემდეგ გაკვეთილზე დაბრუნდება.'
+                                : 'That is enough for today. Tricky words will return in your next lesson.'
+                            : locale === 'ru'
+                              ? 'Короткие уроки помогают запоминать без перегрузки.'
+                              : locale === 'ka'
+                                ? 'მოკლე გაკვეთილები გადატვირთვის გარეშე დამახსოვრებაში გეხმარებათ.'
+                                : 'Short lessons help the words stick without overload.'}
                       </p>
                       <small>
-                        {Math.min(
-                          dailyMicroLessonsCompleted,
-                          dailyMicroLessonGoal,
+                        {!isDailyLesson ? (
+                          <>
+                            {completedStepCount}/{speakingUnit.length}{' '}
+                            {locale === 'ru'
+                              ? 'этапов курса'
+                              : locale === 'ka'
+                                ? 'კურსის ეტაპი'
+                                : 'course steps'}{' '}
+                            · +25 XP
+                          </>
+                        ) : (
+                          <>
+                            {Math.min(
+                              dailyMicroLessonsCompleted,
+                              dailyMicroLessonGoal,
+                            )}
+                            /{dailyMicroLessonGoal}{' '}
+                            {locale === 'ru'
+                              ? 'мини-урока сегодня'
+                              : locale === 'ka'
+                                ? 'მინი გაკვეთილი დღეს'
+                                : 'mini lessons today'}{' '}
+                            · +25 XP
+                          </>
                         )}
-                        /{dailyMicroLessonGoal}{' '}
-                        {locale === 'ru'
-                          ? 'мини-урока сегодня'
-                          : locale === 'ka'
-                            ? 'მინი გაკვეთილი დღეს'
-                            : 'mini lessons today'}
                       </small>
                     </div>
                   )}
@@ -4697,7 +4825,23 @@ function AppShell({
                   <div className="lesson-focus-actions">
                     {previewMode === 'complete' ? (
                       <>
-                        {dailyMicroLessonsCompleted >= dailyMicroLessonGoal ? (
+                        {!isDailyLesson ? (
+                          <button
+                            className="lesson-next-button"
+                            onClick={() => {
+                              setLearnSection('paths');
+                              setScreen('learn');
+                            }}
+                          >
+                            {locale === 'ru'
+                              ? 'Вернуться к курсу'
+                              : locale === 'ka'
+                                ? 'კურსზე დაბრუნება'
+                                : 'Back to course'}
+                            <ChevronRight />
+                          </button>
+                        ) : dailyMicroLessonsCompleted >=
+                          dailyMicroLessonGoal ? (
                           <button
                             className="lesson-next-button"
                             onClick={() => {
@@ -5066,7 +5210,10 @@ function AppShell({
               <button
                 className="daily-lesson-card"
                 onClick={startTodayLesson}
-                disabled={!dailyPlan.ids.length}
+                disabled={
+                  !dailyPlan.ids.length ||
+                  dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                }
               >
                 <span className="daily-book">
                   <BookOpen />
@@ -5085,8 +5232,16 @@ function AppShell({
                   </small>
                 </span>
                 <span className="start-lesson">
-                  {dailyPlan.ids.length ? 'Start lesson' : 'Done for today'}{' '}
-                  {dailyPlan.ids.length ? <ChevronRight /> : <Check />}
+                  {dailyPlan.ids.length &&
+                  dailyMicroLessonsCompleted < dailyMicroLessonGoal
+                    ? 'Start lesson'
+                    : 'Done for today'}{' '}
+                  {dailyPlan.ids.length &&
+                  dailyMicroLessonsCompleted < dailyMicroLessonGoal ? (
+                    <ChevronRight />
+                  ) : (
+                    <Check />
+                  )}
                 </span>
               </button>
               <div className="streak-card">
@@ -5107,11 +5262,11 @@ function AppShell({
               <button className="basics-progress" onClick={openProgress}>
                 <span className="progress-ring">{basicsPercent}%</span>
                 <span>
-                  <b>Georgian basics</b>
+                  <b>Course progress</b>
                   <small>
-                    {stats.practiced
-                      ? 'Keep it up!'
-                      : 'Practice your first phrase'}
+                    {stats.completedSteps
+                      ? `${stats.completedSteps} of ${speakingUnit.length} steps complete`
+                      : 'Complete your first course step'}
                   </small>
                   <Progress value={basicsPercent} />
                 </span>
@@ -5238,7 +5393,7 @@ function AppShell({
                 <article>
                   <BookOpen />
                   <b>{basicsPercent}%</b>
-                  <span>basics complete</span>
+                  <span>course complete</span>
                 </article>
                 <article>
                   <Volume2 />
@@ -5268,7 +5423,10 @@ function AppShell({
                   </span>
                   <div>
                     <b>Longest streak: {stats.longest} days</b>
-                    <p>Keep practicing to build a lasting habit.</p>
+                    <p>
+                      {stats.lessons} lessons completed · {stats.practiced}{' '}
+                      words practiced
+                    </p>
                   </div>
                   <CheckCircle2 />
                 </div>
