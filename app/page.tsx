@@ -6807,7 +6807,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=17', {
+        .register('/sw.js?v=18', {
           scope: '/',
           updateViaCache: 'none',
         })

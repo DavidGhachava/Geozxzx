@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_Georgian, Nunito_Sans } from 'next/font/google';
 import { SITE_ORIGIN } from '@/lib/site';
 import './globals.css';
+import './redesign.css';
 
 const sans = Nunito_Sans({
   variable: '--font-sans',
@@ -64,7 +65,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#b20d2f',
+  themeColor: '#122a29',
   colorScheme: 'light',
 };
 

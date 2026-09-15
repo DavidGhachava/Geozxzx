@@ -33,8 +33,8 @@
   --background: #fbf8f2;
   --foreground: #171614;
   --card: #fffdf9;
-  --primary: #a41627;
-  --primary-dark: #81101e;
+  --primary: #843f58;
+  --primary-dark: #633044;
   --coral: #ed5146;
   --sage: #7e957f;
   --sage-pale: #edf1ea;
@@ -219,8 +219,8 @@ svg {
   font-weight: 850 !important;
 }
 .primary-cta {
-  background: linear-gradient(135deg, var(--primary), #c72838) !important;
-  box-shadow: 0 10px 25px rgba(164, 22, 39, 0.18);
+  background: linear-gradient(135deg, var(--primary), #a64b68) !important;
+  box-shadow: 0 10px 25px rgba(132, 63, 88, 0.18);
 }
 .secondary-cta {
   border-color: var(--primary) !important;
@@ -372,15 +372,15 @@ svg {
   display: grid;
   place-items: center;
   color: white;
-  background: linear-gradient(140deg, #8f0d1d, #c92336);
-  box-shadow: 0 8px 18px rgba(164, 22, 39, 0.18);
+  background: linear-gradient(140deg, #633044, #a64b68);
+  box-shadow: 0 8px 18px rgba(132, 63, 88, 0.18);
   transition:
     transform 0.2s,
     box-shadow 0.2s;
 }
 .audio-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 22px rgba(164, 22, 39, 0.24);
+  box-shadow: 0 12px 22px rgba(132, 63, 88, 0.24);
 }
 .audio-button svg {
   width: 25px;
@@ -424,7 +424,7 @@ svg {
 }
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 12px rgba(164, 22, 39, 0.11);
+    box-shadow: 0 0 0 12px rgba(132, 63, 88, 0.11);
   }
 }
 .demo-pricing {
@@ -653,7 +653,7 @@ footer > button {
   transform: translate(-50%, 0);
 }
 .sticky-logo {
-  background: linear-gradient(135deg, var(--primary), #c92b3e);
+  background: linear-gradient(135deg, var(--primary), #a64b68);
   color: #fff;
   border-radius: 10px;
   width: 48px;
@@ -673,7 +673,7 @@ footer > button {
   margin-left: auto;
   height: 44px;
   padding: 0 24px;
-  background: linear-gradient(135deg, var(--primary), #c92b3e);
+  background: linear-gradient(135deg, var(--primary), #a64b68);
 }
 
 /* Application shell */
@@ -1250,7 +1250,7 @@ footer > button {
 .audio-speed-control button.active {
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 5px 14px rgba(178, 13, 47, 0.16);
+  box-shadow: 0 5px 14px rgba(132, 63, 88, 0.16);
 }
 .phrase-card {
   min-height: 128px;
@@ -1988,7 +1988,7 @@ footer > button {
 .install-step {
   min-height: 54px;
   padding: 10px 12px;
-  border: 1px solid rgba(178, 13, 47, 0.14);
+  border: 1px solid rgba(132, 63, 88, 0.14);
   border-radius: 14px;
   background: #fff8f8;
   display: flex;
@@ -2918,7 +2918,7 @@ footer > button {
 .home-v2-word-list .audio-button {
   width: 38px;
   height: 38px;
-  box-shadow: 0 8px 20px rgba(178, 13, 47, 0.2);
+  box-shadow: 0 8px 20px rgba(132, 63, 88, 0.2);
 }
 
 .home-v2-board footer {
@@ -3087,7 +3087,7 @@ footer > button {
   min-width: 0;
   min-height: 92px;
   padding: 13px 14px;
-  border: 1px solid rgba(178, 13, 47, 0.16);
+  border: 1px solid rgba(132, 63, 88, 0.16);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
   display: flex;
@@ -3140,7 +3140,7 @@ footer > button {
   width: 100%;
   min-height: 50px;
   margin-top: 16px;
-  border-color: rgba(178, 13, 47, 0.24);
+  border-color: rgba(132, 63, 88, 0.24);
   color: var(--primary);
   font-weight: 850;
 }
@@ -3203,7 +3203,7 @@ footer > button {
   width: 36px;
   height: 36px;
   flex: none;
-  filter: drop-shadow(0 7px 13px rgba(178, 13, 47, 0.18));
+  filter: drop-shadow(0 7px 13px rgba(132, 63, 88, 0.18));
 }
 .brand .brand-word {
   color: #a6092d;
@@ -3219,7 +3219,7 @@ footer > button {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 13px;
   color: #a6092d;
   background: rgba(255, 255, 255, 0.92);
@@ -3233,7 +3233,7 @@ footer > button {
 .language-menu-content {
   min-width: 180px !important;
   padding: 7px !important;
-  border: 1px solid rgba(178, 13, 47, 0.14) !important;
+  border: 1px solid rgba(132, 63, 88, 0.14) !important;
   background: #fffdfc !important;
   box-shadow: 0 18px 50px rgba(88, 3, 24, 0.18) !important;
 }
@@ -3411,7 +3411,7 @@ footer > button {
   .marketing .mobile-menu button {
     min-height: 50px;
     padding: 0 16px;
-    border: 1px solid rgba(178, 13, 47, 0.12);
+    border: 1px solid rgba(132, 63, 88, 0.12);
     border-radius: 13px;
     color: #38282d;
     background: #fff8f8;
@@ -3428,7 +3428,7 @@ footer > button {
     color: #fff;
     background: linear-gradient(110deg, #a5092d, #e0224a 55%, #a5092d);
     background-size: 200% 100%;
-    box-shadow: 0 10px 25px rgba(178, 13, 47, 0.25);
+    box-shadow: 0 10px 25px rgba(132, 63, 88, 0.25);
   }
   .marketing .menu-button {
     border: 0 !important;
@@ -3513,7 +3513,7 @@ footer > button {
   align-items: center;
   gap: 8px;
   overflow: hidden;
-  border: 1px solid rgba(178, 13, 47, 0.16);
+  border: 1px solid rgba(132, 63, 88, 0.16);
   border-radius: 12px;
   color: #4a333a;
   background: rgba(255, 255, 255, 0.78);
@@ -3523,7 +3523,7 @@ footer > button {
 }
 .marketing-account:hover {
   color: var(--primary);
-  border-color: rgba(178, 13, 47, 0.32);
+  border-color: rgba(132, 63, 88, 0.32);
   background: #fff;
 }
 .marketing-account svg {
@@ -3544,7 +3544,7 @@ footer > button {
   justify-content: center;
   gap: 7px;
   overflow: hidden;
-  border: 1px solid rgba(178, 13, 47, 0.14);
+  border: 1px solid rgba(132, 63, 88, 0.14);
   border-radius: 11px;
   background: #fff4f5;
   text-overflow: ellipsis;
@@ -3568,7 +3568,7 @@ footer > button {
   align-items: center;
   gap: 2px;
   padding: 3px;
-  border: 1px solid rgba(164, 22, 39, 0.18);
+  border: 1px solid rgba(132, 63, 88, 0.18);
   border-radius: 11px;
   background: #fff;
 }
@@ -3887,7 +3887,7 @@ footer > button {
   padding-inline: max(5vw, calc((100vw - 1340px) / 2));
   background: rgba(251, 248, 242, 0.96);
   backdrop-filter: blur(18px);
-  border-bottom: 1px solid rgba(164, 22, 39, 0.08);
+  border-bottom: 1px solid rgba(132, 63, 88, 0.08);
   pointer-events: auto;
 }
 .beta-label,
@@ -3951,7 +3951,7 @@ footer > button {
   font-family: Georgia, serif;
   font-size: 22rem;
   line-height: 0.7;
-  color: rgba(164, 22, 39, 0.035);
+  color: rgba(132, 63, 88, 0.035);
   font-weight: 900;
 }
 .section-kicker {
@@ -4608,8 +4608,8 @@ footer > button {
 
 /* Georgian flag red — kinetic glass direction */
 :root {
-  --primary: #b20d2f;
-  --primary-dark: #78051c;
+  --primary: #843f58;
+  --primary-dark: #633044;
   --coral: #ff405d;
   --background: #fff8f7;
   --card: rgba(255, 255, 255, 0.78);
@@ -4626,7 +4626,7 @@ footer > button {
     radial-gradient(circle at 16% 8%, rgba(255, 66, 96, 0.13), transparent 25%),
     radial-gradient(
       circle at 82% 18%,
-      rgba(178, 13, 47, 0.14),
+      rgba(132, 63, 88, 0.14),
       transparent 28%
     ),
     linear-gradient(145deg, #fffafa 0%, #fff4f3 46%, #fff9f6 100%);
@@ -4650,7 +4650,7 @@ footer > button {
 }
 .marketing .site-header {
   background: rgba(255, 248, 248, 0.72);
-  border-color: rgba(178, 13, 47, 0.13);
+  border-color: rgba(132, 63, 88, 0.13);
   box-shadow: 0 8px 35px rgba(100, 0, 24, 0.05);
 }
 .brand {
@@ -4710,11 +4710,11 @@ footer > button {
   color: transparent;
   background: linear-gradient(
     100deg,
-    #78051c 5%,
+    #633044 5%,
     #d21442 42%,
     #ff6b7f 52%,
-    #b20d2f 68%,
-    #78051c 95%
+    #843f58 68%,
+    #633044 95%
   );
   background-size: 250% auto;
   background-clip: text;
@@ -4729,7 +4729,7 @@ footer > button {
 .eyebrow {
   display: inline-flex;
   padding: 8px 13px;
-  border: 1px solid rgba(178, 13, 47, 0.16);
+  border: 1px solid rgba(132, 63, 88, 0.16);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(12px);
@@ -4788,7 +4788,7 @@ button:active {
   transform: translateY(1px) scale(0.98) !important;
 }
 .marketing .secondary-cta {
-  border-color: rgba(178, 13, 47, 0.27) !important;
+  border-color: rgba(132, 63, 88, 0.27) !important;
   background: rgba(255, 255, 255, 0.48) !important;
   backdrop-filter: blur(12px);
   box-shadow:
@@ -4810,7 +4810,7 @@ button:active {
   padding: 7px 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(178, 13, 47, 0.1);
+  border: 1px solid rgba(132, 63, 88, 0.1);
   backdrop-filter: blur(10px);
 }
 .hero-visual::before {
@@ -4898,20 +4898,20 @@ button:active {
 }
 .mini-category:hover {
   transform: translateX(4px);
-  border-color: rgba(178, 13, 47, 0.28);
+  border-color: rgba(132, 63, 88, 0.28);
   box-shadow: 0 8px 22px rgba(116, 5, 31, 0.09);
 }
 .audio-button {
   position: relative;
   box-shadow:
-    0 12px 30px rgba(178, 13, 47, 0.3),
-    0 0 0 8px rgba(178, 13, 47, 0.06);
+    0 12px 30px rgba(132, 63, 88, 0.3),
+    0 0 0 8px rgba(132, 63, 88, 0.06);
 }
 .audio-button:hover {
   transform: translateY(-3px) scale(1.06);
   box-shadow:
-    0 18px 38px rgba(178, 13, 47, 0.38),
-    0 0 0 12px rgba(178, 13, 47, 0.07);
+    0 18px 38px rgba(132, 63, 88, 0.38),
+    0 0 0 12px rgba(132, 63, 88, 0.07);
 }
 .kinetic-strip {
   z-index: 3 !important;
@@ -4949,7 +4949,7 @@ button:active {
 .trust-list span,
 .category-showcase button,
 .demo-card {
-  border-color: rgba(178, 13, 47, 0.16);
+  border-color: rgba(132, 63, 88, 0.16);
   background: linear-gradient(
     145deg,
     rgba(255, 255, 255, 0.83),
@@ -5066,7 +5066,7 @@ button:active {
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 .plan-state {
-  border: 1px solid rgba(178, 13, 47, 0.13);
+  border: 1px solid rgba(132, 63, 88, 0.13);
 }
 .plan-state.live {
   box-shadow: 0 0 0 5px rgba(47, 132, 65, 0.07);
@@ -5091,7 +5091,7 @@ button:active {
   padding-inline: 18px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.6);
-  border-color: rgba(178, 13, 47, 0.23);
+  border-color: rgba(132, 63, 88, 0.23);
 }
 .faq-section summary {
   transition: color 0.2s;
@@ -5112,7 +5112,7 @@ button:active {
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .sticky-install {
-  border-color: rgba(178, 13, 47, 0.2);
+  border-color: rgba(132, 63, 88, 0.2);
   background: rgba(255, 248, 248, 0.82);
   box-shadow:
     0 24px 65px rgba(81, 2, 24, 0.23),
@@ -5128,7 +5128,7 @@ button:active {
   backdrop-filter: blur(18px);
 }
 .public-footer {
-  background: linear-gradient(180deg, transparent, rgba(178, 13, 47, 0.035));
+  background: linear-gradient(180deg, transparent, rgba(132, 63, 88, 0.035));
 }
 .app-view {
   background:
@@ -5153,7 +5153,7 @@ button:active {
 .phrase-card:hover,
 .stats-grid article:hover {
   transform: translateY(-5px);
-  border-color: rgba(178, 13, 47, 0.3);
+  border-color: rgba(132, 63, 88, 0.3);
   box-shadow: 0 20px 48px rgba(116, 5, 31, 0.14);
 }
 
@@ -5205,7 +5205,7 @@ button:active {
   top: 0;
   z-index: 1000;
   background: rgba(255, 250, 250, 0.96);
-  border-bottom: 1px solid rgba(178, 13, 47, 0.1);
+  border-bottom: 1px solid rgba(132, 63, 88, 0.1);
   backdrop-filter: blur(18px) saturate(1.2);
 }
 .legal-header {
@@ -5307,7 +5307,7 @@ button:active {
   grid-template-columns: 1.25fr 0.75fr;
   gap: 34px;
   align-items: stretch;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 30px;
   background:
     radial-gradient(
@@ -5346,7 +5346,7 @@ button:active {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(178, 13, 47, 0.14);
+  border: 1px solid rgba(132, 63, 88, 0.14);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   font-size: 0.88rem;
@@ -5446,7 +5446,7 @@ button:active {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 12px;
   color: var(--primary);
   background: rgba(255, 255, 255, 0.58);
@@ -5495,7 +5495,7 @@ button:active {
 .local-grid article {
   min-height: 185px;
   padding: 27px;
-  border: 1px solid rgba(178, 13, 47, 0.16);
+  border: 1px solid rgba(132, 63, 88, 0.16);
   border-radius: 21px;
   background: linear-gradient(
     145deg,
@@ -5565,7 +5565,7 @@ button:active {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 11px;
   color: var(--primary);
   background: rgba(255, 255, 255, 0.7);
@@ -6008,7 +6008,7 @@ html[data-app-mode='true'] .marketing {
     z-index: 12;
     height: 58px;
     margin-inline: -4px;
-    border-color: rgba(178, 13, 47, 0.25);
+    border-color: rgba(132, 63, 88, 0.25);
     background: #fffdfb;
     box-shadow: 0 8px 24px rgba(82, 20, 32, 0.1);
   }
@@ -6103,7 +6103,7 @@ html[data-app-mode='true'] .marketing {
 .lesson-path-count {
   min-height: 44px;
   padding: 0 15px;
-  border: 1px solid rgba(178, 13, 47, 0.18);
+  border: 1px solid rgba(132, 63, 88, 0.18);
   border-radius: 999px;
   background: #fff;
   color: var(--primary);
@@ -6122,7 +6122,7 @@ html[data-app-mode='true'] .marketing {
   width: fit-content;
   margin: 0 0 18px;
   padding: 4px;
-  border: 1px solid rgba(178, 13, 47, 0.14);
+  border: 1px solid rgba(132, 63, 88, 0.14);
   border-radius: 14px;
   background: #f6eaec;
   display: flex;
@@ -6158,7 +6158,7 @@ html[data-app-mode='true'] .marketing {
   overflow: hidden;
   margin-bottom: 14px;
   padding: 24px;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 24px;
   background:
     radial-gradient(
@@ -6209,7 +6209,7 @@ html[data-app-mode='true'] .marketing {
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 10px 24px rgba(178, 13, 47, 0.22);
+  box-shadow: 0 10px 24px rgba(132, 63, 88, 0.22);
 }
 
 .today-learning-icon svg {
@@ -6226,7 +6226,7 @@ html[data-app-mode='true'] .marketing {
 .today-learning-mix span {
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid rgba(178, 13, 47, 0.13);
+  border: 1px solid rgba(132, 63, 88, 0.13);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.82);
   color: #765f66;
@@ -6255,7 +6255,7 @@ html[data-app-mode='true'] .marketing {
   gap: 8px;
   font-size: 0.95rem;
   font-weight: 900;
-  box-shadow: 0 12px 27px rgba(178, 13, 47, 0.2);
+  box-shadow: 0 12px 27px rgba(132, 63, 88, 0.2);
 }
 
 .today-learning-start svg {
@@ -6283,7 +6283,7 @@ html[data-app-mode='true'] .marketing {
 .daily-learning-rhythm {
   margin: 0 0 24px;
   padding: 14px 16px;
-  border: 1px solid rgba(178, 13, 47, 0.16);
+  border: 1px solid rgba(132, 63, 88, 0.16);
   border-radius: 18px;
   background: linear-gradient(120deg, #fff 0%, #fff1f3 100%);
   display: flex;
@@ -6303,7 +6303,7 @@ html[data-app-mode='true'] .marketing {
   place-items: center;
   font-size: 0.9rem;
   font-weight: 900;
-  box-shadow: 0 8px 18px rgba(178, 13, 47, 0.2);
+  box-shadow: 0 8px 18px rgba(132, 63, 88, 0.2);
 }
 
 .daily-learning-rhythm > span:nth-child(2) {
@@ -6406,7 +6406,7 @@ html[data-app-mode='true'] .marketing {
   width: 100%;
   min-height: 84px;
   padding: 12px 14px;
-  border: 1px solid rgba(178, 13, 47, 0.18);
+  border: 1px solid rgba(132, 63, 88, 0.18);
   border-radius: 18px;
   background: linear-gradient(120deg, #fff 0%, #fff9f9 100%);
   color: var(--text);
@@ -6423,15 +6423,15 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-card:hover {
-  border-color: rgba(178, 13, 47, 0.42);
+  border-color: rgba(132, 63, 88, 0.42);
   box-shadow: 0 13px 30px rgba(94, 11, 30, 0.09);
   transform: translateY(-2px);
 }
 
 .lesson-path-card.current {
-  border-color: rgba(178, 13, 47, 0.62);
+  border-color: rgba(132, 63, 88, 0.62);
   box-shadow:
-    0 0 0 3px rgba(178, 13, 47, 0.08),
+    0 0 0 3px rgba(132, 63, 88, 0.08),
     0 14px 32px rgba(94, 11, 30, 0.1);
 }
 
@@ -6479,7 +6479,7 @@ html[data-app-mode='true'] .marketing {
   place-items: center;
   font-size: 1.2rem;
   font-weight: 900;
-  box-shadow: 0 8px 18px rgba(178, 13, 47, 0.2);
+  box-shadow: 0 8px 18px rgba(132, 63, 88, 0.2);
 }
 
 .lesson-path-card:nth-child(2) .lesson-path-number {
@@ -6628,7 +6628,7 @@ html[data-app-mode='true'] .marketing {
 .lesson-preview-heading {
   margin: 20px 0 22px;
   padding: 18px;
-  border: 1px solid rgba(178, 13, 47, 0.18);
+  border: 1px solid rgba(132, 63, 88, 0.18);
   border-radius: 20px;
   background: linear-gradient(120deg, #fff 0%, #fff1f3 100%);
   display: flex;
@@ -6670,7 +6670,7 @@ html[data-app-mode='true'] .marketing {
 .lesson-preview-navigation button {
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid rgba(178, 13, 47, 0.22);
+  border: 1px solid rgba(132, 63, 88, 0.22);
   border-radius: 13px;
   background: #fff;
   color: var(--primary);
@@ -6841,7 +6841,7 @@ html[data-app-mode='true'] .marketing {
 
 @keyframes recorder-pulse {
   to {
-    box-shadow: 0 0 0 5px rgba(178, 13, 47, 0.08);
+    box-shadow: 0 0 0 5px rgba(132, 63, 88, 0.08);
   }
 }
 
@@ -6941,7 +6941,7 @@ html[data-app-mode='true'] .marketing {
   width: 70px;
   height: 70px;
   margin: 0 0 10px;
-  box-shadow: 0 12px 30px rgba(178, 13, 47, 0.18);
+  box-shadow: 0 12px 30px rgba(132, 63, 88, 0.18);
 }
 
 .lesson-learn-audio-hint {
@@ -7221,7 +7221,7 @@ html[data-app-mode='true'] .marketing {
   gap: 8px;
   font-size: 1rem;
   font-weight: 900;
-  box-shadow: 0 12px 28px rgba(178, 13, 47, 0.2);
+  box-shadow: 0 12px 28px rgba(132, 63, 88, 0.2);
 }
 
 .lesson-next-button svg {
@@ -7523,7 +7523,7 @@ html[data-app-mode='true'] .marketing {
 .onboarding-summary > svg {
   width: 26px;
   flex: none;
-  color: #b20d2f;
+  color: #843f58;
 }
 .onboarding-summary span {
   display: grid;
@@ -7770,7 +7770,7 @@ html[data-app-mode='true'] .marketing {
 .library-quick-actions button {
   min-height: 44px;
   padding: 0 15px;
-  border: 1px solid rgba(178, 13, 47, 0.2);
+  border: 1px solid rgba(132, 63, 88, 0.2);
   border-radius: 13px;
   background: #fffdfc;
   color: var(--primary);
@@ -8147,7 +8147,7 @@ html[data-app-mode='true'] .marketing {
 }
 
 .pricing-grid .phrasebook-plan {
-  border-color: rgba(178, 13, 47, 0.28);
+  border-color: rgba(132, 63, 88, 0.28);
   background: linear-gradient(145deg, #fffdfc, #fff0f2);
   box-shadow: 0 18px 45px rgba(112, 10, 35, 0.1);
 }
@@ -8158,7 +8158,7 @@ html[data-app-mode='true'] .marketing {
 }
 
 .premium-price-card.phrasebook-pro-card {
-  border: 1px solid rgba(178, 13, 47, 0.25);
+  border: 1px solid rgba(132, 63, 88, 0.25);
   color: #2a1118;
   background: linear-gradient(150deg, #fffdfc, #ffe9ed);
   box-shadow: 0 18px 40px rgba(112, 10, 35, 0.12);
@@ -8175,7 +8175,7 @@ html[data-app-mode='true'] .marketing {
 }
 
 .modal-plans .phrasebook-choice {
-  border-color: rgba(178, 13, 47, 0.24);
+  border-color: rgba(132, 63, 88, 0.24);
   color: var(--primary);
   background: #fff1f3;
 }
@@ -8186,7 +8186,7 @@ html[data-app-mode='true'] .marketing {
   gap: 16px;
   margin: 26px auto 0;
   padding: 16px 18px;
-  border-color: rgba(178, 13, 47, 0.2);
+  border-color: rgba(132, 63, 88, 0.2);
   border-left: 4px solid var(--primary);
   border-radius: 18px;
   box-shadow: none;
@@ -8225,7 +8225,7 @@ html[data-app-mode='true'] .marketing {
 .app-teacher-actions a.teacher-whatsapp {
   min-height: 38px;
   padding-inline: 12px;
-  border-color: rgba(178, 13, 47, 0.24);
+  border-color: rgba(132, 63, 88, 0.24);
   background: white;
   color: var(--primary);
   font-size: 0.86rem;
