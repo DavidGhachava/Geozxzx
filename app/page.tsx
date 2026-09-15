@@ -2333,6 +2333,71 @@ function AppShell({
         applyLearningDashboard(null);
         return;
       }
+      const legacyMigrationKey = accountStorageKey(
+        'legacy-local-data-migrated-v1',
+        activeUser.id,
+      );
+      if (!localStorage.getItem(legacyMigrationKey)) {
+        const parseLegacy = <T,>(key: string, fallback: T): T => {
+          try {
+            const value = localStorage.getItem(key);
+            return value ? (JSON.parse(value) as T) : fallback;
+          } catch {
+            return fallback;
+          }
+        };
+        const legacySavedWords = parseLegacy<unknown[]>(
+          'geo-saved-words',
+          [],
+        ).filter(
+          (wordId): wordId is string =>
+            typeof wordId === 'string' && /^word-[0-9]{3,5}$/.test(wordId),
+        );
+        const legacyWordMemory = parseLegacy<Record<string, WordMemory>>(
+          'geo-word-memory-v1',
+          {},
+        );
+        const legacySteps = parseLegacy<unknown[]>(
+          'geo-speaking-unit-progress-v2',
+          [],
+        ).filter(
+          (step): step is number =>
+            Number.isInteger(step) && Number(step) >= 1 && Number(step) <= 48,
+        );
+        const legacyDaily = parseLegacy<{ date?: string; count?: number }>(
+          'geo-daily-micro-lessons-v1',
+          {},
+        );
+        if (legacySavedWords.length)
+          writeAccountCache('saved-words-v1', activeUser.id, legacySavedWords);
+        if (Object.keys(legacyWordMemory).length)
+          writeAccountCache('word-memory-v1', activeUser.id, legacyWordMemory);
+        if (legacySteps.length)
+          writeAccountCache('speaking-progress-v1', activeUser.id, legacySteps);
+        const today = new Date().toISOString().slice(0, 10);
+        if (
+          legacyDaily.date === today &&
+          Number.isInteger(legacyDaily.count) &&
+          Number(legacyDaily.count) > 0
+        ) {
+          const count = Math.min(20, Math.max(0, Number(legacyDaily.count)));
+          for (let microLesson = 0; microLesson < count; microLesson += 1)
+            queueLearningSession(activeUser.id, {
+              key: `daily:${today}:${microLesson}`,
+              source: 'daily',
+              microLesson,
+              minutes: 3,
+            });
+        }
+        localStorage.setItem(legacyMigrationKey, new Date().toISOString());
+        for (const key of [
+          'geo-saved-words',
+          'geo-word-memory-v1',
+          'geo-speaking-unit-progress-v2',
+          'geo-daily-micro-lessons-v1',
+        ])
+          localStorage.removeItem(key);
+      }
       const cachedSaved = readAccountCache<string[]>(
         'saved-phrases-v1',
         activeUser.id,
