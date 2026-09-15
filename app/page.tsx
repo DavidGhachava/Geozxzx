@@ -61,6 +61,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
+import { MarketingExperience } from '@/components/marketing-experience';
 import wordAudioManifest from '@/lib/word-audio-manifest.json';
 import phraseAudioManifest from '@/lib/phrase-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
@@ -1506,6 +1507,8 @@ function AudioButton({
   );
 }
 
+// Retained temporarily as a content reference while the new experience ships.
+// eslint-disable-next-line no-unused-vars
 function Marketing({
   openApp,
   installApp,
@@ -3401,6 +3404,7 @@ function AppShell({
     >
       <aside className="app-sidebar">
         <Brand onHome={appHome} />
+        <span className="sidebar-section-label">Learning space</span>
         <nav>
           <button
             className={
@@ -3471,6 +3475,22 @@ function AppShell({
           >
             <Menu />
           </button>
+          <div className="app-topbar-context">
+            <small>GEO / Learning space</small>
+            <b>
+              {screen === 'learn' || screen === 'daily'
+                ? 'Your course'
+                : screen === 'progress'
+                  ? 'Progress'
+                  : screen === 'settings'
+                    ? 'Account'
+                    : screen === 'saved'
+                      ? 'Saved phrases'
+                      : screen === 'words'
+                        ? 'Dictionary'
+                        : 'Explore Georgian'}
+            </b>
+          </div>
           <div className="app-top-actions">
             <button
               className="account-button"
@@ -6807,7 +6827,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=18', {
+        .register('/sw.js?v=19', {
           scope: '/',
           updateViaCache: 'none',
         })
@@ -6967,7 +6987,7 @@ export default function HomePage() {
       {authOpen ? (
         <AuthPage locale={locale} onClose={() => setAuthOpen(false)} />
       ) : mode === 'marketing' ? (
-        <Marketing
+        <MarketingExperience
           openApp={openApp}
           installApp={() => void installApp()}
           openAuth={() => setAuthOpen(true)}
@@ -6977,6 +6997,7 @@ export default function HomePage() {
           accountReady={siteAuthReady}
           locale={locale}
           onLocaleChange={changeLocale}
+          copy={(key) => getCopy(locale, key)}
         />
       ) : (
         <AppShell

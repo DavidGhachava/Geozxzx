@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Noto_Sans_Georgian, Nunito_Sans } from 'next/font/google';
+import { Manrope, Noto_Sans_Georgian } from 'next/font/google';
 import { SITE_ORIGIN } from '@/lib/site';
 import './globals.css';
-import './redesign.css';
+import './travel-ui.css';
 
-const sans = Nunito_Sans({
+const sans = Manrope({
   variable: '--font-sans',
   subsets: ['latin', 'cyrillic'],
 });
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#122a29',
+  themeColor: '#eaf6fb',
   colorScheme: 'light',
 };
 
