@@ -2198,7 +2198,8 @@ function AppShell({
     },
     [applyLearningDashboard, supabase],
   );
-  const primedAudio = useRef(new Set<string>());
+  const primedAudio = useRef(new Map<string, string>());
+  const primingAudio = useRef(new Set<string>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     let active = true;
@@ -2249,15 +2250,27 @@ function AppShell({
     };
   }, []);
   const primeAudio = useCallback((audioUrl: string) => {
-    if (primedAudio.current.has(audioUrl)) return;
-    primedAudio.current.add(audioUrl);
-    void fetch(audioUrl, { cache: 'force-cache' }).catch(() => {
-      primedAudio.current.delete(audioUrl);
-    });
+    if (primedAudio.current.has(audioUrl) || primingAudio.current.has(audioUrl))
+      return;
+    primingAudio.current.add(audioUrl);
+    void fetch(audioUrl, { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error('Audio unavailable');
+        return response.blob();
+      })
+      .then((blob) => {
+        if (blob.size)
+          primedAudio.current.set(audioUrl, URL.createObjectURL(blob));
+      })
+      .catch(() => undefined)
+      .finally(() => primingAudio.current.delete(audioUrl));
   }, []);
   useEffect(
     () => () => {
       currentAudio.current?.pause();
+      for (const objectUrl of primedAudio.current.values())
+        URL.revokeObjectURL(objectUrl);
+      primedAudio.current.clear();
     },
     [],
   );
@@ -2271,7 +2284,7 @@ function AppShell({
         primeAudio(audioUrl);
         // Start playback directly from the click event so mobile browsers retain
         // the user gesture. Awaiting a preload first can make playback get blocked.
-        const audio = new Audio(audioUrl);
+        const audio = new Audio(primedAudio.current.get(audioUrl) ?? audioUrl);
         audio.preload = 'auto';
         audio.playbackRate = audioRate;
         currentAudio.current = audio;
@@ -2312,15 +2325,31 @@ function AppShell({
   );
   useEffect(() => {
     if (screen !== 'words') return;
-    const delay = normalizedSearch ? 150 : 900;
+    const delay = normalizedSearch ? 0 : 120;
     const timer = window.setTimeout(() => {
-      for (const word of filteredWords.slice(0, normalizedSearch ? 8 : 12)) {
+      for (const word of filteredWords.slice(0, normalizedSearch ? 12 : 20)) {
         if (wordAudioIds.has(word.id))
           primeAudio(`/audio/words/${word.id}.mp3`);
       }
     }, delay);
     return () => window.clearTimeout(timer);
   }, [filteredWords, normalizedSearch, primeAudio, screen]);
+  useEffect(() => {
+    let visiblePhrases: Phrase[] = [];
+    if (screen === 'category') visiblePhrases = library[category];
+    if (screen === 'all') visiblePhrases = allPhrases.slice(0, 20);
+    if (screen === 'saved')
+      visiblePhrases = allPhrases.filter((phrase) =>
+        saved.includes(phraseKey(phrase)),
+      );
+    for (const phrase of visiblePhrases) {
+      const audioUrl =
+        getRecordedPhraseAudio(phrase.ka) ??
+        recordedWordAudioByGeorgian.get(phrase.ka) ??
+        phrase.audio_url;
+      if (audioUrl) primeAudio(audioUrl);
+    }
+  }, [allPhrases, category, library, primeAudio, saved, screen]);
   const openCategory = (name: CategoryName) => {
     setCategory(name);
     setScreen('category');
@@ -3184,6 +3213,16 @@ function AppShell({
       window.scrollTo(0, 0);
       return;
     }
+    for (const ka of lesson.words) {
+      const word = allWords.find((entry) => entry.ka === ka);
+      if (word && wordAudioIds.has(word.id))
+        primeAudio(`/audio/words/${word.id}.mp3`);
+    }
+    for (const scenario of lesson.scenarios ?? []) {
+      const answer = scenario.options[scenario.correct];
+      const audioUrl = answer ? getRecordedPhraseAudio(answer) : null;
+      if (audioUrl) primeAudio(audioUrl);
+    }
     setPreviewSource('path');
     setPreviewLessonNumber(lesson.number);
     setPreviewWordIndex(0);
@@ -3329,6 +3368,9 @@ function AppShell({
       dailyMicroLessonsCompleted >= dailyMicroLessonGoal
     )
       return;
+    for (const id of dailyPlan.ids) {
+      if (wordAudioIds.has(id)) primeAudio(`/audio/words/${id}.mp3`);
+    }
     setTodayWordIds(dailyPlan.ids);
     setPreviewSource('today');
     setPreviewLessonNumber(0);
@@ -3441,6 +3483,16 @@ function AppShell({
     >
       <aside className="app-sidebar">
         <Brand onHome={appHome} />
+        <div className="sidebar-language">
+          <span>
+            <Globe2 /> {t('language')}
+          </span>
+          <LanguageMenu
+            locale={locale}
+            onChange={changeLocale}
+            label={t('language')}
+          />
+        </div>
         <span className="sidebar-section-label">Learning space</span>
         <nav>
           <button
@@ -3563,6 +3615,23 @@ function AppShell({
                   <X />
                 </button>
               </div>
+              <div className="mobile-app-menu-language">
+                <span>
+                  <Globe2 /> {t('language')}
+                </span>
+                <fieldset aria-label={t('language')}>
+                  {(['en', 'ru', 'ka'] as Locale[]).map((item) => (
+                    <button
+                      key={item}
+                      className={locale === item ? 'active' : ''}
+                      aria-pressed={locale === item}
+                      onClick={() => changeLocale(item)}
+                    >
+                      {item === 'en' ? 'EN' : item === 'ru' ? 'RU' : 'KA'}
+                    </button>
+                  ))}
+                </fieldset>
+              </div>
               <nav>
                 <button onClick={() => navigateInApp('explore')}>
                   <Compass />
@@ -3606,23 +3675,6 @@ function AppShell({
                       : 'Settings'}
                 </button>
               </nav>
-              <div className="mobile-app-menu-language">
-                <span>
-                  <Globe2 /> {t('language')}
-                </span>
-                <fieldset aria-label={t('language')}>
-                  {(['en', 'ru', 'ka'] as Locale[]).map((item) => (
-                    <button
-                      key={item}
-                      className={locale === item ? 'active' : ''}
-                      aria-pressed={locale === item}
-                      onClick={() => changeLocale(item)}
-                    >
-                      {item === 'en' ? 'EN' : item === 'ru' ? 'RU' : 'KA'}
-                    </button>
-                  ))}
-                </fieldset>
-              </div>
               <div className="mobile-app-menu-secondary">
                 <button
                   onClick={() => {
@@ -6930,7 +6982,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v20-reloaded';
+      const reloadKey = 'geo-sw-v21-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -6949,7 +7001,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=20', {
+        .register('/sw.js?v=21', {
           scope: '/',
           updateViaCache: 'none',
         })
