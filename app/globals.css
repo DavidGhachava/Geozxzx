@@ -829,7 +829,7 @@ footer > button {
   width: 10px;
   height: 20px;
   border-radius: 99px;
-  background: #ef315a;
+  background: #70a2ff;
   transform: rotate(28deg);
 }
 .access-welcome-celebration span:nth-child(1) {
@@ -879,7 +879,7 @@ footer > button {
   place-items: center;
   border-radius: 21px;
   color: white;
-  background: linear-gradient(145deg, #b90e37, #ef315a);
+  background: linear-gradient(145deg, #b90e37, #70a2ff);
   box-shadow: 0 15px 30px rgba(185, 14, 55, 0.25);
 }
 .access-welcome-icon svg {
@@ -1131,10 +1131,10 @@ footer > button {
   width: 24px;
 }
 .wine {
-  background: linear-gradient(135deg, #971323, #c82a3c);
+  background: linear-gradient(135deg, #2f63ea, #70a2ff);
 }
 .coral {
-  background: linear-gradient(135deg, #ee755f, #f1a18c);
+  background: linear-gradient(135deg, #4f7df0, #8eb1ff);
 }
 .sage,
 .green {
@@ -2983,8 +2983,8 @@ footer > button {
   height: 39px;
   place-items: center;
   border-radius: 12px;
-  color: #a6092d;
-  background: #fff0f3;
+  color: #2f63ea;
+  background: #f2f7ff;
 }
 
 .onboarding-choice-grid button span > svg {
@@ -3206,7 +3206,7 @@ footer > button {
   filter: drop-shadow(0 7px 13px rgba(47, 99, 234, 0.18));
 }
 .brand .brand-word {
-  color: #a6092d;
+  color: #2f63ea;
   font-size: 1.35rem;
   font-weight: 950;
   letter-spacing: -0.045em;
@@ -3221,7 +3221,7 @@ footer > button {
   gap: 7px;
   border: 1px solid rgba(47, 99, 234, 0.2);
   border-radius: 13px;
-  color: #a6092d;
+  color: #2f63ea;
   background: rgba(255, 255, 255, 0.92);
   font-weight: 950;
   cursor: pointer;
@@ -3245,7 +3245,7 @@ footer > button {
 }
 .language-menu-item b {
   width: 26px;
-  color: #a6092d;
+  color: #2f63ea;
 }
 .language-menu-item span {
   flex: 1;
@@ -3346,7 +3346,7 @@ footer > button {
   display: grid !important;
   place-items: center;
   border-radius: 11px;
-  color: #a6092d;
+  color: #2f63ea;
   background: #fdecef;
 }
 .device-icon svg {
@@ -3372,7 +3372,7 @@ footer > button {
   align-items: center;
   gap: 8px;
   border: 0;
-  color: #a6092d;
+  color: #2f63ea;
   background: transparent;
   font-weight: 800;
   cursor: pointer;
@@ -3389,7 +3389,7 @@ footer > button {
   padding: 0 16px;
   border: 1px solid #c91b3f;
   border-radius: 11px;
-  color: #a6092d;
+  color: #2f63ea;
   background: #fff;
   font-weight: 850;
   cursor: pointer;
@@ -6205,7 +6205,7 @@ html[data-app-mode='true'] .marketing {
   height: 52px;
   flex: 0 0 52px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #a9092b, #ef294d);
+  background: linear-gradient(135deg, #2f63ea, #70a2ff);
   color: #fff;
   display: grid;
   place-items: center;
@@ -6247,7 +6247,7 @@ html[data-app-mode='true'] .marketing {
   padding: 0 20px;
   border: 0;
   border-radius: 15px;
-  background: linear-gradient(110deg, #a9092b, #ef294d);
+  background: linear-gradient(110deg, #2f63ea, #70a2ff);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -7213,7 +7213,7 @@ html[data-app-mode='true'] .marketing {
   min-height: 54px;
   border: 0;
   border-radius: 16px;
-  background: linear-gradient(110deg, #a9092b, #ef294d);
+  background: linear-gradient(110deg, #2f63ea, #70a2ff);
   color: #fff;
   display: flex;
   align-items: center;
@@ -7274,7 +7274,7 @@ html[data-app-mode='true'] .marketing {
       rgba(255, 255, 255, 0.9),
       transparent 32%
     ),
-    linear-gradient(135deg, #fff 0%, #fff0f3 100%);
+    linear-gradient(135deg, #fff 0%, #f2f7ff 100%);
   box-shadow: 0 14px 35px rgba(104, 13, 36, 0.08);
 }
 .explore-continue-icon {
@@ -7284,7 +7284,7 @@ html[data-app-mode='true'] .marketing {
   place-items: center;
   border-radius: 16px;
   color: white;
-  background: linear-gradient(145deg, #bd0d36, #ee2854);
+  background: linear-gradient(145deg, #2f63ea, #70a2ff);
   box-shadow: 0 10px 22px rgba(190, 13, 54, 0.22);
 }
 .explore-continue-icon svg {
@@ -7296,7 +7296,7 @@ html[data-app-mode='true'] .marketing {
   min-width: 0;
 }
 .explore-continue-copy small {
-  color: #a6092d;
+  color: #2f63ea;
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -7319,7 +7319,7 @@ html[data-app-mode='true'] .marketing {
   border-radius: 14px;
   color: white;
   font-weight: 900;
-  background: #bd0d36;
+  background: #2f63ea;
 }
 .explore-continue-card > button:disabled {
   opacity: 0.45;
@@ -7379,11 +7379,11 @@ html[data-app-mode='true'] .marketing {
   background: #eee5e7;
 }
 .onboarding-progress span.active {
-  background: linear-gradient(90deg, #b80e36, #ef315a);
+  background: linear-gradient(90deg, #2f63ea, #70a2ff);
 }
 .onboarding-eyebrow {
   margin-top: 6px;
-  color: #a6092d;
+  color: #2f63ea;
   font-size: 0.74rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -7415,17 +7415,17 @@ html[data-app-mode='true'] .marketing {
 .onboarding-choice-grid button:hover,
 .onboarding-chip-grid button:hover,
 .onboarding-two-columns fieldset button:hover {
-  border-color: #c93455;
+  border-color: #70a2ff;
   transform: translateY(-1px);
 }
 .onboarding-choice-grid button.selected,
 .onboarding-chip-grid button.selected,
 .onboarding-two-columns fieldset button.selected {
-  border-color: #ba0d35;
-  background: #fff0f3;
+  border-color: #2f63ea;
+  background: #f2f7ff;
   box-shadow:
-    0 0 0 2px rgba(186, 13, 53, 0.08),
-    0 8px 20px rgba(112, 11, 38, 0.08);
+    0 0 0 2px rgba(47, 99, 234, 0.08),
+    0 8px 20px rgba(47, 99, 234, 0.08);
 }
 .onboarding-choice-grid button {
   display: grid;
@@ -7530,7 +7530,7 @@ html[data-app-mode='true'] .marketing {
   gap: 4px;
 }
 .onboarding-summary small {
-  color: #a6092d;
+  color: #2f63ea;
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -7661,13 +7661,13 @@ html[data-app-mode='true'] .marketing {
   .mobile-app-menu nav button:hover,
   .mobile-app-menu-secondary button:hover,
   .mobile-app-menu-secondary a:hover {
-    color: #a6092d;
-    background: #fff0f3;
+    color: #2f63ea;
+    background: #f2f7ff;
   }
   .mobile-app-menu nav svg,
   .mobile-app-menu-secondary svg {
     width: 20px;
-    color: #a6092d;
+    color: #2f63ea;
   }
   .mobile-app-menu-secondary {
     display: grid;
@@ -7940,7 +7940,7 @@ html[data-app-mode='true'] .marketing {
   display: grid;
   place-items: center;
   color: var(--primary);
-  background: #fff0f3;
+  background: #f2f7ff;
 }
 .auth-account-icon svg {
   width: 24px;

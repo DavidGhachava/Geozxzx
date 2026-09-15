@@ -384,13 +384,50 @@ const categories: {
   count: number;
   icon: typeof Heart;
   tone: string;
+  asset: string;
 }[] = [
-  { name: 'Essentials', count: 14, icon: Heart, tone: 'wine' },
-  { name: 'Food & Cafés', count: 9, icon: Coffee, tone: 'coral' },
-  { name: 'Transport', count: 9, icon: Bus, tone: 'sage' },
-  { name: 'Shopping', count: 7, icon: ShoppingBag, tone: 'gold' },
-  { name: 'Emergencies', count: 6, icon: ShieldPlus, tone: 'red' },
-  { name: 'Meeting People', count: 5, icon: Users, tone: 'green' },
+  {
+    name: 'Essentials',
+    count: 14,
+    icon: Heart,
+    tone: 'wine',
+    asset: '/situations/essentials.webp',
+  },
+  {
+    name: 'Food & Cafés',
+    count: 9,
+    icon: Coffee,
+    tone: 'coral',
+    asset: '/situations/food-cafes.webp',
+  },
+  {
+    name: 'Transport',
+    count: 9,
+    icon: Bus,
+    tone: 'sage',
+    asset: '/situations/transport.webp',
+  },
+  {
+    name: 'Shopping',
+    count: 7,
+    icon: ShoppingBag,
+    tone: 'gold',
+    asset: '/situations/shopping.webp',
+  },
+  {
+    name: 'Emergencies',
+    count: 6,
+    icon: ShieldPlus,
+    tone: 'red',
+    asset: '/situations/emergencies.webp',
+  },
+  {
+    name: 'Meeting People',
+    count: 5,
+    icon: Users,
+    tone: 'green',
+    asset: '/situations/meeting-people.webp',
+  },
 ];
 
 const phrases: Record<CategoryName, Phrase[]> = {
@@ -3933,14 +3970,14 @@ function AppShell({
                     <span>{t('sixCategories')}</span>
                   </div>
                   <div className="category-grid">
-                    {categories.map(({ name, icon: Icon, tone }) => (
+                    {categories.map(({ name, asset }) => (
                       <button
                         className="category-card"
                         key={name}
                         onClick={() => openCategory(name)}
                       >
-                        <span className={`category-icon ${tone}`}>
-                          <Icon />
+                        <span className="category-visual" aria-hidden="true">
+                          <img src={asset} alt="" width="72" height="72" />
                         </span>
                         <span>
                           <b>{categoryLabels[locale][name]}</b>
@@ -6509,15 +6546,21 @@ function GoogleMark() {
 function AuthPage({
   locale,
   onClose,
+  passwordRecovery = false,
 }: {
   locale: Locale;
   onClose: () => void;
+  passwordRecovery?: boolean;
 }) {
   const googleAuthReady = false;
   const t = (key: string) => getCopy(locale, key);
-  const [mode, setMode] = useState<'signin' | 'signup' | 'recovery'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'recovery' | 'update'>(
+    passwordRecovery ? 'update' : 'signin',
+  );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [passwordUpdated, setPasswordUpdated] = useState(false);
   const [name, setName] = useState('');
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
@@ -6555,9 +6598,43 @@ function AuthPage({
     }
     setBusy(true);
     const client = supabaseModule.createClient();
+    if (mode === 'update') {
+      if (password.length < 8) {
+        setBusy(false);
+        setStatus('Use at least 8 characters for your new password.');
+        return;
+      }
+      if (password !== passwordConfirmation) {
+        setBusy(false);
+        setStatus('The two passwords do not match.');
+        return;
+      }
+      const { error } = await client.auth.updateUser({ password });
+      setBusy(false);
+      if (error) {
+        setStatus(
+          error.message.toLowerCase().includes('session')
+            ? 'This reset link has expired. Request a fresh link and try again.'
+            : error.message,
+        );
+        return;
+      }
+      setPassword('');
+      setPasswordConfirmation('');
+      setPasswordUpdated(true);
+      setStatus('Your password has been updated securely.');
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete('recovery');
+      window.history.replaceState(
+        null,
+        '',
+        `${cleanUrl.pathname}${cleanUrl.search}#app`,
+      );
+      return;
+    }
     if (mode === 'recovery') {
       const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/?mode=app#app`,
+        redirectTo: `${window.location.origin}/?mode=app&recovery=1#app`,
       });
       setBusy(false);
       setStatus(
@@ -6641,14 +6718,22 @@ function AuthPage({
               ? t('authTitleIn')
               : mode === 'signup'
                 ? t('authTitleUp')
-                : 'Reset your password'}
+                : mode === 'update'
+                  ? passwordUpdated
+                    ? 'Password updated'
+                    : 'Choose a new password'
+                  : 'Reset your password'}
           </h2>
           <p className="auth-intro">
-            {mode === 'recovery'
-              ? 'We will email you a secure link. After returning, set a new password in Account settings.'
-              : 'Save words, sync progress, and keep your personalized learning plan on every device.'}
+            {mode === 'update'
+              ? passwordUpdated
+                ? 'Your account is secure and ready. Continue where you left off.'
+                : 'Enter a new password for your GEO account.'
+              : mode === 'recovery'
+                ? 'We will email you a secure link. After returning, set a new password in Account settings.'
+                : 'Save words, sync progress, and keep your personalized learning plan on every device.'}
           </p>
-          {mode !== 'recovery' && (
+          {mode !== 'recovery' && mode !== 'update' && (
             <>
               <button
                 className="google-auth-button"
@@ -6667,75 +6752,102 @@ function AuthPage({
               </div>
             </>
           )}
-          <form className="auth-form" onSubmit={submit}>
-            {mode === 'signup' && (
-              <label>
-                {t('displayName')}
-                <input
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  autoComplete="name"
-                  maxLength={80}
-                />
-              </label>
-            )}
-            <label>
-              {t('email')}
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="email"
-                required
-              />
-            </label>
-            {mode !== 'recovery' && (
-              <label>
-                {t('password')}
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete={
-                    mode === 'signin' ? 'current-password' : 'new-password'
-                  }
-                  minLength={8}
-                  required
-                />
-              </label>
-            )}
-            {mode === 'signin' && (
-              <button
-                type="button"
-                className="forgot-password"
-                onClick={() => {
-                  setMode('recovery');
-                  setStatus('');
-                }}
-              >
-                Forgot your password?
-              </button>
-            )}
-            {status && <output className="auth-status">{status}</output>}
-            <Button type="submit" disabled={busy}>
-              {busy
-                ? t('pleaseWait')
-                : mode === 'signin'
-                  ? t('signIn')
-                  : mode === 'signup'
-                    ? t('createAccount')
-                    : 'Email reset link'}
-            </Button>
-          </form>
-          <button
-            className="auth-switch"
-            onClick={() => {
-              setMode((value) => (value === 'signin' ? 'signup' : 'signin'));
-              setStatus('');
-            }}
-          >
-            {mode === 'signin' ? t('newAccount') : t('existingAccount')}
-          </button>
+          {!passwordUpdated && (
+            <form className="auth-form" onSubmit={submit}>
+              {mode === 'signup' && (
+                <label>
+                  {t('displayName')}
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    autoComplete="name"
+                    maxLength={80}
+                  />
+                </label>
+              )}
+              {mode !== 'update' && (
+                <label>
+                  {t('email')}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </label>
+              )}
+              {mode !== 'recovery' && (
+                <label>
+                  {t('password')}
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    autoComplete={
+                      mode === 'signin' ? 'current-password' : 'new-password'
+                    }
+                    minLength={8}
+                    required
+                  />
+                </label>
+              )}
+              {mode === 'update' && (
+                <label>
+                  Confirm new password
+                  <input
+                    type="password"
+                    value={passwordConfirmation}
+                    onChange={(event) =>
+                      setPasswordConfirmation(event.target.value)
+                    }
+                    autoComplete="new-password"
+                    minLength={8}
+                    required
+                  />
+                </label>
+              )}
+              {mode === 'signin' && (
+                <button
+                  type="button"
+                  className="forgot-password"
+                  onClick={() => {
+                    setMode('recovery');
+                    setStatus('');
+                  }}
+                >
+                  Forgot your password?
+                </button>
+              )}
+              {status && <output className="auth-status">{status}</output>}
+              <Button type="submit" disabled={busy}>
+                {busy
+                  ? t('pleaseWait')
+                  : mode === 'signin'
+                    ? t('signIn')
+                    : mode === 'signup'
+                      ? t('createAccount')
+                      : mode === 'update'
+                        ? 'Set new password'
+                        : 'Email reset link'}
+              </Button>
+            </form>
+          )}
+          {passwordUpdated ? (
+            <button className="auth-recovery-complete" onClick={onClose}>
+              Continue to GEO <ChevronRight />
+            </button>
+          ) : mode !== 'update' ? (
+            <button
+              className="auth-switch"
+              onClick={() => {
+                setMode((value) => (value === 'signin' ? 'signup' : 'signin'));
+                setStatus('');
+              }}
+            >
+              {mode === 'signin' ? t('newAccount') : t('existingAccount')}
+            </button>
+          ) : null}
           <p className="auth-legal">
             By continuing, you agree to our <a href="/terms">Terms</a> and
             acknowledge our <a href="/privacy">Privacy Policy</a>.
@@ -6756,6 +6868,8 @@ export default function HomePage() {
   const [languageChoiceOpen, setLanguageChoiceOpen] = useState(false);
   const [modal, setModal] = useState<'install' | 'pricing' | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [passwordRecoveryRequested, setPasswordRecoveryRequested] =
+    useState(false);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [installPlatform, setInstallPlatform] =
@@ -6800,6 +6914,14 @@ export default function HomePage() {
         setLanguageChoiceOpen(true);
       }
     }, 0);
+    const passwordRecovery =
+      new URLSearchParams(location.search).get('recovery') === '1';
+    if (passwordRecovery) {
+      window.setTimeout(() => {
+        setPasswordRecoveryRequested(true);
+        setAuthOpen(true);
+      }, 0);
+    }
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
       location.hash === '#app' ||
@@ -6808,7 +6930,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v17-reloaded';
+      const reloadKey = 'geo-sw-v20-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -6827,7 +6949,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=19', {
+        .register('/sw.js?v=20', {
           scope: '/',
           updateViaCache: 'none',
         })
@@ -6985,7 +7107,14 @@ export default function HomePage() {
   return (
     <>
       {authOpen ? (
-        <AuthPage locale={locale} onClose={() => setAuthOpen(false)} />
+        <AuthPage
+          locale={locale}
+          onClose={() => {
+            setAuthOpen(false);
+            setPasswordRecoveryRequested(false);
+          }}
+          passwordRecovery={passwordRecoveryRequested}
+        />
       ) : mode === 'marketing' ? (
         <MarketingExperience
           openApp={openApp}

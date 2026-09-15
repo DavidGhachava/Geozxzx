@@ -1357,6 +1357,40 @@ body {
   box-shadow: 0 14px 38px rgb(47 76 93 / 7%) !important;
 }
 
+.category-card {
+  grid-template-columns: 76px minmax(0, 1fr) 22px !important;
+  min-height: 100px !important;
+  gap: 16px !important;
+  padding: 11px 16px 11px 11px !important;
+  overflow: hidden;
+}
+
+.category-visual {
+  display: block;
+  width: 76px;
+  height: 76px;
+  overflow: hidden;
+  border-radius: 19px;
+  background: #111820;
+}
+
+.category-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-card b {
+  color: var(--travel-ink) !important;
+  font-size: 1.02rem !important;
+  letter-spacing: -0.02em;
+}
+
+.category-card small {
+  color: var(--travel-muted) !important;
+}
+
 .category-card:hover,
 .phrase-card:hover,
 .word-card:hover,
@@ -1482,7 +1516,54 @@ body {
   color: var(--travel-blue) !important;
 }
 
+.bottom-nav button.active::before {
+  background: var(--travel-blue) !important;
+}
+
+.explore-continue-card,
+.today-learning-panel {
+  border-color: rgb(47 99 234 / 16%) !important;
+  background:
+    radial-gradient(circle at 94% 5%, rgb(112 162 255 / 15%), transparent 34%),
+    white !important;
+  box-shadow: 0 14px 38px rgb(47 76 93 / 8%) !important;
+}
+
+.explore-continue-icon,
+.today-learning-icon {
+  color: white !important;
+  background: var(--travel-blue) !important;
+  box-shadow: 0 10px 22px rgb(47 99 234 / 23%) !important;
+}
+
+.explore-continue-copy small,
+.today-learning-copy small {
+  color: var(--travel-blue) !important;
+}
+
+.explore-continue-card > button,
+.today-learning-start {
+  color: white !important;
+  background: var(--travel-blue) !important;
+  box-shadow: 0 12px 24px rgb(47 99 234 / 22%) !important;
+}
+
+.learn-section-tabs {
+  border-color: var(--travel-line) !important;
+  background: #edf4f8 !important;
+}
+
+.learn-section-tabs button {
+  color: #68737d !important;
+}
+
+.learn-section-tabs button.active {
+  color: var(--travel-blue) !important;
+  background: white !important;
+}
+
 .auth-page {
+  grid-template-columns: 1fr 1fr !important;
   background: var(--travel-sky) !important;
 }
 
@@ -1490,7 +1571,6 @@ body {
   background: url('/geo-dusk-hero.png') center / cover !important;
 }
 
-.auth-panel,
 .auth-card,
 .mock-dialog,
 .onboarding-dialog {
@@ -1498,6 +1578,51 @@ body {
   border-radius: 28px !important;
   background: white !important;
   box-shadow: var(--travel-shadow) !important;
+}
+
+.auth-panel {
+  background: white !important;
+}
+
+.auth-card {
+  box-sizing: border-box;
+  padding: 34px !important;
+}
+
+.auth-page .auth-form {
+  gap: 18px !important;
+}
+
+.auth-page .auth-form input {
+  width: 100%;
+  border-color: var(--travel-line) !important;
+  background: #fbfdfe !important;
+}
+
+.auth-page .auth-form input:focus {
+  border-color: var(--travel-blue) !important;
+  box-shadow: 0 0 0 4px rgb(47 99 234 / 10%) !important;
+}
+
+.auth-page .auth-form > button[type='submit'],
+.auth-recovery-complete {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: 16px;
+  color: white !important;
+  background: var(--travel-blue) !important;
+  box-shadow: 0 12px 24px rgb(47 99 234 / 22%) !important;
+  font: inherit;
+  font-weight: 850;
+}
+
+.auth-recovery-complete svg {
+  width: 18px;
 }
 
 @keyframes travel-photo-in {
@@ -1890,6 +2015,95 @@ body {
     bottom: 8px !important;
     left: 8px !important;
     border-radius: 22px !important;
+  }
+
+  .category-card {
+    grid-template-columns: 72px minmax(0, 1fr) 20px !important;
+    min-height: 96px !important;
+    padding: 11px 14px 11px 11px !important;
+    border-radius: 24px !important;
+  }
+
+  .category-visual {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+  }
+
+  .explore-continue-card {
+    padding: 17px !important;
+    border-radius: 23px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .auth-page {
+    display: block !important;
+    min-height: 100svh;
+    background: white !important;
+  }
+
+  .auth-showcase {
+    display: none !important;
+  }
+
+  .auth-panel {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    min-height: 100svh !important;
+    padding: 72px 20px 28px !important;
+    overflow-x: hidden;
+  }
+
+  .auth-card {
+    width: 100% !important;
+    max-width: 460px !important;
+    min-width: 0 !important;
+    padding: 28px 24px 24px !important;
+    border: 1px solid var(--travel-line) !important;
+    border-radius: 26px !important;
+    background: white !important;
+    box-shadow: 0 18px 48px rgb(47 76 93 / 9%) !important;
+  }
+
+  .auth-mobile-brand {
+    margin-bottom: 24px !important;
+  }
+
+  .auth-card h2 {
+    margin-top: 18px !important;
+    font-size: clamp(2.05rem, 9vw, 2.7rem) !important;
+  }
+
+  .auth-intro {
+    margin-bottom: 24px !important;
+    font-size: 0.96rem;
+  }
+
+  .google-auth-button {
+    height: 56px !important;
+  }
+
+  .auth-legal {
+    margin-top: 22px !important;
+    padding: 0 4px 10px;
+  }
+}
+
+@media (max-width: 430px) {
+  .auth-panel {
+    padding: 64px 12px 18px !important;
+  }
+
+  .auth-card {
+    padding: 24px 18px 20px !important;
+    border-radius: 23px !important;
+  }
+
+  .google-auth-button small {
+    position: static;
+    margin-left: auto;
   }
 }
 
