@@ -13,6 +13,7 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Coffee,
   Compass,
@@ -67,6 +68,7 @@ import phraseAudioManifest from '@/lib/phrase-audio-manifest.json';
 import { wordLibrary, type WordEntry } from '@/lib/word-library';
 import {
   speakingUnit,
+  speakingUnitOutcomes,
   speakingUnitTitles,
   type SpeakingStep,
 } from '@/lib/speaking-unit';
@@ -280,15 +282,15 @@ const defaultLearnerPreferences: LearnerPreferences = {
 };
 
 const focusUnits: Record<LearningFocus, number[]> = {
-  general_speaking: [1, 2, 3, 4, 5, 6, 7, 8],
-  social: [1, 8],
-  cafe: [2, 1],
-  work: [6, 1],
-  shopping: [3, 1],
-  transport: [4, 1],
-  home: [5, 1],
-  health: [7, 1],
-  services: [6, 4, 1],
+  general_speaking: [1, 8, 9, 10, 13, 14, 16],
+  social: [1, 8, 9, 13, 16],
+  cafe: [2, 9, 12, 16],
+  work: [6, 10, 14, 15, 16],
+  shopping: [3, 10, 12, 16],
+  transport: [4, 10, 11, 16],
+  home: [5, 10, 13, 14, 16],
+  health: [7, 10, 13, 16],
+  services: [4, 6, 10, 11, 15, 16],
 };
 
 const focusLabels: Record<LearningFocus, Record<Locale, string>> = {
@@ -2067,6 +2069,7 @@ function AppShell({
   const t = (key: string) => getCopy(locale, key);
   const [screen, setScreen] = useState<Screen>(initialScreen ?? 'words');
   const [learnSection, setLearnSection] = useState<'today' | 'paths'>('today');
+  const [openLearningUnits, setOpenLearningUnits] = useState<number[]>([1]);
   const [previewSource, setPreviewSource] = useState<'path' | 'today'>('path');
   const [todayWordIds, setTodayWordIds] = useState<string[]>([]);
   const [wordMemory, setWordMemory] = useState<Record<string, WordMemory>>({});
@@ -2152,7 +2155,10 @@ function AppShell({
     'phrasebook',
   );
   const [hasLearningAccess, setHasLearningAccess] = useState(false);
-  const canUseLearning = hasLearningAccess;
+  // Local development keeps the complete course testable without granting a
+  // real subscription. Production access still comes only from Supabase.
+  const isLocalCoursePreview = process.env.NODE_ENV === 'development';
+  const canUseLearning = hasLearningAccess || isLocalCoursePreview;
   const [hasPhrasebookProAccess, setHasPhrasebookProAccess] = useState(false);
   const canUseDictionary = hasPhrasebookProAccess || hasLearningAccess;
   const [welcomeAccess, setWelcomeAccess] = useState<{
@@ -2203,7 +2209,7 @@ function AppShell({
   const currentAudio = useRef<HTMLAudioElement | null>(null);
   useEffect(() => {
     let active = true;
-    if (!canUseDictionary) {
+    if (!canUseDictionary && !canUseLearning) {
       const clearWords = window.setTimeout(() => {
         if (active) setAllWords([]);
       }, 0);
@@ -2215,6 +2221,11 @@ function AppShell({
     const showCuratedWords = window.setTimeout(() => {
       if (active) setAllWords(wordLibrary);
     }, 0);
+    if (!canUseDictionary)
+      return () => {
+        active = false;
+        window.clearTimeout(showCuratedWords);
+      };
     void fetch('/data/word-library-extended.json', { cache: 'force-cache' })
       .then((response) => {
         if (!response.ok) throw new Error('Expanded word library unavailable');
@@ -2238,7 +2249,7 @@ function AppShell({
       active = false;
       window.clearTimeout(showCuratedWords);
     };
-  }, [canUseDictionary]);
+  }, [canUseDictionary, canUseLearning]);
   useEffect(() => {
     let active = true;
     void import('@/lib/supabase/client').then((supabaseModule) => {
@@ -2431,7 +2442,9 @@ function AppShell({
           [],
         ).filter(
           (step): step is number =>
-            Number.isInteger(step) && Number(step) >= 1 && Number(step) <= 48,
+            Number.isInteger(step) &&
+            Number(step) >= 1 &&
+            Number(step) <= speakingUnit.length,
         );
         const legacyDaily = parseLegacy<{ date?: string; count?: number }>(
           'geo-daily-micro-lessons-v1',
@@ -3299,10 +3312,14 @@ function AppShell({
           new Date(a.nextReviewAt ?? 0).getTime() -
           new Date(b.nextReviewAt ?? 0).getTime(),
       );
+    const reviewCapacity = Math.min(
+      Math.max(1, dailyWordTarget - 1),
+      Math.max(2, Math.ceil(dailyWordTarget * 0.5)),
+    );
     const reviewIds = [...weak, ...due]
       .map((item) => item.wordId)
       .filter((id) => allWords.some((word) => word.id === id))
-      .slice(0, Math.min(3, Math.max(1, dailyWordTarget - 2)));
+      .slice(0, reviewCapacity);
     const focusedNew = learningWords.filter(
       ({ word, unitNumber }) =>
         preferredUnits.has(unitNumber) && !wordMemory[word.id],
@@ -3343,6 +3360,7 @@ function AppShell({
       ids: [...reviewIds, ...newIds].slice(0, dailyWordTarget),
       reviewCount: reviewIds.length,
       newCount: Math.min(newIds.length, dailyWordTarget - reviewIds.length),
+      reviewBacklog: Math.max(0, weak.length + due.length - reviewIds.length),
       focusLabel: focusLabels[learnerPreferences.primaryGoal][locale],
     };
   }, [
@@ -4059,10 +4077,10 @@ function AppShell({
                       </b>
                       <em>
                         {locale === 'ru'
-                          ? '8 разделов готовы'
+                          ? '16 разделов готовы'
                           : locale === 'ka'
-                            ? '8 ნაწილი მზადაა'
-                            : '8 units ready'}
+                            ? '16 ნაწილი მზადაა'
+                            : '16 units ready'}
                       </em>
                     </span>
                     <span className="banner-action">
@@ -4414,10 +4432,10 @@ function AppShell({
                     </b>
                     <small>
                       {locale === 'ru'
-                        ? 'Ошибки возвращаются раньше. Уверенные слова — позже.'
+                        ? 'Новые слова возвращаются через 1, 3, 7, 14 и 30 дней. Ошибки — уже через несколько часов.'
                         : locale === 'ka'
-                          ? 'შეცდომები მალე ბრუნდება. კარგად ნასწავლი სიტყვები — მოგვიანებით.'
-                          : 'Mistakes return sooner. Strong words wait longer.'}
+                          ? 'ახალი სიტყვები ბრუნდება 1, 3, 7, 14 და 30 დღეში. შეცდომები — რამდენიმე საათში.'
+                          : 'New words return after 1, 3, 7, 14, and 30 days. Mistakes return within hours.'}
                     </small>
                   </span>
                 </div>
@@ -4431,126 +4449,146 @@ function AppShell({
                       (lesson) => lesson.unit === unitNumber,
                     );
                     const firstStep = unitLessons[0]?.number ?? 1;
+                    const unitCompleted = completedSpeakingSteps.filter(
+                      (stepNumber) =>
+                        unitLessons.some((step) => step.number === stepNumber),
+                    ).length;
+                    const phaseNumber = Math.ceil(unitNumber / 4);
 
                     return (
                       <section className="lesson-unit" key={unitNumber}>
-                        <div className="lesson-unit-heading">
+                        <button
+                          type="button"
+                          className="lesson-unit-heading"
+                          aria-expanded={openLearningUnits.includes(unitNumber)}
+                          onClick={() =>
+                            setOpenLearningUnits((current) =>
+                              current.includes(unitNumber)
+                                ? current.filter((item) => item !== unitNumber)
+                                : [...current, unitNumber],
+                            )
+                          }
+                        >
                           <span>
                             {locale === 'ru'
-                              ? `Раздел ${unitNumber}`
+                              ? `Этап ${phaseNumber} · Раздел ${unitNumber}`
                               : locale === 'ka'
-                                ? `ნაწილი ${unitNumber}`
-                                : `Unit ${unitNumber}`}
+                                ? `ეტაპი ${phaseNumber} · ნაწილი ${unitNumber}`
+                                : `Stage ${phaseNumber} · Unit ${unitNumber}`}
                           </span>
-                          <b>{speakingUnitTitles[unitNumber][locale]}</b>
+                          <span className="lesson-unit-title">
+                            <b>{speakingUnitTitles[unitNumber][locale]}</b>
+                            <em>{speakingUnitOutcomes[unitNumber][locale]}</em>
+                          </span>
                           <small>
-                            {
-                              completedSpeakingSteps.filter((stepNumber) =>
-                                unitLessons.some(
-                                  (step) => step.number === stepNumber,
-                                ),
-                              ).length
-                            }
-                            /{unitLessons.length}
+                            {unitCompleted}/{unitLessons.length}
+                            <ChevronDown />
                           </small>
-                        </div>
-                        <div className="lesson-path-list">
-                          {unitLessons.map((lesson) => {
-                            const complete = completedSpeakingSteps.includes(
-                              lesson.number,
-                            );
-                            const accessLocked = !canUseLearning;
-                            const locked =
-                              accessLocked ||
-                              (!complete &&
-                                lesson.number !== firstStep &&
-                                !completedSpeakingSteps.includes(
-                                  lesson.number - 1,
-                                ));
-                            const current = !complete && !locked;
+                        </button>
+                        {openLearningUnits.includes(unitNumber) && (
+                          <div className="lesson-path-list">
+                            {unitLessons.map((lesson) => {
+                              const complete = completedSpeakingSteps.includes(
+                                lesson.number,
+                              );
+                              const accessLocked = !canUseLearning;
+                              const locked =
+                                accessLocked ||
+                                (!isLocalCoursePreview &&
+                                  !complete &&
+                                  lesson.number !== firstStep &&
+                                  !completedSpeakingSteps.includes(
+                                    lesson.number - 1,
+                                  ));
+                              const current = !complete && !locked;
 
-                            return (
-                              <button
-                                className={`lesson-path-card ${lesson.kind} ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${locked ? 'locked' : ''}`}
-                                key={lesson.number}
-                                disabled={locked && !accessLocked}
-                                onClick={() => openSpeakingStep(lesson)}
-                              >
-                                <span className="lesson-path-number">
-                                  {complete ? (
-                                    <Check />
-                                  ) : locked ? (
-                                    <LockKeyhole />
-                                  ) : lesson.kind === 'review' ? (
-                                    <Brain />
-                                  ) : lesson.kind === 'mission' ? (
-                                    <Trophy />
-                                  ) : lesson.kind === 'scenario' ? (
-                                    <Coffee />
-                                  ) : (
-                                    lesson.number
-                                  )}
-                                </span>
-                                <span className="lesson-path-copy">
-                                  <b>{lesson.title[locale]}</b>
-                                  <small>
-                                    {lesson.minutes} min ·{' '}
-                                    {lesson.kind === 'review'
-                                      ? locale === 'ru'
-                                        ? 'повторение'
-                                        : locale === 'ka'
-                                          ? 'გამეორება'
-                                          : 'memory review'
-                                      : lesson.kind === 'scenario' ||
-                                          lesson.kind === 'mission'
+                              return (
+                                <button
+                                  className={`lesson-path-card ${lesson.kind} ${complete ? 'complete' : ''} ${current ? 'current' : ''} ${locked ? 'locked' : ''}`}
+                                  key={lesson.number}
+                                  disabled={locked && !accessLocked}
+                                  onClick={() => openSpeakingStep(lesson)}
+                                >
+                                  <span className="lesson-path-number">
+                                    {complete ? (
+                                      <Check />
+                                    ) : locked ? (
+                                      <LockKeyhole />
+                                    ) : lesson.kind === 'review' ? (
+                                      <Brain />
+                                    ) : lesson.kind === 'mission' ? (
+                                      <Trophy />
+                                    ) : lesson.kind === 'scenario' ? (
+                                      <Coffee />
+                                    ) : (
+                                      lesson.number
+                                    )}
+                                  </span>
+                                  <span className="lesson-path-copy">
+                                    <b>{lesson.title[locale]}</b>
+                                    <small>
+                                      {lesson.minutes} min ·{' '}
+                                      {lesson.kind === 'review'
                                         ? locale === 'ru'
-                                          ? 'разговор'
+                                          ? 'повторение'
                                           : locale === 'ka'
-                                            ? 'საუბარი'
-                                            : 'speaking mission'
-                                        : locale === 'ru'
-                                          ? `${splitIntoMicroLessons(lesson.words).length} коротких урока · до 3 слов`
-                                          : locale === 'ka'
-                                            ? `${splitIntoMicroLessons(lesson.words).length} მოკლე გაკვეთილი · მაქს. 3 სიტყვა`
-                                            : `${splitIntoMicroLessons(lesson.words).length} short ${splitIntoMicroLessons(lesson.words).length === 1 ? 'lesson' : 'lessons'} · up to 3 words`}
-                                  </small>
-                                </span>
-                                <span className="lesson-path-action">
-                                  {accessLocked
-                                    ? locale === 'ru'
-                                      ? 'Открыть курс'
-                                      : locale === 'ka'
-                                        ? 'კურსის გახსნა'
-                                        : 'Unlock course'
-                                    : locked
-                                      ? locale === 'ru'
-                                        ? 'Закрыто'
-                                        : locale === 'ka'
-                                          ? 'ჩაკეტილია'
-                                          : 'Locked'
-                                      : complete
-                                        ? locale === 'ru'
-                                          ? 'Ещё раз'
-                                          : locale === 'ka'
-                                            ? 'თავიდან'
-                                            : 'Replay'
-                                        : lesson.kind === 'review'
+                                            ? 'გამეორება'
+                                            : 'memory review'
+                                        : lesson.kind === 'scenario' ||
+                                            lesson.kind === 'mission'
                                           ? locale === 'ru'
-                                            ? 'Повторить'
+                                            ? 'разговор'
                                             : locale === 'ka'
-                                              ? 'გამეორება'
-                                              : 'Review'
+                                              ? 'საუბარი'
+                                              : 'speaking mission'
                                           : locale === 'ru'
-                                            ? 'Начать'
+                                            ? `${splitIntoMicroLessons(lesson.words).length} коротких урока · до 3 слов`
                                             : locale === 'ka'
-                                              ? 'დაწყება'
-                                              : 'Start'}
-                                  {locked ? <LockKeyhole /> : <ChevronRight />}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                                              ? `${splitIntoMicroLessons(lesson.words).length} მოკლე გაკვეთილი · მაქს. 3 სიტყვა`
+                                              : `${splitIntoMicroLessons(lesson.words).length} short ${splitIntoMicroLessons(lesson.words).length === 1 ? 'lesson' : 'lessons'} · up to 3 words`}
+                                    </small>
+                                  </span>
+                                  <span className="lesson-path-action">
+                                    {accessLocked
+                                      ? locale === 'ru'
+                                        ? 'Открыть курс'
+                                        : locale === 'ka'
+                                          ? 'კურსის გახსნა'
+                                          : 'Unlock course'
+                                      : locked
+                                        ? locale === 'ru'
+                                          ? 'Закрыто'
+                                          : locale === 'ka'
+                                            ? 'ჩაკეტილია'
+                                            : 'Locked'
+                                        : complete
+                                          ? locale === 'ru'
+                                            ? 'Ещё раз'
+                                            : locale === 'ka'
+                                              ? 'თავიდან'
+                                              : 'Replay'
+                                          : lesson.kind === 'review'
+                                            ? locale === 'ru'
+                                              ? 'Повторить'
+                                              : locale === 'ka'
+                                                ? 'გამეორება'
+                                                : 'Review'
+                                            : locale === 'ru'
+                                              ? 'Начать'
+                                              : locale === 'ka'
+                                                ? 'დაწყება'
+                                                : 'Start'}
+                                    {locked ? (
+                                      <LockKeyhole />
+                                    ) : (
+                                      <ChevronRight />
+                                    )}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </section>
                     );
                   })}
@@ -4564,7 +4602,7 @@ function AppShell({
                       ? 'Проверки памяти возвращают старые слова до того, как они забудутся.'
                       : locale === 'ka'
                         ? 'მეხსიერების შემოწმება ძველ სიტყვებს დავიწყებამდე აბრუნებს.'
-                        : 'Memory checks return older language before it fades.'}
+                        : 'Spiral checks mix older units into every new stage, while daily practice schedules each word before it fades.'}
                   </span>
                 </div>
               )}
@@ -5430,9 +5468,9 @@ function AppShell({
                       <div>
                         <CalendarDays />
                         <span>
-                          <b>Complete A0 survival-speaking course</b>
+                          <b>Practical A1 survival-speaking path</b>
                           <small>
-                            48 guided steps across 8 practical units
+                            96 guided steps across 16 practical units
                           </small>
                         </span>
                       </div>
@@ -5441,7 +5479,7 @@ function AppShell({
                         <span>
                           <b>Progress, XP, quizzes, and streaks</b>
                           <small>
-                            148 core words, smart review, and 27 speaking
+                            253 core words, smart review, and 51 speaking
                             prompts
                           </small>
                         </span>
@@ -5663,7 +5701,7 @@ function AppShell({
                 <Compass />
                 <span>
                   <b>Explore the complete course</b>
-                  <small>48 guided steps across 8 practical units</small>
+                  <small>96 guided steps across 16 practical units</small>
                 </span>
                 <ChevronRight />
               </button>
@@ -7289,7 +7327,7 @@ export default function HomePage() {
               <div className="recommended">
                 <span>
                   <b>Guided Learning</b>
-                  <small>8 units · Dictionary included</small>
+                  <small>16 units · Dictionary included</small>
                 </span>
                 <strong>₾19/mo</strong>
               </div>

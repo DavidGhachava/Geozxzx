@@ -250,7 +250,7 @@ export function MarketingExperience({
           <b>9,000</b> dictionary words
         </span>
         <span>
-          <b>48</b> guided steps
+          <b>96</b> guided steps
         </span>
         <span>
           <b>5 min</b> daily rhythm

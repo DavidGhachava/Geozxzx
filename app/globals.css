@@ -6354,30 +6354,56 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-unit {
   min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(47, 99, 234, 0.12);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 30px rgba(34, 48, 73, 0.045);
 }
 
 .lesson-unit-heading {
-  min-height: 34px;
-  margin-bottom: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   display: flex;
   align-items: center;
   gap: 9px;
+  cursor: pointer;
 }
 
-.lesson-unit-heading > span {
+.lesson-unit-heading > span:first-child {
   padding: 5px 8px;
   border-radius: 8px;
-  background: #f5e6e8;
-  color: var(--primary);
+  background: #e8f0ff;
+  color: #2f63ea;
   font-size: 0.7rem;
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.lesson-unit-heading > b {
+.lesson-unit-title {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.lesson-unit-title b {
   color: #38252b;
   font-size: 1.02rem;
+}
+
+.lesson-unit-title em {
+  overflow: hidden;
+  color: #84747a;
+  font-size: 0.73rem;
+  font-style: normal;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lesson-unit-heading > svg {
@@ -6389,8 +6415,24 @@ html[data-app-mode='true'] .marketing {
 .lesson-unit-heading > small {
   margin-left: auto;
   color: #8d7c81;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.76rem;
   font-weight: 800;
+}
+
+.lesson-unit-heading > small svg {
+  width: 15px;
+  transition: transform 180ms ease;
+}
+
+.lesson-unit-heading[aria-expanded='true'] {
+  margin-bottom: 12px;
+}
+
+.lesson-unit-heading[aria-expanded='true'] > small svg {
+  transform: rotate(180deg);
 }
 
 .lesson-unit.locked .lesson-unit-heading {
@@ -6408,7 +6450,7 @@ html[data-app-mode='true'] .marketing {
   padding: 12px 14px;
   border: 1px solid rgba(47, 99, 234, 0.18);
   border-radius: 18px;
-  background: linear-gradient(120deg, #fff 0%, #fff9f9 100%);
+  background: linear-gradient(120deg, #fff 0%, #f6f9ff 100%);
   color: var(--text);
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
@@ -6462,11 +6504,11 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-card:nth-child(2) {
-  background: linear-gradient(120deg, #fff 0%, #fff4f1 100%);
+  background: linear-gradient(120deg, #fff 0%, #f2f7ff 100%);
 }
 
 .lesson-path-card:nth-child(3) {
-  background: linear-gradient(120deg, #fff 0%, #fdf1f4 100%);
+  background: linear-gradient(120deg, #fff 0%, #f5f3ff 100%);
 }
 
 .lesson-path-number {
@@ -6483,11 +6525,11 @@ html[data-app-mode='true'] .marketing {
 }
 
 .lesson-path-card:nth-child(2) .lesson-path-number {
-  background: #e44951;
+  background: #5d8def;
 }
 
 .lesson-path-card:nth-child(3) .lesson-path-number {
-  background: #8d1732;
+  background: #775ed0;
 }
 
 .lesson-path-card.review {
@@ -6591,12 +6633,12 @@ html[data-app-mode='true'] .marketing {
   margin-top: 15px;
   padding: 14px 16px;
   border-radius: 16px;
-  background: #f7e8e9;
+  background: #eaf2ff;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #66323e;
+  color: #315caa;
   font-size: 0.88rem;
   font-weight: 700;
   text-align: center;
@@ -8331,9 +8373,10 @@ html[data-app-mode='true'] .marketing {
     font-size: 0.73rem;
   }
   .lesson-path-action {
-    min-height: 36px;
-    padding-inline: 10px;
-    font-size: 0.75rem;
+    width: 38px;
+    min-height: 38px;
+    padding: 0;
+    font-size: 0;
   }
   .lesson-path-footer {
     align-items: stretch;

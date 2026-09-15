@@ -26,7 +26,7 @@ const expect = (condition, message) => {
   if (!condition) failures.push(message);
 };
 
-expect(speakingUnit.length === 48, 'The guided course must contain 48 steps.');
+expect(speakingUnit.length === 96, 'The guided course must contain 96 steps.');
 expect(
   speakingUnit.every((step, index) => step.number === index + 1),
   'Course step numbers must be consecutive.',
@@ -34,11 +34,16 @@ expect(
 
 for (const step of speakingUnit) {
   expect(
-    step.unit >= 1 && step.unit <= 8,
+    step.unit >= 1 && step.unit <= 16,
     `Step ${step.number} has an invalid unit.`,
   );
   if (step.kind === 'lesson' || step.kind === 'review')
     expect(step.words.length > 0, `Step ${step.number} has no vocabulary.`);
+  if (step.kind === 'review' && step.unit >= 9)
+    expect(
+      (step.reviewFrom?.length ?? 0) >= 3,
+      `Step ${step.number} must spiral material from at least three units.`,
+    );
   for (const georgian of step.words) {
     const word = wordsByGeorgian.get(georgian);
     expect(Boolean(word), `Step ${step.number} is missing word: ${georgian}`);
