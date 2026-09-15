@@ -120,4 +120,3 @@ revoke all on function public.complete_learning_session(text, smallint, smallint
 from public, anon;
 grant execute on function public.complete_learning_session(text, smallint, smallint, smallint, integer)
 to authenticated;
-
