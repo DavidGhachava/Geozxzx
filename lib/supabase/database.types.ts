@@ -199,6 +199,12 @@ export type Database = {
         Update: { user_id?: string; phrase_id?: string; created_at?: string };
         Relationships: [];
       };
+      saved_words: {
+        Row: { user_id: string; word_id: string; created_at: string };
+        Insert: { user_id: string; word_id: string; created_at?: string };
+        Update: { user_id?: string; word_id?: string; created_at?: string };
+        Relationships: [];
+      };
       learning_progress: {
         Row: {
           user_id: string;

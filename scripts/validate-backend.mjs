@@ -40,6 +40,7 @@ await check(
   },
 );
 await check('word memory RLS', '/rest/v1/word_memory?select=word_id&limit=1');
+await check('saved words RLS', '/rest/v1/saved_words?select=word_id&limit=1');
 await check(
   'learning progress RLS',
   '/rest/v1/learning_path_progress?select=step_number&limit=1',
@@ -70,6 +71,7 @@ await check('account deletion CORS', '/functions/v1/delete-account', {
 const failures = [];
 const protectedChecks = [
   'word memory RLS',
+  'saved words RLS',
   'learning progress RLS',
   'learner preferences RLS',
 ];

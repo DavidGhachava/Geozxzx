@@ -155,6 +155,15 @@ type LearningDashboard = {
   activity: LearningActivityDay[];
 };
 
+type PendingLearningSession = {
+  key: string;
+  source: 'daily' | 'path';
+  stepNumber?: number;
+  unitNumber?: number;
+  microLesson?: number;
+  minutes?: number;
+};
+
 type LearningStats = {
   streak: number;
   longest: number;
@@ -174,6 +183,62 @@ const emptyLearningStats = (): LearningStats => ({
   lessons: 0,
   activity: [],
 });
+
+const accountStorageKey = (name: string, userId: string) =>
+  `geo-${name}:${userId}`;
+
+function readAccountCache<T>(name: string, userId: string, fallback: T): T {
+  try {
+    const stored = localStorage.getItem(accountStorageKey(name, userId));
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeAccountCache(name: string, userId: string, value: unknown) {
+  localStorage.setItem(accountStorageKey(name, userId), JSON.stringify(value));
+}
+
+function queueLearningSession(userId: string, item: PendingLearningSession) {
+  const pending = readAccountCache<PendingLearningSession[]>(
+    'pending-learning-v1',
+    userId,
+    [],
+  );
+  writeAccountCache('pending-learning-v1', userId, [
+    ...pending.filter((entry) => entry.key !== item.key),
+    item,
+  ]);
+}
+
+function removeQueuedLearningSession(userId: string, key: string) {
+  const pending = readAccountCache<PendingLearningSession[]>(
+    'pending-learning-v1',
+    userId,
+    [],
+  );
+  writeAccountCache(
+    'pending-learning-v1',
+    userId,
+    pending.filter((entry) => entry.key !== key),
+  );
+}
+
+function accountDisplayName(user: User, profileName?: string | null) {
+  const metadata = user.user_metadata as Record<string, unknown>;
+  const candidates = [
+    profileName,
+    metadata.display_name,
+    metadata.full_name,
+    metadata.name,
+  ];
+  const name = candidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === 'string' && candidate.trim().length > 0,
+  );
+  return name?.trim() ?? 'Account';
+}
 
 type LearningFocus =
   | 'general_speaking'
@@ -1448,6 +1513,7 @@ function Marketing({
   openAccount,
   user,
   displayName,
+  accountReady,
   locale,
   onLocaleChange,
 }: {
@@ -1457,6 +1523,7 @@ function Marketing({
   openAccount: () => void;
   user: User | null;
   displayName: string | null;
+  accountReady: boolean;
   locale: Locale;
   onLocaleChange: (locale: Locale) => void;
 }) {
@@ -1516,8 +1583,10 @@ function Marketing({
           >
             <UserRound />
             {user
-              ? (displayName ?? user.email?.split('@')[0] ?? 'Account')
-              : t('signIn')}
+              ? accountDisplayName(user, displayName)
+              : accountReady
+                ? t('signIn')
+                : 'Account'}
           </button>
           <button className="open-app-link" onClick={openApp}>
             {t('useWeb')} <ChevronRight />
@@ -1553,8 +1622,10 @@ function Marketing({
             <button onClick={installApp}>{t('installApp')}</button>
             <button onClick={user ? openAccount : openAuth}>
               {user
-                ? `${displayName ?? user.email?.split('@')[0] ?? 'Account'} · Settings`
-                : t('signIn')}
+                ? `${accountDisplayName(user, displayName)} · Settings`
+                : accountReady
+                  ? t('signIn')
+                  : 'Account'}
             </button>
             <button onClick={openApp}>{t('useWeb')}</button>
           </nav>
@@ -1992,6 +2063,7 @@ function AppShell({
   const [library, setLibrary] =
     useState<Record<CategoryName, Phrase[]>>(phrases);
   const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [settingsName, setSettingsName] = useState('');
@@ -2049,6 +2121,7 @@ function AppShell({
   } | null>(null);
   const [stats, setStats] = useState<LearningStats>(emptyLearningStats);
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
+  const activeUserIdRef = useRef<string | null>(null);
   const applyLearningDashboard = useCallback(
     (dashboard?: LearningDashboard | null) => {
       if (!dashboard) {
@@ -2076,63 +2149,17 @@ function AppShell({
         return;
       }
       const { data, error } = await supabase.rpc('get_learning_dashboard');
-      if (!error) applyLearningDashboard(data?.[0] ?? null);
+      if (!error) {
+        const dashboard = data?.[0] ?? null;
+        if (dashboard)
+          writeAccountCache('learning-dashboard-v1', activeUser.id, dashboard);
+        applyLearningDashboard(dashboard);
+      }
     },
     [applyLearningDashboard, supabase],
   );
   const primedAudio = useRef(new Set<string>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const stored = localStorage.getItem('geo-daily-micro-lessons-v1');
-    if (!stored) return;
-    let progress: { date?: string; count?: number };
-    try {
-      progress = JSON.parse(stored) as { date?: string; count?: number };
-    } catch {
-      localStorage.removeItem('geo-daily-micro-lessons-v1');
-      return;
-    }
-    if (progress.date !== today || !Number.isFinite(progress.count)) return;
-    const timer = window.setTimeout(
-      () => setDailyMicroLessonsCompleted(Math.max(0, progress.count ?? 0)),
-      0,
-    );
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    const stored = localStorage.getItem('geo-saved-words');
-    window.setTimeout(() => {
-      if (!stored) return;
-      try {
-        setSavedWords(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('geo-saved-words');
-      }
-    }, 0);
-  }, []);
-  useEffect(() => {
-    const stored = localStorage.getItem('geo-speaking-unit-progress-v2');
-    window.setTimeout(() => {
-      if (!stored) return;
-      try {
-        setCompletedSpeakingSteps(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('geo-speaking-unit-progress-v2');
-      }
-    }, 0);
-  }, []);
-  useEffect(() => {
-    const stored = localStorage.getItem('geo-word-memory-v1');
-    window.setTimeout(() => {
-      if (!stored) return;
-      try {
-        setWordMemory(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem('geo-word-memory-v1');
-      }
-    }, 0);
-  }, []);
   useEffect(() => {
     let active = true;
     if (!canUseDictionary) {
@@ -2290,7 +2317,11 @@ function AppShell({
   const loadUserData = useCallback(
     async (activeUser: User | null) => {
       if (!supabase || !activeUser) {
+        activeUserIdRef.current = null;
         setSaved([]);
+        setSavedWords([]);
+        setWordMemory({});
+        setCompletedSpeakingSteps([]);
         setDisplayName(null);
         setPhoneNumber('');
         setSettingsName('');
@@ -2302,8 +2333,54 @@ function AppShell({
         applyLearningDashboard(null);
         return;
       }
+      const cachedSaved = readAccountCache<string[]>(
+        'saved-phrases-v1',
+        activeUser.id,
+        [],
+      );
+      const cachedSavedWords = readAccountCache<string[]>(
+        'saved-words-v1',
+        activeUser.id,
+        [],
+      );
+      const cachedWordMemory = readAccountCache<Record<string, WordMemory>>(
+        'word-memory-v1',
+        activeUser.id,
+        {},
+      );
+      const cachedSteps = readAccountCache<number[]>(
+        'speaking-progress-v1',
+        activeUser.id,
+        [],
+      );
+      const cachedDashboard = readAccountCache<LearningDashboard | null>(
+        'learning-dashboard-v1',
+        activeUser.id,
+        null,
+      );
+      const cachedPreferences = readAccountCache<LearnerPreferences | null>(
+        'learner-preferences-v1',
+        activeUser.id,
+        null,
+      );
+      const cachedAccess = readAccountCache<{
+        guided: boolean;
+        phrasebook: boolean;
+      } | null>('product-access-v1', activeUser.id, null);
+      setSaved(cachedSaved);
+      setSavedWords(cachedSavedWords);
+      setWordMemory(cachedWordMemory);
+      setCompletedSpeakingSteps(cachedSteps);
+      setDisplayName(accountDisplayName(activeUser));
+      if (cachedDashboard) applyLearningDashboard(cachedDashboard);
+      if (cachedPreferences) setLearnerPreferences(cachedPreferences);
+      if (cachedAccess) {
+        setHasLearningAccess(cachedAccess.guided);
+        setHasPhrasebookProAccess(cachedAccess.phrasebook);
+      }
       const [
         savedResult,
+        savedWordsResult,
         profileResult,
         dashboardResult,
         accessResult,
@@ -2313,6 +2390,7 @@ function AppShell({
         learnerPreferencesResult,
       ] = await Promise.all([
         supabase.from('saved_phrases').select('phrase_id'),
+        supabase.from('saved_words').select('word_id'),
         supabase
           .from('profiles')
           .select('display_name,interface_language,phone_number')
@@ -2324,17 +2402,42 @@ function AppShell({
         supabase.from('learning_path_progress').select('step_number'),
         supabase.from('learner_preferences').select('*').maybeSingle(),
       ]);
-      setSaved((savedResult.data ?? []).map((item) => item.phrase_id));
-      setDisplayName(profileResult.data?.display_name ?? null);
-      setSettingsName(profileResult.data?.display_name ?? '');
-      setPhoneNumber(profileResult.data?.phone_number ?? '');
+      if (activeUserIdRef.current !== activeUser.id) return;
+      if (!savedResult.error) {
+        const remoteSaved = (savedResult.data ?? []).map(
+          (item) => item.phrase_id,
+        );
+        setSaved(remoteSaved);
+        writeAccountCache('saved-phrases-v1', activeUser.id, remoteSaved);
+      }
+      if (!profileResult.error) {
+        const profileName = profileResult.data?.display_name ?? null;
+        setDisplayName(accountDisplayName(activeUser, profileName));
+        setSettingsName(
+          profileName ??
+            (accountDisplayName(activeUser) === 'Account'
+              ? ''
+              : accountDisplayName(activeUser)),
+        );
+        setPhoneNumber(profileResult.data?.phone_number ?? '');
+      }
       const savedLocale = profileResult.data?.interface_language;
       if (savedLocale === 'en' || savedLocale === 'ru' || savedLocale === 'ka')
         onLocaleChange(savedLocale);
-      const guidedAccess = accessResult.data === true;
-      const phrasebookAccess = phrasebookAccessResult.data === true;
-      setHasLearningAccess(guidedAccess);
-      setHasPhrasebookProAccess(phrasebookAccess);
+      const guidedAccess = accessResult.error
+        ? (cachedAccess?.guided ?? false)
+        : accessResult.data === true;
+      const phrasebookAccess = phrasebookAccessResult.error
+        ? (cachedAccess?.phrasebook ?? false)
+        : phrasebookAccessResult.data === true;
+      if (!accessResult.error) setHasLearningAccess(guidedAccess);
+      if (!phrasebookAccessResult.error)
+        setHasPhrasebookProAccess(phrasebookAccess);
+      if (!accessResult.error && !phrasebookAccessResult.error)
+        writeAccountCache('product-access-v1', activeUser.id, {
+          guided: guidedAccess,
+          phrasebook: phrasebookAccess,
+        });
       if (guidedAccess || phrasebookAccess) {
         const accessLevel = guidedAccess
           ? phrasebookAccess
@@ -2360,12 +2463,33 @@ function AppShell({
           discoverySource: learnerPreferencesResult.data.discovery_source ?? '',
         };
         setLearnerPreferences(preferences);
+        writeAccountCache('learner-preferences-v1', activeUser.id, preferences);
         setOnboardingOpen(false);
-      } else {
+      } else if (!learnerPreferencesResult.error && !cachedPreferences) {
         setLearnerPreferences(defaultLearnerPreferences);
         setOnboardingOpen(true);
       }
-      if (wordMemoryResult.data) {
+      if (!savedWordsResult.error) {
+        const remoteSavedWords = (savedWordsResult.data ?? []).map(
+          (item) => item.word_id,
+        );
+        const mergedSavedWords = Array.from(
+          new Set([...remoteSavedWords, ...cachedSavedWords]),
+        );
+        setSavedWords(mergedSavedWords);
+        writeAccountCache('saved-words-v1', activeUser.id, mergedSavedWords);
+        const unsyncedWords = mergedSavedWords.filter(
+          (wordId) => !remoteSavedWords.includes(wordId),
+        );
+        if (unsyncedWords.length)
+          void supabase.from('saved_words').insert(
+            unsyncedWords.map((wordId) => ({
+              user_id: activeUser.id,
+              word_id: wordId,
+            })),
+          );
+      }
+      if (!wordMemoryResult.error && wordMemoryResult.data) {
         const remoteMemory: Record<string, WordMemory> = Object.fromEntries(
           wordMemoryResult.data.map((item) => [
             item.word_id,
@@ -2382,58 +2506,79 @@ function AppShell({
             },
           ]),
         );
-        setWordMemory((localMemory) => {
-          const merged = { ...remoteMemory };
-          for (const [wordId, local] of Object.entries(localMemory)) {
-            const remote = merged[wordId];
-            if (!remote || local.timesPracticed > remote.timesPracticed)
-              merged[wordId] = local;
-          }
-          localStorage.setItem('geo-word-memory-v1', JSON.stringify(merged));
-          const rows = Object.values(merged).map((item) => ({
-            user_id: activeUser.id,
-            word_id: item.wordId,
-            unit_number: item.unitNumber,
-            times_practiced: item.timesPracticed,
-            correct_answers: item.correctAnswers,
-            mistake_count: item.mistakeCount,
-            mastery_level: item.masteryLevel,
-            last_result: item.lastResult,
-            last_reviewed_at: item.lastReviewedAt,
-            next_review_at: item.nextReviewAt,
-          }));
-          if (rows.length)
-            void supabase
-              .from('word_memory')
-              .upsert(rows, { onConflict: 'user_id,word_id' });
-          return merged;
-        });
+        const merged = { ...remoteMemory };
+        for (const [wordId, local] of Object.entries(cachedWordMemory)) {
+          const remote = merged[wordId];
+          if (!remote || local.timesPracticed > remote.timesPracticed)
+            merged[wordId] = local;
+        }
+        setWordMemory(merged);
+        writeAccountCache('word-memory-v1', activeUser.id, merged);
+        const rows = Object.values(merged).map((item) => ({
+          user_id: activeUser.id,
+          word_id: item.wordId,
+          unit_number: item.unitNumber,
+          times_practiced: item.timesPracticed,
+          correct_answers: item.correctAnswers,
+          mistake_count: item.mistakeCount,
+          mastery_level: item.masteryLevel,
+          last_result: item.lastResult,
+          last_reviewed_at: item.lastReviewedAt,
+          next_review_at: item.nextReviewAt,
+        }));
+        if (rows.length)
+          void supabase
+            .from('word_memory')
+            .upsert(rows, { onConflict: 'user_id,word_id' });
       }
-      if (pathProgressResult.data) {
+      if (!pathProgressResult.error && pathProgressResult.data) {
         const remoteSteps = pathProgressResult.data.map(
           (item) => item.step_number,
         );
-        setCompletedSpeakingSteps((localSteps) => {
-          const merged = Array.from(new Set([...remoteSteps, ...localSteps]));
-          localStorage.setItem(
-            'geo-speaking-unit-progress-v2',
-            JSON.stringify(merged),
-          );
-          const rows = merged.map((stepNumber) => ({
-            user_id: activeUser.id,
-            step_number: stepNumber,
-            unit_number:
-              speakingUnit.find((step) => step.number === stepNumber)?.unit ??
-              1,
-          }));
-          if (rows.length)
-            void supabase
-              .from('learning_path_progress')
-              .upsert(rows, { onConflict: 'user_id,step_number' });
-          return merged;
-        });
+        const merged = Array.from(new Set([...remoteSteps, ...cachedSteps]));
+        setCompletedSpeakingSteps(merged);
+        writeAccountCache('speaking-progress-v1', activeUser.id, merged);
+        const rows = merged.map((stepNumber) => ({
+          user_id: activeUser.id,
+          step_number: stepNumber,
+          unit_number:
+            speakingUnit.find((step) => step.number === stepNumber)?.unit ?? 1,
+        }));
+        if (rows.length)
+          void supabase
+            .from('learning_path_progress')
+            .upsert(rows, { onConflict: 'user_id,step_number' });
       }
-      applyLearningDashboard(dashboardResult.data?.[0] ?? null);
+      if (!dashboardResult.error) {
+        const dashboard = dashboardResult.data?.[0] ?? null;
+        if (dashboard)
+          writeAccountCache('learning-dashboard-v1', activeUser.id, dashboard);
+        applyLearningDashboard(dashboard);
+      }
+      const pendingSessions = readAccountCache<PendingLearningSession[]>(
+        'pending-learning-v1',
+        activeUser.id,
+        [],
+      );
+      for (const pending of pendingSessions) {
+        const { data, error } = await supabase.rpc(
+          'complete_learning_session',
+          {
+            p_source: pending.source,
+            p_step_number: pending.stepNumber ?? null,
+            p_unit_number: pending.unitNumber ?? null,
+            p_micro_lesson: pending.microLesson ?? 0,
+            p_minutes: pending.minutes ?? 3,
+          },
+        );
+        if (error) continue;
+        removeQueuedLearningSession(activeUser.id, pending.key);
+        const dashboard = data?.[0] ?? null;
+        if (dashboard && activeUserIdRef.current === activeUser.id) {
+          writeAccountCache('learning-dashboard-v1', activeUser.id, dashboard);
+          applyLearningDashboard(dashboard);
+        }
+      }
     },
     [applyLearningDashboard, supabase, onLocaleChange],
   );
@@ -2465,6 +2610,7 @@ function AppShell({
     );
     if (error) return error.message;
     setLearnerPreferences(next);
+    writeAccountCache('learner-preferences-v1', user.id, next);
     setOnboardingOpen(false);
     setDailyPlanStartedAt(Date.now());
     return null;
@@ -2537,18 +2683,28 @@ function AppShell({
         });
         setLibrary(next);
       });
-    void supabase.auth.getUser().then(({ data }) => {
-      if (active) {
-        setUser(data.user);
-        void loadUserData(data.user);
-      }
+    const syncSessionUser = (activeUser: User | null) => {
+      if (!active) return;
+      activeUserIdRef.current = activeUser?.id ?? null;
+      setUser(activeUser);
+      if (activeUser) setDisplayName(accountDisplayName(activeUser));
+      void loadUserData(activeUser);
+    };
+    void supabase.auth.getSession().then(({ data, error }) => {
+      if (!error) syncSessionUser(data.session?.user ?? null);
+      if (active) setAuthReady(true);
     });
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (!active) return;
-        setUser(session?.user ?? null);
+        if (!session?.user && event !== 'SIGNED_OUT') return;
+        setAuthReady(true);
+        const activeUser = session?.user ?? null;
+        activeUserIdRef.current = activeUser?.id ?? null;
+        setUser(activeUser);
+        if (activeUser) setDisplayName(accountDisplayName(activeUser));
         window.setTimeout(() => {
-          if (active) void loadUserData(session?.user ?? null);
+          if (active) void loadUserData(activeUser);
         }, 0);
       },
     );
@@ -2565,9 +2721,11 @@ function AppShell({
       return;
     }
     const wasSaved = saved.includes(key);
-    setSaved((items) =>
-      wasSaved ? items.filter((value) => value !== key) : [...items, key],
-    );
+    const nextSaved = wasSaved
+      ? saved.filter((value) => value !== key)
+      : [...saved, key];
+    setSaved(nextSaved);
+    writeAccountCache('saved-phrases-v1', user.id, nextSaved);
     const result = wasSaved
       ? await supabase
           .from('saved_phrases')
@@ -2577,17 +2735,35 @@ function AppShell({
       : await supabase
           .from('saved_phrases')
           .insert({ user_id: user.id, phrase_id: phrase.id });
-    if (result.error)
-      setSaved((items) =>
-        wasSaved ? [...items, key] : items.filter((value) => value !== key),
-      );
+    if (result.error) {
+      setSaved(saved);
+      writeAccountCache('saved-phrases-v1', user.id, saved);
+    }
   };
-  const toggleSavedWord = (word: WordEntry) => {
+  const toggleSavedWord = async (word: WordEntry) => {
+    if (!supabase || !user) {
+      openAuth();
+      return;
+    }
+    const wasSaved = savedWords.includes(word.id);
     const next = savedWords.includes(word.id)
       ? savedWords.filter((id) => id !== word.id)
       : [...savedWords, word.id];
     setSavedWords(next);
-    localStorage.setItem('geo-saved-words', JSON.stringify(next));
+    writeAccountCache('saved-words-v1', user.id, next);
+    const result = wasSaved
+      ? await supabase
+          .from('saved_words')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('word_id', word.id)
+      : await supabase
+          .from('saved_words')
+          .insert({ user_id: user.id, word_id: word.id });
+    if (result.error) {
+      setSavedWords(savedWords);
+      writeAccountCache('saved-words-v1', user.id, savedWords);
+    }
   };
 
   const openLearning = () => {
@@ -2621,7 +2797,7 @@ function AppShell({
       setSettingsStatus(error.message);
       return;
     }
-    setDisplayName(settingsName.trim() || null);
+    setDisplayName(accountDisplayName(user, settingsName.trim() || null));
     setSettingsStatus('Account details saved.');
   };
 
@@ -3071,6 +3247,18 @@ function AppShell({
     } = {},
   ) => {
     if (!supabase || !user) return;
+    const pendingKey =
+      source === 'path'
+        ? `path:${options.stepNumber ?? 0}`
+        : `daily:${new Date().toISOString().slice(0, 10)}:${options.microLesson ?? 0}`;
+    queueLearningSession(user.id, {
+      key: pendingKey,
+      source,
+      stepNumber: options.stepNumber,
+      unitNumber: options.unitNumber,
+      microLesson: options.microLesson,
+      minutes: options.minutes,
+    });
     const { data, error } = await supabase.rpc('complete_learning_session', {
       p_source: source,
       p_step_number: options.stepNumber ?? null,
@@ -3078,7 +3266,24 @@ function AppShell({
       p_micro_lesson: options.microLesson ?? 0,
       p_minutes: options.minutes ?? 3,
     });
-    if (!error) applyLearningDashboard(data?.[0] ?? null);
+    if (!error) {
+      removeQueuedLearningSession(user.id, pendingKey);
+      const dashboard = data?.[0] ?? null;
+      if (dashboard)
+        writeAccountCache('learning-dashboard-v1', user.id, dashboard);
+      applyLearningDashboard(dashboard);
+    } else if (source === 'path' && options.stepNumber && options.unitNumber) {
+      // Preserve the learner's completed step even if the richer stats RPC is
+      // temporarily unavailable. The queued idempotent RPC restores XP later.
+      await supabase.from('learning_path_progress').upsert(
+        {
+          user_id: user.id,
+          step_number: options.stepNumber,
+          unit_number: options.unitNumber,
+        },
+        { onConflict: 'user_id,step_number' },
+      );
+    }
   };
   const recordWordResult = (
     word: WordEntry,
@@ -3112,7 +3317,7 @@ function AppShell({
           nextReviewAt: nextReview.toISOString(),
         },
       };
-      localStorage.setItem('geo-word-memory-v1', JSON.stringify(next));
+      if (user) writeAccountCache('word-memory-v1', user.id, next);
       return next;
     });
     if (supabase && user)
@@ -3208,8 +3413,10 @@ function AppShell({
             >
               {user ? <UserRound /> : <LogIn />}
               {user
-                ? (displayName ?? user.email?.split('@')[0] ?? 'Account')
-                : t('signIn')}
+                ? accountDisplayName(user, displayName)
+                : authReady
+                  ? t('signIn')
+                  : 'Account'}
             </button>
           </div>
         </header>
@@ -4261,10 +4468,12 @@ function AppShell({
               ]).size;
               const finishStep = (returnToLearn = true) => {
                 if (previewSource === 'today') {
-                  localStorage.setItem(
-                    'geo-last-daily-lesson',
-                    new Date().toISOString(),
-                  );
+                  if (user)
+                    writeAccountCache(
+                      'last-daily-lesson-v1',
+                      user.id,
+                      new Date().toISOString(),
+                    );
                   if (returnToLearn) {
                     setLearnSection('today');
                     setScreen('daily');
@@ -4275,10 +4484,8 @@ function AppShell({
                   new Set([...completedSpeakingSteps, lesson.number]),
                 );
                 setCompletedSpeakingSteps(next);
-                localStorage.setItem(
-                  'geo-speaking-unit-progress-v2',
-                  JSON.stringify(next),
-                );
+                if (user)
+                  writeAccountCache('speaking-progress-v1', user.id, next);
                 void completeLearningSession('path', {
                   stepNumber: lesson.number,
                   unitNumber: lesson.unit,
@@ -4290,13 +4497,11 @@ function AppShell({
                 if (isDailyLesson) {
                   const nextDailyCount = dailyMicroLessonsCompleted + 1;
                   setDailyMicroLessonsCompleted(nextDailyCount);
-                  localStorage.setItem(
-                    'geo-daily-micro-lessons-v1',
-                    JSON.stringify({
+                  if (user)
+                    writeAccountCache('daily-micro-lessons-v1', user.id, {
                       date: new Date().toISOString().slice(0, 10),
                       count: nextDailyCount,
-                    }),
-                  );
+                    });
                   void completeLearningSession('daily', {
                     microLesson: previewMicroLesson,
                     minutes: Math.max(
@@ -6461,6 +6666,7 @@ export default function HomePage() {
   const [initialAppScreen, setInitialAppScreen] = useState<Screen>('explore');
   const [siteUser, setSiteUser] = useState<User | null>(null);
   const [siteDisplayName, setSiteDisplayName] = useState<string | null>(null);
+  const [siteAuthReady, setSiteAuthReady] = useState(false);
   const [locale, setLocale] = useState<Locale>('en');
   const [languageChoiceOpen, setLanguageChoiceOpen] = useState(false);
   const [modal, setModal] = useState<'install' | 'pricing' | null>(null);
@@ -6517,7 +6723,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v16-reloaded';
+      const reloadKey = 'geo-sw-v17-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -6536,7 +6742,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=16', {
+        .register('/sw.js?v=17', {
           scope: '/',
           updateViaCache: 'none',
         })
@@ -6582,23 +6788,34 @@ export default function HomePage() {
         setSiteDisplayName(null);
         return;
       }
-      const { data } = await client
+      setSiteDisplayName(accountDisplayName(activeUser));
+      const { data, error } = await client
         .from('profiles')
         .select('display_name')
         .eq('id', activeUser.id)
         .maybeSingle();
-      if (active) setSiteDisplayName(data?.display_name ?? null);
+      if (active && !error)
+        setSiteDisplayName(accountDisplayName(activeUser, data?.display_name));
     };
     const timer = window.setTimeout(() => {
       void import('@/lib/supabase/client').then(async (supabaseModule) => {
-        if (!active || !supabaseModule.isSupabaseConfigured) return;
+        if (!active) return;
+        if (!supabaseModule.isSupabaseConfigured) {
+          setSiteAuthReady(true);
+          return;
+        }
         const client = supabaseModule.createClient();
-        const { data } = await client.auth.getUser();
-        await syncPublicAccount(data.user, client);
+        const { data, error } = await client.auth.getSession();
+        if (!error) await syncPublicAccount(data.session?.user ?? null, client);
+        if (active) setSiteAuthReady(true);
         const { data: listener } = client.auth.onAuthStateChange(
-          (_event, session) => {
+          (event, session) => {
+            if (!session?.user && event !== 'SIGNED_OUT') return;
             window.setTimeout(() => {
-              if (active) void syncPublicAccount(session?.user ?? null, client);
+              if (active) {
+                setSiteAuthReady(true);
+                void syncPublicAccount(session?.user ?? null, client);
+              }
             }, 0);
           },
         );
@@ -6692,6 +6909,7 @@ export default function HomePage() {
           openAccount={openAccount}
           user={siteUser}
           displayName={siteDisplayName}
+          accountReady={siteAuthReady}
           locale={locale}
           onLocaleChange={changeLocale}
         />
