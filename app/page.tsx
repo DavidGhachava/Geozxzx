@@ -2226,7 +2226,21 @@ function AppShell({
         active = false;
         window.clearTimeout(showCuratedWords);
       };
-    void fetch('/data/word-library-extended.json', { cache: 'force-cache' })
+    if (!supabase)
+      return () => {
+        active = false;
+        window.clearTimeout(showCuratedWords);
+      };
+    void supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        const token = data.session?.access_token;
+        if (error || !token) throw new Error('Authentication required');
+        return fetch('/api/dictionary', {
+          cache: 'no-store',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      })
       .then((response) => {
         if (!response.ok) throw new Error('Expanded word library unavailable');
         return response.json() as Promise<{ words: string[][] }>;
@@ -2249,7 +2263,7 @@ function AppShell({
       active = false;
       window.clearTimeout(showCuratedWords);
     };
-  }, [canUseDictionary, canUseLearning]);
+  }, [canUseDictionary, canUseLearning, supabase]);
   useEffect(() => {
     let active = true;
     void import('@/lib/supabase/client').then((supabaseModule) => {
@@ -2535,6 +2549,7 @@ function AppShell({
         wordMemoryResult,
         pathProgressResult,
         learnerPreferencesResult,
+        accessWelcomeResult,
       ] = await Promise.all([
         supabase.from('saved_phrases').select('phrase_id'),
         supabase.from('saved_words').select('word_id'),
@@ -2548,6 +2563,7 @@ function AppShell({
         supabase.from('word_memory').select('*'),
         supabase.from('learning_path_progress').select('step_number'),
         supabase.from('learner_preferences').select('*').maybeSingle(),
+        supabase.rpc('claim_access_welcomes'),
       ]);
       if (activeUserIdRef.current !== activeUser.id) return;
       if (!savedResult.error) {
@@ -2585,20 +2601,22 @@ function AppShell({
           guided: guidedAccess,
           phrasebook: phrasebookAccess,
         });
-      if (guidedAccess || phrasebookAccess) {
-        const accessLevel = guidedAccess
-          ? phrasebookAccess
-            ? 'complete'
-            : 'guided'
-          : 'phrasebook';
-        const welcomeKey = `geo-access-welcome-v1:${activeUser.id}:${accessLevel}`;
-        if (!localStorage.getItem(welcomeKey)) {
-          setWelcomeAccess({
-            guided: guidedAccess,
-            phrasebook: phrasebookAccess,
-          });
-          setScreen('access-welcome');
-        }
+      const newlyAcknowledged = new Set(
+        (accessWelcomeResult.data ?? []).map(
+          (row: { product: string }) => row.product,
+        ),
+      );
+      if (!accessWelcomeResult.error && newlyAcknowledged.size) {
+        const welcome = {
+          guided: newlyAcknowledged.has('guided_learning'),
+          phrasebook: newlyAcknowledged.has('phrasebook_pro'),
+        };
+        localStorage.setItem(
+          `geo-access-welcome-v2:${activeUser.id}`,
+          JSON.stringify([...newlyAcknowledged]),
+        );
+        setWelcomeAccess(welcome);
+        setScreen('access-welcome');
       }
       if (learnerPreferencesResult.data) {
         const preferences: LearnerPreferences = {
@@ -2777,17 +2795,6 @@ function AppShell({
   };
 
   const completeAccessWelcome = (destination: 'daily' | 'words') => {
-    if (user && welcomeAccess) {
-      const accessLevel = welcomeAccess.guided
-        ? welcomeAccess.phrasebook
-          ? 'complete'
-          : 'guided'
-        : 'phrasebook';
-      localStorage.setItem(
-        `geo-access-welcome-v1:${user.id}:${accessLevel}`,
-        new Date().toISOString(),
-      );
-    }
     setWelcomeAccess(null);
     setScreen(destination);
     window.scrollTo(0, 0);
@@ -2962,8 +2969,8 @@ function AppShell({
   };
 
   const updatePassword = async () => {
-    if (!supabase || !user || newPassword.length < 8) {
-      setSettingsStatus('Use at least 8 characters for the new password.');
+    if (!supabase || !user || !isStrongPassword(newPassword)) {
+      setSettingsStatus(strongPasswordMessage);
       return;
     }
     setSettingsBusy(true);
@@ -5995,7 +6002,7 @@ function AppShell({
                     <Button
                       variant="outline"
                       onClick={() => void updatePassword()}
-                      disabled={settingsBusy || newPassword.length < 8}
+                      disabled={settingsBusy || !isStrongPassword(newPassword)}
                     >
                       Update password
                     </Button>
@@ -6633,6 +6640,18 @@ function GoogleMark() {
   );
 }
 
+function isStrongPassword(value: string) {
+  return (
+    value.length >= 10 &&
+    /[a-z]/.test(value) &&
+    /[A-Z]/.test(value) &&
+    /[0-9]/.test(value)
+  );
+}
+
+const strongPasswordMessage =
+  'Use at least 10 characters with an uppercase letter, lowercase letter, and number.';
+
 function AuthPage({
   locale,
   onClose,
@@ -6689,9 +6708,9 @@ function AuthPage({
     setBusy(true);
     const client = supabaseModule.createClient();
     if (mode === 'update') {
-      if (password.length < 8) {
+      if (!isStrongPassword(password)) {
         setBusy(false);
-        setStatus('Use at least 8 characters for your new password.');
+        setStatus(strongPasswordMessage);
         return;
       }
       if (password !== passwordConfirmation) {
@@ -6732,6 +6751,11 @@ function AuthPage({
           ? error.message
           : 'Check your email for a secure password-reset link.',
       );
+      return;
+    }
+    if (mode === 'signup' && !isStrongPassword(password)) {
+      setBusy(false);
+      setStatus(strongPasswordMessage);
       return;
     }
     const result =
@@ -6877,7 +6901,7 @@ function AuthPage({
                     autoComplete={
                       mode === 'signin' ? 'current-password' : 'new-password'
                     }
-                    minLength={8}
+                    minLength={mode === 'signin' ? 8 : 10}
                     required
                   />
                 </label>
@@ -6892,7 +6916,7 @@ function AuthPage({
                       setPasswordConfirmation(event.target.value)
                     }
                     autoComplete="new-password"
-                    minLength={8}
+                    minLength={10}
                     required
                   />
                 </label>
@@ -7020,7 +7044,7 @@ export default function HomePage() {
       window.setTimeout(() => setMode('app'), 0);
     let removeServiceWorkerListener: (() => void) | undefined;
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      const reloadKey = 'geo-sw-v21-reloaded';
+      const reloadKey = 'geo-sw-v22-reloaded';
       const handleControllerChange = () => {
         // A newly activated worker cannot replace code already executing in
         // this document. Reload once so iOS/PWA users immediately receive the
@@ -7039,7 +7063,7 @@ export default function HomePage() {
           handleControllerChange,
         );
       void navigator.serviceWorker
-        .register('/sw.js?v=21', {
+        .register('/sw.js?v=22', {
           scope: '/',
           updateViaCache: 'none',
         })

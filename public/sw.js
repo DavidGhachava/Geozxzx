@@ -1,7 +1,7 @@
 // Bump this whenever a release needs to evict an older installed app shell.
 // This is especially important on iOS, where a Home Screen app can keep an
 // existing service-worker cache alive longer than a normal Safari tab.
-const CACHE = 'geo-pwa-v21';
+const CACHE = 'geo-pwa-v22';
 const CORE = [
   '/',
   '/offline.html',
@@ -15,7 +15,6 @@ const CORE = [
   '/situations/shopping.webp',
   '/situations/emergencies.webp',
   '/situations/meeting-people.webp',
-  '/data/word-library-extended.json',
 ];
 
 self.addEventListener('install', (event) => {

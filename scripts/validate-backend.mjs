@@ -59,6 +59,11 @@ await check('phrasebook access RPC', '/rest/v1/rpc/has_phrasebook_pro_access', {
   headers: { 'Content-Type': 'application/json' },
   body: '{}',
 });
+await check('access welcome RPC', '/rest/v1/rpc/claim_access_welcomes', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: '{}',
+});
 await check('account deletion CORS', '/functions/v1/delete-account', {
   method: 'OPTIONS',
   headers: {
@@ -80,7 +85,9 @@ for (const result of checks) {
     protectedChecks.includes(result.name) && result.status === 401;
   const protectedAndEmpty =
     protectedChecks.includes(result.name) && result.ok && result.body === '[]';
-  if (!result.ok && !protectedAndDenied)
+  const welcomeSafelyDenied =
+    result.name === 'access welcome RPC' && result.status >= 400;
+  if (!result.ok && !protectedAndDenied && !welcomeSafelyDenied)
     failures.push(`${result.name}: HTTP ${result.status}`);
   if (
     protectedChecks.includes(result.name) &&
@@ -93,6 +100,8 @@ for (const result of checks) {
     result.body !== 'false'
   )
     failures.push(`${result.name}: anonymous access was not denied`);
+  if (result.name === 'access welcome RPC' && result.status < 400)
+    failures.push(`${result.name}: anonymous caller unexpectedly claimed access`);
 }
 
 if (failures.length) {

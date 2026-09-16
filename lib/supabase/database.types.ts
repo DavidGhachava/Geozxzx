@@ -193,6 +193,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      access_welcome_acknowledgements: {
+        Row: {
+          user_id: string;
+          product: 'guided_learning' | 'phrasebook_pro';
+          acknowledged_at: string;
+        };
+        Insert: {
+          user_id: string;
+          product: 'guided_learning' | 'phrasebook_pro';
+          acknowledged_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          product?: 'guided_learning' | 'phrasebook_pro';
+          acknowledged_at?: string;
+        };
+        Relationships: [];
+      };
       saved_phrases: {
         Row: { user_id: string; phrase_id: string; created_at: string };
         Insert: { user_id: string; phrase_id: string; created_at?: string };
@@ -407,6 +425,10 @@ export type Database = {
       has_phrasebook_pro_access: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
+      };
+      claim_access_welcomes: {
+        Args: Record<PropertyKey, never>;
+        Returns: { product: 'guided_learning' | 'phrasebook_pro' }[];
       };
       get_learning_dashboard: {
         Args: Record<PropertyKey, never>;
