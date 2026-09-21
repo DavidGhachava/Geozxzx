@@ -63,15 +63,19 @@ import { Progress } from '@/components/ui/progress';
 import { CookieNotice } from '@/components/cookie-notice';
 import { MarketingFooter } from '@/components/marketing-footer';
 import { MarketingExperience } from '@/components/marketing-experience';
-import wordAudioManifest from '@/lib/word-audio-manifest.json';
-import phraseAudioManifest from '@/lib/phrase-audio-manifest.json';
-import { wordLibrary, type WordEntry } from '@/lib/word-library';
+import { freePhraseAudio } from '@/lib/free-phrase-audio';
+import type { WordEntry } from '@/lib/word-library';
 import {
-  speakingUnit,
+  SPEAKING_COURSE_WORD_COUNT,
+  SPEAKING_SCENARIO_COUNT,
+  SPEAKING_STEP_COUNT,
+  SPEAKING_STEPS_PER_UNIT,
+  speakingUnitNumbers,
   speakingUnitOutcomes,
   speakingUnitTitles,
   type SpeakingStep,
-} from '@/lib/speaking-unit';
+  unitForSpeakingStep,
+} from '@/lib/course-catalog';
 import {
   LanguageMenu,
   type InterfaceLocale as Locale,
@@ -1274,30 +1278,8 @@ const structuredData = {
   ],
 };
 
-const wordAudioIds = new Set(wordAudioManifest);
-const recordedWordAudioByGeorgian = new Map(
-  wordLibrary
-    .filter((word) => wordAudioIds.has(word.id))
-    .map((word) => [word.ka, `/audio/words/${word.id}.mp3`]),
-);
 const normalizeGeorgianAudioText = (text: string) =>
   text.trim().replace(/[.!?…]+$/u, '');
-const recordedPhraseAudioByGeorgian = new Map(
-  phraseAudioManifest.map((entry) => [
-    normalizeGeorgianAudioText(entry.ka),
-    entry.audio,
-  ]),
-);
-const getRecordedPhraseAudio = (text: string) =>
-  recordedPhraseAudioByGeorgian.get(normalizeGeorgianAudioText(text)) ?? null;
-const speakingCourseWordCount = new Set(
-  speakingUnit.flatMap((step) => step.words),
-).size;
-const speakingScenarioCount = speakingUnit.reduce(
-  (total, step) => total + (step.scenarios?.length ?? 0),
-  0,
-);
-
 function AudioSpeedControl({
   rate,
   onChange,
@@ -2103,6 +2085,13 @@ function AppShell({
   const [search, setSearch] = useState('');
   const [visibleWords, setVisibleWords] = useState(50);
   const [allWords, setAllWords] = useState<WordEntry[]>([]);
+  const [courseSteps, setCourseSteps] = useState<SpeakingStep[]>([]);
+  const [coursePhraseAudio, setCoursePhraseAudio] = useState<
+    { ka: string; audio: string }[]
+  >([]);
+  const [protectedWordAudio, setProtectedWordAudio] = useState<
+    { id: string; audio: string }[]
+  >([]);
   const [library, setLibrary] =
     useState<Record<CategoryName, Phrase[]>>(phrases);
   const [user, setUser] = useState<User | null>(null);
@@ -2207,63 +2196,124 @@ function AppShell({
   const primedAudio = useRef(new Map<string, string>());
   const primingAudio = useRef(new Set<string>());
   const currentAudio = useRef<HTMLAudioElement | null>(null);
+  const wordAudioById = useMemo(
+    () => new Map(protectedWordAudio.map((entry) => [entry.id, entry.audio])),
+    [protectedWordAudio],
+  );
+  const recordedWordAudioByGeorgian = useMemo(
+    () =>
+      new Map(
+        allWords
+          .filter((word) => wordAudioById.has(word.id))
+          .map((word) => [word.ka, wordAudioById.get(word.id) as string]),
+      ),
+    [allWords, wordAudioById],
+  );
+  const recordedPhraseAudioByGeorgian = useMemo(
+    () =>
+      new Map(
+        [...freePhraseAudio, ...coursePhraseAudio].map((entry) => [
+          normalizeGeorgianAudioText(entry.ka),
+          entry.audio,
+        ]),
+      ),
+    [coursePhraseAudio],
+  );
+  const getRecordedPhraseAudio = useCallback(
+    (text: string) =>
+      recordedPhraseAudioByGeorgian.get(normalizeGeorgianAudioText(text)) ??
+      null,
+    [recordedPhraseAudioByGeorgian],
+  );
   useEffect(() => {
     let active = true;
     if (!canUseDictionary && !canUseLearning) {
-      const clearWords = window.setTimeout(() => {
-        if (active) setAllWords([]);
+      const clearProtectedContent = window.setTimeout(() => {
+        if (!active) return;
+        setAllWords([]);
+        setCourseSteps([]);
+        setCoursePhraseAudio([]);
+        setProtectedWordAudio([]);
       }, 0);
       return () => {
         active = false;
-        window.clearTimeout(clearWords);
+        window.clearTimeout(clearProtectedContent);
       };
     }
-    const showCuratedWords = window.setTimeout(() => {
-      if (active) setAllWords(wordLibrary);
-    }, 0);
-    if (!canUseDictionary)
-      return () => {
-        active = false;
-        window.clearTimeout(showCuratedWords);
-      };
-    if (!supabase)
-      return () => {
-        active = false;
-        window.clearTimeout(showCuratedWords);
-      };
-    void supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
-        const token = data.session?.access_token;
-        if (error || !token) throw new Error('Authentication required');
-        return fetch('/api/dictionary', {
-          cache: 'no-store',
-          headers: { Authorization: `Bearer ${token}` },
-        });
-      })
-      .then((response) => {
-        if (!response.ok) throw new Error('Expanded word library unavailable');
-        return response.json() as Promise<{ words: string[][] }>;
-      })
-      .then(({ words }) => {
+    void (async () => {
+      let token: string | null = null;
+      if (supabase) {
+        const { data, error } = await supabase.auth.getSession();
+        if (!error) token = data.session?.access_token ?? null;
+      }
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+      const learningRequest =
+        hasLearningAccess || isLocalCoursePreview
+          ? fetch('/api/learning-content', {
+              cache: 'no-store',
+              headers,
+            })
+          : null;
+      const dictionaryRequest =
+        canUseDictionary && token
+          ? fetch('/api/dictionary', { cache: 'no-store', headers })
+          : null;
+      const [learningResponse, dictionaryResponse] = await Promise.all([
+        learningRequest,
+        dictionaryRequest,
+      ]);
+      let protectedWords: WordEntry[] = [];
+      if (learningResponse?.ok) {
+        const payload = (await learningResponse.json()) as {
+          course: SpeakingStep[];
+          words: WordEntry[];
+          phraseAudio: { ka: string; audio: string }[];
+          wordAudio: { id: string; audio: string }[];
+        };
         if (!active) return;
-        const expanded = words.map(([ka, tr, en, ru], index) => ({
-          id: `word-${String(index + wordLibrary.length + 1).padStart(3, '0')}`,
+        setCourseSteps(payload.course);
+        setCoursePhraseAudio(payload.phraseAudio);
+        setProtectedWordAudio(payload.wordAudio);
+        protectedWords = payload.words;
+      } else if (active) {
+        setCourseSteps([]);
+        setCoursePhraseAudio([]);
+        setProtectedWordAudio([]);
+      }
+      if (dictionaryResponse?.ok) {
+        const payload = (await dictionaryResponse.json()) as {
+          core: WordEntry[];
+          words: string[][];
+          wordAudio: { id: string; audio: string }[];
+        };
+        const expanded = payload.words.map(([ka, tr, en, ru], index) => ({
+          id: `word-${String(index + payload.core.length + 1).padStart(3, '0')}`,
           ka,
           tr,
           en,
           ru,
         }));
-        setAllWords([...wordLibrary, ...expanded]);
-      })
-      .catch(() => {
-        // The curated core remains fully usable if the extended catalog is offline.
-      });
+        protectedWords = [...payload.core, ...expanded];
+        setProtectedWordAudio(payload.wordAudio);
+      }
+      if (active) setAllWords(protectedWords);
+    })().catch(() => {
+      if (!active) return;
+      setCourseSteps([]);
+      setCoursePhraseAudio([]);
+      setProtectedWordAudio([]);
+      setAllWords([]);
+    });
     return () => {
       active = false;
-      window.clearTimeout(showCuratedWords);
     };
-  }, [canUseDictionary, canUseLearning, supabase]);
+  }, [
+    canUseDictionary,
+    canUseLearning,
+    hasLearningAccess,
+    isLocalCoursePreview,
+    supabase,
+  ]);
   useEffect(() => {
     let active = true;
     void import('@/lib/supabase/client').then((supabaseModule) => {
@@ -2353,12 +2403,12 @@ function AppShell({
     const delay = normalizedSearch ? 0 : 120;
     const timer = window.setTimeout(() => {
       for (const word of filteredWords.slice(0, normalizedSearch ? 12 : 20)) {
-        if (wordAudioIds.has(word.id))
-          primeAudio(`/audio/words/${word.id}.mp3`);
+        const audioUrl = wordAudioById.get(word.id);
+        if (audioUrl) primeAudio(audioUrl);
       }
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [filteredWords, normalizedSearch, primeAudio, screen]);
+  }, [filteredWords, normalizedSearch, primeAudio, screen, wordAudioById]);
   useEffect(() => {
     let visiblePhrases: Phrase[] = [];
     if (screen === 'category') visiblePhrases = library[category];
@@ -2374,7 +2424,16 @@ function AppShell({
         phrase.audio_url;
       if (audioUrl) primeAudio(audioUrl);
     }
-  }, [allPhrases, category, library, primeAudio, saved, screen]);
+  }, [
+    allPhrases,
+    category,
+    getRecordedPhraseAudio,
+    library,
+    primeAudio,
+    recordedWordAudioByGeorgian,
+    saved,
+    screen,
+  ]);
   const openCategory = (name: CategoryName) => {
     setCategory(name);
     setScreen('category');
@@ -2391,7 +2450,7 @@ function AppShell({
     screen === 'quiz';
   const basicsPercent = Math.min(
     100,
-    Math.round((stats.completedSteps / speakingUnit.length) * 100),
+    Math.round((stats.completedSteps / SPEAKING_STEP_COUNT) * 100),
   );
   const weekActivity = useMemo(() => {
     const byDate = new Map(
@@ -2458,7 +2517,7 @@ function AppShell({
           (step): step is number =>
             Number.isInteger(step) &&
             Number(step) >= 1 &&
-            Number(step) <= speakingUnit.length,
+            Number(step) <= SPEAKING_STEP_COUNT,
         );
         const legacyDaily = parseLegacy<{ date?: string; count?: number }>(
           'geo-daily-micro-lessons-v1',
@@ -2706,8 +2765,7 @@ function AppShell({
         const rows = merged.map((stepNumber) => ({
           user_id: activeUser.id,
           step_number: stepNumber,
-          unit_number:
-            speakingUnit.find((step) => step.number === stepNumber)?.unit ?? 1,
+          unit_number: unitForSpeakingStep(stepNumber),
         }));
         if (rows.length)
           void supabase
@@ -3102,7 +3160,7 @@ function AppShell({
           annotations: { readOnlyHint: false, untrustedContentHint: false },
           execute() {
             setScreen('learn');
-            return { screen: 'learn', total: speakingUnit.length };
+            return { screen: 'learn', total: SPEAKING_STEP_COUNT };
           },
         },
         { signal: lifecycle.signal },
@@ -3172,7 +3230,8 @@ function AppShell({
   const renderWords = (items: WordEntry[]) => (
     <div className="word-list">
       {items.map((word) => {
-        const hasAudio = wordAudioIds.has(word.id);
+        const audioUrl = wordAudioById.get(word.id);
+        const hasAudio = Boolean(audioUrl);
         return (
           <article className="word-card" key={word.id}>
             <div>
@@ -3199,7 +3258,7 @@ function AppShell({
                   onPlay={play}
                   onPrime={primeAudio}
                   text={word.ka}
-                  audioUrl={`/audio/words/${word.id}.mp3`}
+                  audioUrl={audioUrl}
                 />
               ) : (
                 <button
@@ -3226,7 +3285,7 @@ function AppShell({
     }
     exitToSite();
   };
-  const openSpeakingStep = (lesson: (typeof speakingUnit)[number]) => {
+  const openSpeakingStep = (lesson: SpeakingStep) => {
     if (!canUseLearning) {
       setUpgradeFocus('guided');
       setScreen('premium');
@@ -3235,8 +3294,8 @@ function AppShell({
     }
     for (const ka of lesson.words) {
       const word = allWords.find((entry) => entry.ka === ka);
-      if (word && wordAudioIds.has(word.id))
-        primeAudio(`/audio/words/${word.id}.mp3`);
+      const audioUrl = word ? wordAudioById.get(word.id) : null;
+      if (audioUrl) primeAudio(audioUrl);
     }
     for (const scenario of lesson.scenarios ?? []) {
       const answer = scenario.options[scenario.correct];
@@ -3265,7 +3324,7 @@ function AppShell({
   };
   const learningWords = useMemo(() => {
     const seen = new Set<string>();
-    return speakingUnit.flatMap((step) =>
+    return courseSteps.flatMap((step) =>
       step.words.flatMap((ka) => {
         const word = allWords.find((entry) => entry.ka === ka);
         if (!word || seen.has(word.id)) return [];
@@ -3273,16 +3332,16 @@ function AppShell({
         return [{ word, unitNumber: step.unit }];
       }),
     );
-  }, [allWords]);
+  }, [allWords, courseSteps]);
   const activeUnits = useMemo(() => {
     const units = new Set(
-      speakingUnit
+      courseSteps
         .filter((step) => completedSpeakingSteps.includes(step.number))
         .map((step) => step.unit),
     );
     if (!units.size) units.add(1);
     return units;
-  }, [completedSpeakingSteps]);
+  }, [completedSpeakingSteps, courseSteps]);
   const preferredUnits = useMemo(() => {
     const goals = Array.from(
       new Set([
@@ -3394,7 +3453,8 @@ function AppShell({
     )
       return;
     for (const id of dailyPlan.ids) {
-      if (wordAudioIds.has(id)) primeAudio(`/audio/words/${id}.mp3`);
+      const audioUrl = wordAudioById.get(id);
+      if (audioUrl) primeAudio(audioUrl);
     }
     setTodayWordIds(dailyPlan.ids);
     setPreviewSource('today');
@@ -4249,16 +4309,16 @@ function AppShell({
                   <BookOpen />{' '}
                   {
                     completedSpeakingSteps.filter(
-                      (step) => step <= speakingUnit.length,
+                      (step) => step <= SPEAKING_STEP_COUNT,
                     ).length
                   }{' '}
-                  / {speakingUnit.length}
+                  / {SPEAKING_STEP_COUNT}
                 </span>
               </div>
 
               <div className="course-scope" aria-label="Course contents">
                 <span>
-                  <b>{speakingUnit.length}</b>
+                  <b>{SPEAKING_STEP_COUNT}</b>
                   {locale === 'ru'
                     ? 'этапов'
                     : locale === 'ka'
@@ -4266,7 +4326,7 @@ function AppShell({
                       : 'guided steps'}
                 </span>
                 <span>
-                  <b>{speakingCourseWordCount}</b>
+                  <b>{SPEAKING_COURSE_WORD_COUNT}</b>
                   {locale === 'ru'
                     ? 'ключевых слов'
                     : locale === 'ka'
@@ -4274,7 +4334,7 @@ function AppShell({
                       : 'speaking words'}
                 </span>
                 <span>
-                  <b>{speakingScenarioCount}</b>
+                  <b>{SPEAKING_SCENARIO_COUNT}</b>
                   {locale === 'ru'
                     ? 'реальных ситуаций'
                     : locale === 'ka'
@@ -4450,11 +4510,12 @@ function AppShell({
 
               {learnSection === 'paths' && (
                 <div className="lesson-units">
-                  {Object.keys(speakingUnitTitles).map((unitKey) => {
-                    const unitNumber = Number(unitKey);
-                    const unitLessons = speakingUnit.filter(
+                  {speakingUnitNumbers.map((unitNumber) => {
+                    const unitLessons = courseSteps.filter(
                       (lesson) => lesson.unit === unitNumber,
                     );
+                    const unitTotal =
+                      unitLessons.length || SPEAKING_STEPS_PER_UNIT;
                     const firstStep = unitLessons[0]?.number ?? 1;
                     const unitCompleted = completedSpeakingSteps.filter(
                       (stepNumber) =>
@@ -4488,12 +4549,62 @@ function AppShell({
                             <em>{speakingUnitOutcomes[unitNumber][locale]}</em>
                           </span>
                           <small>
-                            {unitCompleted}/{unitLessons.length}
+                            {unitCompleted}/{unitTotal}
                             <ChevronDown />
                           </small>
                         </button>
                         {openLearningUnits.includes(unitNumber) && (
                           <div className="lesson-path-list">
+                            {!unitLessons.length && (
+                              <button
+                                className="lesson-path-card lesson locked"
+                                disabled={canUseLearning}
+                                onClick={() => {
+                                  setUpgradeFocus('guided');
+                                  setScreen('premium');
+                                }}
+                              >
+                                <span className="lesson-path-number">
+                                  <LockKeyhole />
+                                </span>
+                                <span className="lesson-path-copy">
+                                  <b>
+                                    {locale === 'ru'
+                                      ? `${SPEAKING_STEPS_PER_UNIT} защищённых уроков`
+                                      : locale === 'ka'
+                                        ? `${SPEAKING_STEPS_PER_UNIT} დაცული გაკვეთილი`
+                                        : `${SPEAKING_STEPS_PER_UNIT} protected lessons`}
+                                  </b>
+                                  <small>
+                                    {canUseLearning
+                                      ? locale === 'ru'
+                                        ? 'Загрузка защищённого содержания…'
+                                        : locale === 'ka'
+                                          ? 'დაცული შინაარსი იტვირთება…'
+                                          : 'Loading protected content…'
+                                      : locale === 'ru'
+                                        ? 'Содержание загружается после проверки доступа'
+                                        : locale === 'ka'
+                                          ? 'შინაარსი იტვირთება წვდომის შემოწმების შემდეგ'
+                                          : 'Content loads after access is verified'}
+                                  </small>
+                                </span>
+                                <span className="lesson-path-action">
+                                  {canUseLearning
+                                    ? locale === 'ru'
+                                      ? 'Загрузка'
+                                      : locale === 'ka'
+                                        ? 'იტვირთება'
+                                        : 'Loading'
+                                    : locale === 'ru'
+                                      ? 'Открыть курс'
+                                      : locale === 'ka'
+                                        ? 'კურსის გახსნა'
+                                        : 'Unlock course'}
+                                  <LockKeyhole />
+                                </span>
+                              </button>
+                            )}
                             {unitLessons.map((lesson) => {
                               const complete = completedSpeakingSteps.includes(
                                 lesson.number,
@@ -4637,9 +4748,9 @@ function AppShell({
               const lesson =
                 previewSource === 'today'
                   ? todayLesson
-                  : (speakingUnit.find(
+                  : (courseSteps.find(
                       (item) => item.number === previewLessonNumber,
-                    ) ?? speakingUnit[0]);
+                    ) ?? courseSteps[0]);
               const previewWords =
                 previewSource === 'today'
                   ? todayWordIds
@@ -4660,7 +4771,7 @@ function AppShell({
               const isLastTestWord =
                 previewTestIndex === segmentWords.length - 1;
               const hasAudio = currentWord
-                ? wordAudioIds.has(currentWord.id)
+                ? wordAudioById.has(currentWord.id)
                 : false;
               const progressTotal =
                 previewMode === 'scenario'
@@ -4808,7 +4919,7 @@ function AppShell({
                   play(
                     `lesson-test-${currentWord.id}`,
                     currentWord.ka,
-                    `/audio/words/${currentWord.id}.mp3`,
+                    wordAudioById.get(currentWord.id),
                   );
               };
               const currentScenario = lesson.scenarios?.[previewScenarioIndex];
@@ -4900,7 +5011,7 @@ function AppShell({
                           }}
                           onPrime={primeAudio}
                           text={currentWord.ka}
-                          audioUrl={`/audio/words/${currentWord.id}.mp3`}
+                          audioUrl={wordAudioById.get(currentWord.id)}
                           large
                         />
                       ) : (
@@ -4959,7 +5070,7 @@ function AppShell({
                           onPlay={play}
                           onPrime={primeAudio}
                           text={currentWord.ka}
-                          audioUrl={`/audio/words/${currentWord.id}.mp3`}
+                          audioUrl={wordAudioById.get(currentWord.id)}
                           large
                         />
                       ) : (
@@ -5219,7 +5330,7 @@ function AppShell({
                       <small>
                         {!isDailyLesson ? (
                           <>
-                            {completedStepCount}/{speakingUnit.length}{' '}
+                            {completedStepCount}/{SPEAKING_STEP_COUNT}{' '}
                             {locale === 'ru'
                               ? 'этапов курса'
                               : locale === 'ka'
@@ -5689,7 +5800,7 @@ function AppShell({
                   <b>Course progress</b>
                   <small>
                     {stats.completedSteps
-                      ? `${stats.completedSteps} of ${speakingUnit.length} steps complete`
+                      ? `${stats.completedSteps} of ${SPEAKING_STEP_COUNT} steps complete`
                       : 'Complete your first course step'}
                   </small>
                   <Progress value={basicsPercent} />

@@ -5,11 +5,10 @@ import { speakingUnit } from '../lib/speaking-unit.ts';
 import { wordLibrary } from '../lib/word-library.ts';
 
 const root = path.resolve(import.meta.dirname, '..');
-const wordAudioIds = new Set(
-  JSON.parse(
-    await readFile(path.join(root, 'lib/word-audio-manifest.json'), 'utf8'),
-  ),
+const wordAudioManifest = JSON.parse(
+  await readFile(path.join(root, 'lib/word-audio-manifest.json'), 'utf8'),
 );
+const wordAudioIds = new Set(wordAudioManifest.map((entry) => entry.id));
 const phraseAudioManifest = JSON.parse(
   await readFile(path.join(root, 'lib/phrase-audio-manifest.json'), 'utf8'),
 );
@@ -79,6 +78,20 @@ for (const entry of phraseAudioManifest) {
     );
   } catch {
     failures.push(`Phrase audio file is missing: ${entry.audio}`);
+  }
+}
+
+for (const entry of wordAudioManifest) {
+  const file = path.join(root, 'public', entry.audio.replace(/^\//, ''));
+  try {
+    await access(file);
+    const details = await stat(file);
+    expect(
+      details.size > 1_000,
+      `Word audio is unexpectedly small: ${entry.audio}`,
+    );
+  } catch {
+    failures.push(`Missing word audio file: ${entry.audio}`);
   }
 }
 
