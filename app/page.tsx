@@ -2070,6 +2070,7 @@ function AppShell({
   const [previewResult, setPreviewResult] = useState<
     'idle' | 'correct' | 'wrong'
   >('idle');
+  const [previewSessionXp, setPreviewSessionXp] = useState(0);
   const [previewScenarioIndex, setPreviewScenarioIndex] = useState(0);
   const [previewScenarioChoice, setPreviewScenarioChoice] = useState<
     number | null
@@ -3365,6 +3366,7 @@ function AppShell({
     setPreviewTestIndex(0);
     setPreviewAnswer('');
     setPreviewResult('idle');
+    setPreviewSessionXp(0);
     setPreviewScenarioIndex(0);
     setPreviewScenarioChoice(null);
     setScreen('lesson-preview');
@@ -3519,6 +3521,7 @@ function AppShell({
     setPreviewTestIndex(0);
     setPreviewAnswer('');
     setPreviewResult('idle');
+    setPreviewSessionXp(0);
     setScreen('lesson-preview');
     window.scrollTo(0, 0);
   };
@@ -4952,6 +4955,13 @@ function AppShell({
                 ...completedSpeakingSteps,
                 ...(lesson.number > 0 ? [lesson.number] : []),
               ]).size;
+              const completionBonus =
+                isDailyLesson ||
+                microLessons.length === 0 ||
+                previewMicroLesson === microLessons.length - 1
+                  ? 25
+                  : 0;
+              const lessonXpEarned = previewSessionXp + completionBonus;
               const finishStep = (returnToLearn = true) => {
                 if (previewSource === 'today') {
                   if (user)
@@ -5006,6 +5016,7 @@ function AppShell({
                 setPreviewTestIndex(0);
                 setPreviewAnswer('');
                 setPreviewResult('idle');
+                setPreviewSessionXp(0);
                 setPreviewAudioHeard(false);
                 setPreviewMode(lesson.kind === 'review' ? 'test' : 'learn');
               };
@@ -5066,6 +5077,9 @@ function AppShell({
                   : isLessonAnswerCorrect(answer, currentWord, locale);
                 setPreviewAnswer(answer);
                 setPreviewResult(correct ? 'correct' : 'wrong');
+                setPreviewSessionXp((current) =>
+                  current + (correct ? 10 : 2),
+                );
                 const wordUnit =
                   learningWords.find((item) => item.word.id === currentWord.id)
                     ?.unitNumber ?? lesson.unit;
@@ -5093,7 +5107,8 @@ function AppShell({
                   setPreviewScenarioChoice(null);
                   return;
                 }
-                finishStep();
+                finishStep(false);
+                setPreviewMode('complete');
               };
               return (
                 <section className="screen lesson-preview-screen">
@@ -5336,9 +5351,6 @@ function AppShell({
                                     : 'Not quite — remember this'}
                             </strong>
                             <span>{answerLabel}</span>
-                            <small>
-                              +{previewResult === 'correct' ? 10 : 2} XP
-                            </small>
                           </span>
                         </div>
                       )}
@@ -5483,7 +5495,35 @@ function AppShell({
                                 ? 'მოკლე გაკვეთილები გადატვირთვის გარეშე დამახსოვრებაში გეხმარებათ.'
                                 : 'Short lessons help the words stick without overload.'}
                       </p>
-                      <small>
+                      <div className="lesson-xp-reward" aria-live="polite">
+                        <span className="lesson-xp-icon">
+                          <Trophy />
+                        </span>
+                        <span>
+                          <small>
+                            {locale === 'ru'
+                              ? 'Награда за урок'
+                              : locale === 'ka'
+                                ? 'გაკვეთილის ჯილდო'
+                                : 'Lesson reward'}
+                          </small>
+                          <strong>+{lessonXpEarned} XP</strong>
+                        </span>
+                        <small>
+                          {completionBonus
+                            ? locale === 'ru'
+                              ? `Ответы + бонус ${completionBonus} XP за завершение`
+                              : locale === 'ka'
+                                ? `პასუხები + ${completionBonus} XP დასრულების ბონუსი`
+                                : `Answers + ${completionBonus} XP finish bonus`
+                            : locale === 'ru'
+                              ? 'XP за ответы в этом этапе'
+                              : locale === 'ka'
+                                ? 'XP ამ ეტაპის პასუხებისთვის'
+                                : 'XP from this stage’s answers'}
+                        </small>
+                      </div>
+                      <small className="lesson-complete-progress">
                         {!isDailyLesson ? (
                           <>
                             {completedStepCount}/{SPEAKING_STEP_COUNT}{' '}
@@ -5491,8 +5531,7 @@ function AppShell({
                               ? 'этапов курса'
                               : locale === 'ka'
                                 ? 'კურსის ეტაპი'
-                                : 'course steps'}{' '}
-                            · +25 XP
+                                : 'course steps'}
                           </>
                         ) : (
                           <>
@@ -5505,8 +5544,7 @@ function AppShell({
                               ? 'мини-урока сегодня'
                               : locale === 'ka'
                                 ? 'მინი გაკვეთილი დღეს'
-                                : 'mini lessons today'}{' '}
-                            · +25 XP
+                                : 'mini lessons today'}
                           </>
                         )}
                       </small>
@@ -6076,7 +6114,7 @@ function AppShell({
                   <button>{locale === 'ru' ? 'До свидания' : 'Goodbye'}</button>
                 </div>
                 <p className="correct-note">
-                  <CheckCircle2 /> Correct! <b>+10 XP</b>
+                  <CheckCircle2 /> Correct answer
                 </p>
                 <Button onClick={() => void completeQuiz()}>
                   Save progress <ChevronRight />

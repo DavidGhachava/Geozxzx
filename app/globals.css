@@ -6906,13 +6906,75 @@ html[data-app-mode='true'] .marketing {
 
 .lesson-complete-stage > small {
   display: inline-flex;
-  margin-top: 1.35rem;
+  margin-top: 0.9rem;
   padding: 0.55rem 0.8rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--primary) 10%, transparent);
   color: var(--primary);
   font-size: 0.875rem;
   font-weight: 800;
+}
+
+.lesson-xp-reward {
+  width: min(500px, 100%);
+  margin-top: 1.25rem;
+  padding: 14px 16px;
+  border: 1px solid #d7e3ff;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 202, 73, 0.22), transparent 38%),
+    linear-gradient(135deg, #f4f7ff, #fffdf5);
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(47, 99, 234, 0.08);
+}
+
+.lesson-xp-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  color: #fff;
+  background: linear-gradient(145deg, #f0ad22, #ffcf54);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 9px 20px rgba(216, 148, 12, 0.22);
+}
+
+.lesson-xp-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.lesson-xp-reward > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.lesson-xp-reward > span:nth-child(2) small {
+  color: #727d8a;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.lesson-xp-reward strong {
+  color: #203764;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.lesson-xp-reward > small {
+  max-width: 180px;
+  color: #6e7782;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .lesson-complete-mark {
@@ -9014,6 +9076,23 @@ html[data-app-mode='true'] .marketing {
 }
 
 @media (max-width: 760px) {
+  .lesson-xp-reward {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .lesson-xp-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .lesson-xp-reward > small {
+    max-width: none;
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
   .daily-session-copy {
     min-width: 0;
     color: #16212d;
