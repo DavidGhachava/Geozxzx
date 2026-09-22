@@ -2157,6 +2157,7 @@ function AppShell({
   const canUseLearning = hasLearningAccess || isLocalCoursePreview;
   const [hasPhrasebookProAccess, setHasPhrasebookProAccess] = useState(false);
   const canUseDictionary = hasPhrasebookProAccess || hasLearningAccess;
+  const protectedContentUserId = user?.id ?? null;
   const [welcomeAccess, setWelcomeAccess] = useState<{
     guided: boolean;
     phrasebook: boolean;
@@ -2251,7 +2252,10 @@ function AppShell({
     }
     const needsLearning = hasLearningAccess || isLocalCoursePreview;
     const needsDictionary = canUseDictionary;
-    if (!isLocalCoursePreview && (!authReady || !user || !supabase)) {
+    if (
+      !isLocalCoursePreview &&
+      (!authReady || !protectedContentUserId || !supabase)
+    ) {
       const markProtectedContentLoading = window.setTimeout(() => {
         if (!active) return;
         if (needsLearning) setLearningContentStatus('loading');
@@ -2290,7 +2294,11 @@ function AppShell({
       const protectedRequestFailed =
         (learningResponse !== null && !learningResponse.ok) ||
         (dictionaryResponse !== null && !dictionaryResponse.ok);
-      if ((!token || protectedRequestFailed) && supabase && user) {
+      if (
+        (!token || protectedRequestFailed) &&
+        supabase &&
+        protectedContentUserId
+      ) {
         const { data, error } = await supabase.auth.refreshSession();
         if (!error && data.session?.access_token) {
           token = data.session.access_token;
@@ -2351,8 +2359,8 @@ function AppShell({
     hasLearningAccess,
     isLocalCoursePreview,
     protectedContentRetry,
+    protectedContentUserId,
     supabase,
-    user,
   ]);
   useEffect(() => {
     let active = true;
