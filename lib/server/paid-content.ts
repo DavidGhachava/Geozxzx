@@ -12,7 +12,8 @@ export function privateJson(body: unknown, status = 200) {
 }
 
 async function callBooleanRpc(name: string, authorization: string) {
-  if (!supabaseUrl || !publishableKey) return false;
+  if (!supabaseUrl || !publishableKey)
+    throw new Error('Supabase server configuration is unavailable');
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
@@ -23,7 +24,8 @@ async function callBooleanRpc(name: string, authorization: string) {
     body: '{}',
     cache: 'no-store',
   });
-  if (!response.ok) return false;
+  if (!response.ok)
+    throw new Error(`Supabase access check failed with ${response.status}`);
   return (await response.json()) === true;
 }
 

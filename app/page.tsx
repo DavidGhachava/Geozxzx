@@ -2086,6 +2086,13 @@ function AppShell({
   const [visibleWords, setVisibleWords] = useState(50);
   const [allWords, setAllWords] = useState<WordEntry[]>([]);
   const [courseSteps, setCourseSteps] = useState<SpeakingStep[]>([]);
+  const [learningContentStatus, setLearningContentStatus] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
+  const [dictionaryContentStatus, setDictionaryContentStatus] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
+  const [protectedContentRetry, setProtectedContentRetry] = useState(0);
   const [coursePhraseAudio, setCoursePhraseAudio] = useState<
     { ka: string; audio: string }[]
   >([]);
@@ -2234,34 +2241,64 @@ function AppShell({
         setCourseSteps([]);
         setCoursePhraseAudio([]);
         setProtectedWordAudio([]);
+        setLearningContentStatus('idle');
+        setDictionaryContentStatus('idle');
       }, 0);
       return () => {
         active = false;
         window.clearTimeout(clearProtectedContent);
       };
     }
+    const needsLearning = hasLearningAccess || isLocalCoursePreview;
+    const needsDictionary = canUseDictionary;
+    if (!isLocalCoursePreview && (!authReady || !user || !supabase)) {
+      const markProtectedContentLoading = window.setTimeout(() => {
+        if (!active) return;
+        if (needsLearning) setLearningContentStatus('loading');
+        if (needsDictionary) setDictionaryContentStatus('loading');
+      }, 0);
+      return () => {
+        active = false;
+        window.clearTimeout(markProtectedContentLoading);
+      };
+    }
     void (async () => {
+      if (needsLearning) setLearningContentStatus('loading');
+      if (needsDictionary) setDictionaryContentStatus('loading');
       let token: string | null = null;
       if (supabase) {
         const { data, error } = await supabase.auth.getSession();
         if (!error) token = data.session?.access_token ?? null;
       }
-      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-      const learningRequest =
-        hasLearningAccess || isLocalCoursePreview
-          ? fetch('/api/learning-content', {
-              cache: 'no-store',
-              headers,
-            })
-          : null;
-      const dictionaryRequest =
-        canUseDictionary && token
-          ? fetch('/api/dictionary', { cache: 'no-store', headers })
-          : null;
-      const [learningResponse, dictionaryResponse] = await Promise.all([
-        learningRequest,
-        dictionaryRequest,
-      ]);
+      const requestContent = (accessToken: string | null) => {
+        const headers = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : undefined;
+        return Promise.all([
+          needsLearning
+            ? fetch('/api/learning-content', {
+                cache: 'no-store',
+                headers,
+              })
+            : null,
+          needsDictionary && accessToken
+            ? fetch('/api/dictionary', { cache: 'no-store', headers })
+            : null,
+        ]);
+      };
+      let [learningResponse, dictionaryResponse] = await requestContent(token);
+      const protectedRequestFailed =
+        (learningResponse !== null && !learningResponse.ok) ||
+        (dictionaryResponse !== null && !dictionaryResponse.ok);
+      if ((!token || protectedRequestFailed) && supabase && user) {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (!error && data.session?.access_token) {
+          token = data.session.access_token;
+          [learningResponse, dictionaryResponse] = await requestContent(token);
+        }
+      }
+      if (!isLocalCoursePreview && !token)
+        throw new Error('Authenticated session unavailable');
       let protectedWords: WordEntry[] = [];
       if (learningResponse?.ok) {
         const payload = (await learningResponse.json()) as {
@@ -2274,11 +2311,10 @@ function AppShell({
         setCourseSteps(payload.course);
         setCoursePhraseAudio(payload.phraseAudio);
         setProtectedWordAudio(payload.wordAudio);
+        setLearningContentStatus('ready');
         protectedWords = payload.words;
-      } else if (active) {
-        setCourseSteps([]);
-        setCoursePhraseAudio([]);
-        setProtectedWordAudio([]);
+      } else if (needsLearning && active) {
+        setLearningContentStatus('error');
       }
       if (dictionaryResponse?.ok) {
         const payload = (await dictionaryResponse.json()) as {
@@ -2295,14 +2331,15 @@ function AppShell({
         }));
         protectedWords = [...payload.core, ...expanded];
         setProtectedWordAudio(payload.wordAudio);
+        setDictionaryContentStatus('ready');
+      } else if (needsDictionary && active) {
+        setDictionaryContentStatus('error');
       }
-      if (active) setAllWords(protectedWords);
+      if (active && protectedWords.length) setAllWords(protectedWords);
     })().catch(() => {
       if (!active) return;
-      setCourseSteps([]);
-      setCoursePhraseAudio([]);
-      setProtectedWordAudio([]);
-      setAllWords([]);
+      if (needsLearning) setLearningContentStatus('error');
+      if (needsDictionary) setDictionaryContentStatus('error');
     });
     return () => {
       active = false;
@@ -2310,9 +2347,12 @@ function AppShell({
   }, [
     canUseDictionary,
     canUseLearning,
+    authReady,
     hasLearningAccess,
     isLocalCoursePreview,
+    protectedContentRetry,
     supabase,
+    user,
   ]);
   useEffect(() => {
     let active = true;
@@ -3447,6 +3487,11 @@ function AppShell({
       window.scrollTo(0, 0);
       return;
     }
+    if (learningContentStatus === 'error') {
+      setProtectedContentRetry((attempt) => attempt + 1);
+      return;
+    }
+    if (learningContentStatus !== 'ready') return;
     if (
       !dailyPlan.ids.length ||
       dailyMicroLessonsCompleted >= dailyMicroLessonGoal
@@ -3933,7 +3978,55 @@ function AppShell({
                     : `${Math.min(visibleWords, filteredWords.length)} of ${filteredWords.length}`}
                 </span>
               </div>
-              {filteredWords.length ? (
+              {dictionaryContentStatus === 'error' && !allWords.length ? (
+                <div className="empty-card" role="alert">
+                  <Search />
+                  <h3>
+                    {locale === 'ru'
+                      ? 'Словарь не загрузился'
+                      : locale === 'ka'
+                        ? 'ლექსიკონი ვერ ჩაიტვირთა'
+                        : 'The dictionary did not load'}
+                  </h3>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Проверьте соединение и попробуйте снова.'
+                      : locale === 'ka'
+                        ? 'შეამოწმეთ კავშირი და ხელახლა სცადეთ.'
+                        : 'Check your connection and try again.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setProtectedContentRetry((attempt) => attempt + 1)
+                    }
+                  >
+                    {locale === 'ru'
+                      ? 'Повторить загрузку'
+                      : locale === 'ka'
+                        ? 'ხელახლა ჩატვირთვა'
+                        : 'Try again'}
+                  </button>
+                </div>
+              ) : dictionaryContentStatus !== 'ready' && !allWords.length ? (
+                <div className="empty-card" aria-live="polite">
+                  <Search />
+                  <h3>
+                    {locale === 'ru'
+                      ? 'Загружаем словарь…'
+                      : locale === 'ka'
+                        ? 'ლექსიკონი იტვირთება…'
+                        : 'Loading your dictionary…'}
+                  </h3>
+                  <p>
+                    {locale === 'ru'
+                      ? 'Проверяем доступ и готовим слова.'
+                      : locale === 'ka'
+                        ? 'ვამოწმებთ წვდომას და ვამზადებთ სიტყვებს.'
+                        : 'Checking access and preparing your words.'}
+                  </p>
+                </div>
+              ) : filteredWords.length ? (
                 <>
                   {renderWords(filteredWords.slice(0, visibleWords))}
                   {visibleWords < filteredWords.length && (
@@ -4053,7 +4146,13 @@ function AppShell({
                     </span>
                     <button
                       onClick={startTodayLesson}
-                      disabled={canUseLearning && !dailyPlan.ids.length}
+                      disabled={
+                        canUseLearning &&
+                        (learningContentStatus === 'loading' ||
+                          learningContentStatus === 'idle' ||
+                          (learningContentStatus === 'ready' &&
+                            !dailyPlan.ids.length))
+                      }
                     >
                       {!canUseLearning
                         ? locale === 'ru'
@@ -4061,11 +4160,23 @@ function AppShell({
                           : locale === 'ka'
                             ? 'გახსნა'
                             : 'Unlock'
-                        : locale === 'ru'
-                          ? 'Начать'
-                          : locale === 'ka'
-                            ? 'დაწყება'
-                            : 'Start'}{' '}
+                        : learningContentStatus === 'error'
+                          ? locale === 'ru'
+                            ? 'Повторить'
+                            : locale === 'ka'
+                              ? 'ხელახლა ცდა'
+                              : 'Retry'
+                          : learningContentStatus !== 'ready'
+                            ? locale === 'ru'
+                              ? 'Загрузка…'
+                              : locale === 'ka'
+                                ? 'იტვირთება…'
+                                : 'Loading…'
+                            : locale === 'ru'
+                              ? 'Начать'
+                              : locale === 'ka'
+                                ? 'დაწყება'
+                                : 'Start'}{' '}
                       <ChevronRight />
                     </button>
                   </div>
@@ -4448,8 +4559,12 @@ function AppShell({
                     onClick={startTodayLesson}
                     disabled={
                       canUseLearning &&
-                      (!dailyPlan.ids.length ||
-                        dailyMicroLessonsCompleted >= dailyMicroLessonGoal)
+                      (learningContentStatus === 'loading' ||
+                        learningContentStatus === 'idle' ||
+                        (learningContentStatus === 'ready' &&
+                          (!dailyPlan.ids.length ||
+                            dailyMicroLessonsCompleted >=
+                              dailyMicroLessonGoal)))
                     }
                   >
                     {!canUseLearning
@@ -4458,17 +4573,29 @@ function AppShell({
                         : locale === 'ka'
                           ? 'სასწავლო კურსის გახსნა'
                           : 'Unlock my daily lessons'
-                      : dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                      : learningContentStatus === 'error'
                         ? locale === 'ru'
-                          ? 'Цель на сегодня выполнена'
+                          ? 'Повторить загрузку уроков'
                           : locale === 'ka'
-                            ? 'დღევანდელი მიზანი შესრულებულია'
-                            : 'Done for today'
-                        : locale === 'ru'
-                          ? 'Начать урок на сегодня'
-                          : locale === 'ka'
-                            ? 'დღევანდელი გაკვეთილის დაწყება'
-                            : "Start today's lesson"}
+                            ? 'გაკვეთილების ხელახლა ჩატვირთვა'
+                            : 'Retry loading lessons'
+                        : learningContentStatus !== 'ready'
+                          ? locale === 'ru'
+                            ? 'Загружаем уроки…'
+                            : locale === 'ka'
+                              ? 'გაკვეთილები იტვირთება…'
+                              : 'Loading lessons…'
+                          : dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                            ? locale === 'ru'
+                              ? 'Цель на сегодня выполнена'
+                              : locale === 'ka'
+                                ? 'დღევანდელი მიზანი შესრულებულია'
+                                : 'Done for today'
+                            : locale === 'ru'
+                              ? 'Начать урок на сегодня'
+                              : locale === 'ka'
+                                ? 'დღევანდელი გაკვეთილის დაწყება'
+                                : "Start today's lesson"}
                     <ChevronRight />
                   </button>
                   <button
@@ -4558,8 +4685,17 @@ function AppShell({
                             {!unitLessons.length && (
                               <button
                                 className="lesson-path-card lesson locked"
-                                disabled={canUseLearning}
+                                disabled={
+                                  canUseLearning &&
+                                  learningContentStatus !== 'error'
+                                }
                                 onClick={() => {
+                                  if (learningContentStatus === 'error') {
+                                    setProtectedContentRetry(
+                                      (attempt) => attempt + 1,
+                                    );
+                                    return;
+                                  }
                                   setUpgradeFocus('guided');
                                   setScreen('premium');
                                 }}
@@ -4577,11 +4713,17 @@ function AppShell({
                                   </b>
                                   <small>
                                     {canUseLearning
-                                      ? locale === 'ru'
-                                        ? 'Загрузка защищённого содержания…'
-                                        : locale === 'ka'
-                                          ? 'დაცული შინაარსი იტვირთება…'
-                                          : 'Loading protected content…'
+                                      ? learningContentStatus === 'error'
+                                        ? locale === 'ru'
+                                          ? 'Не удалось загрузить. Нажмите, чтобы повторить.'
+                                          : locale === 'ka'
+                                            ? 'ჩატვირთვა ვერ მოხერხდა. ხელახლა სცადეთ.'
+                                            : 'Could not load. Tap to try again.'
+                                        : locale === 'ru'
+                                          ? 'Загрузка защищённого содержания…'
+                                          : locale === 'ka'
+                                            ? 'დაცული შინაარსი იტვირთება…'
+                                            : 'Loading protected content…'
                                       : locale === 'ru'
                                         ? 'Содержание загружается после проверки доступа'
                                         : locale === 'ka'
@@ -4591,11 +4733,17 @@ function AppShell({
                                 </span>
                                 <span className="lesson-path-action">
                                   {canUseLearning
-                                    ? locale === 'ru'
-                                      ? 'Загрузка'
-                                      : locale === 'ka'
-                                        ? 'იტვირთება'
-                                        : 'Loading'
+                                    ? learningContentStatus === 'error'
+                                      ? locale === 'ru'
+                                        ? 'Повторить'
+                                        : locale === 'ka'
+                                          ? 'ხელახლა ცდა'
+                                          : 'Retry'
+                                      : locale === 'ru'
+                                        ? 'Загрузка'
+                                        : locale === 'ka'
+                                          ? 'იტვირთება'
+                                          : 'Loading'
                                     : locale === 'ru'
                                       ? 'Открыть курс'
                                       : locale === 'ka'
@@ -5746,8 +5894,11 @@ function AppShell({
                 className="daily-lesson-card"
                 onClick={startTodayLesson}
                 disabled={
-                  !dailyPlan.ids.length ||
-                  dailyMicroLessonsCompleted >= dailyMicroLessonGoal
+                  learningContentStatus === 'loading' ||
+                  learningContentStatus === 'idle' ||
+                  (learningContentStatus === 'ready' &&
+                    (!dailyPlan.ids.length ||
+                      dailyMicroLessonsCompleted >= dailyMicroLessonGoal))
                 }
               >
                 <span className="daily-book">
@@ -5767,16 +5918,21 @@ function AppShell({
                   </small>
                 </span>
                 <span className="start-lesson">
-                  {dailyPlan.ids.length &&
-                  dailyMicroLessonsCompleted < dailyMicroLessonGoal
-                    ? 'Start lesson'
-                    : 'Done for today'}{' '}
-                  {dailyPlan.ids.length &&
+                  {learningContentStatus === 'error'
+                    ? 'Retry lessons'
+                    : learningContentStatus !== 'ready'
+                      ? 'Loading lessons…'
+                      : dailyPlan.ids.length &&
+                          dailyMicroLessonsCompleted < dailyMicroLessonGoal
+                        ? 'Start lesson'
+                        : 'Done for today'}{' '}
+                  {learningContentStatus === 'ready' &&
+                  dailyPlan.ids.length &&
                   dailyMicroLessonsCompleted < dailyMicroLessonGoal ? (
                     <ChevronRight />
-                  ) : (
+                  ) : learningContentStatus === 'ready' ? (
                     <Check />
-                  )}
+                  ) : null}
                 </span>
               </button>
               <div className="streak-card">
