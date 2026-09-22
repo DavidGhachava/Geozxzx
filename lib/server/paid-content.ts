@@ -12,8 +12,12 @@ export function privateJson(body: unknown, status = 200) {
 }
 
 async function callBooleanRpc(name: string, authorization: string) {
-  if (!supabaseUrl || !publishableKey)
+  if (!supabaseUrl || !publishableKey) {
+    console.error(
+      'Paid content access check is missing Supabase configuration',
+    );
     throw new Error('Supabase server configuration is unavailable');
+  }
   const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
     method: 'POST',
     headers: {
@@ -24,8 +28,15 @@ async function callBooleanRpc(name: string, authorization: string) {
     body: '{}',
     cache: 'no-store',
   });
-  if (!response.ok)
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    console.error('Paid content access check failed', {
+      rpc: name,
+      status: response.status,
+      detail,
+    });
     throw new Error(`Supabase access check failed with ${response.status}`);
+  }
   return (await response.json()) === true;
 }
 
