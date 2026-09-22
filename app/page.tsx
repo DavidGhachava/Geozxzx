@@ -5880,113 +5880,130 @@ function AppShell({
           )}
           {screen === 'daily' && canUseLearning && (
             <section className="screen daily-screen">
-              <div className="daily-heading">
-                <div>
-                  <span className="app-eyebrow">დღის მშვიდობისა</span>
-                  <h1>Ready for today?</h1>
-                  <p>A little Georgian goes a long way.</p>
+              <div className="daily-dashboard-hero">
+                <div className="daily-heading">
+                  <div>
+                    <span className="app-eyebrow">დღის მშვიდობისა</span>
+                    <h1>Ready for today?</h1>
+                    <p>A short, focused session built around real Georgian.</p>
+                  </div>
+                  <span className="day-badge">
+                    <Flame /> {stats.streak}
+                  </span>
                 </div>
-                <span className="day-badge">
-                  <Flame /> {stats.streak}
-                </span>
-              </div>
-              <img
-                className="daily-skyline"
-                src="/batumi-line.webp"
-                width="1600"
-                height="533"
-                loading="lazy"
-                alt="Batumi skyline illustration"
-              />
-              <button
-                className="daily-lesson-card"
-                onClick={startTodayLesson}
-                disabled={
-                  learningContentStatus === 'loading' ||
-                  learningContentStatus === 'idle' ||
-                  (learningContentStatus === 'ready' &&
-                    (!dailyPlan.ids.length ||
-                      dailyMicroLessonsCompleted >= dailyMicroLessonGoal))
-                }
-              >
-                <span className="daily-book">
-                  <BookOpen />
-                </span>
-                <span>
-                  <b>
-                    {dailyMicroLessonGoal}{' '}
-                    {dailyMicroLessonGoal === 1
-                      ? 'tiny lesson'
-                      : 'tiny lessons'}{' '}
-                    · 3 words each
-                  </b>
-                  <small>
-                    {dailyPlan.reviewCount} to review · {dailyPlan.newCount} new
-                    · {dailyPlan.focusLabel}
-                  </small>
-                </span>
-                <span className="start-lesson">
-                  {learningContentStatus === 'error'
-                    ? 'Retry lessons'
-                    : learningContentStatus !== 'ready'
-                      ? 'Loading lessons…'
-                      : dailyPlan.ids.length &&
-                          dailyMicroLessonsCompleted < dailyMicroLessonGoal
-                        ? 'Start lesson'
-                        : 'Done for today'}{' '}
-                  {learningContentStatus === 'ready' &&
-                  dailyPlan.ids.length &&
-                  dailyMicroLessonsCompleted < dailyMicroLessonGoal ? (
-                    <ChevronRight />
-                  ) : learningContentStatus === 'ready' ? (
-                    <Check />
-                  ) : null}
-                </span>
-              </button>
-              <div className="streak-card">
-                <h3>
-                  <Flame /> {stats.streak} day streak
-                </h3>
-                <div className="week-row">
-                  {weekActivity.map((day, i) => (
-                    <span key={`${day.label}-${i}`}>
-                      <small>{day.label}</small>
-                      <i className={day.xp > 0 ? 'done' : ''}>
-                        {day.xp > 0 ? <Check /> : null}
-                      </i>
-                    </span>
-                  ))}
+
+                <div className="daily-session-meta" aria-label="Today's lesson summary">
+                  <span>
+                    <Brain />
+                    <b>{dailyPlan.reviewCount}</b> review
+                  </span>
+                  <span>
+                    <Star />
+                    <b>{dailyPlan.newCount}</b> new
+                  </span>
+                  <span>
+                    <Play />
+                    <b>5</b> min
+                  </span>
                 </div>
+
+                <button
+                  className="daily-lesson-card"
+                  onClick={startTodayLesson}
+                  disabled={
+                    learningContentStatus === 'loading' ||
+                    learningContentStatus === 'idle' ||
+                    (learningContentStatus === 'ready' &&
+                      (!dailyPlan.ids.length ||
+                        dailyMicroLessonsCompleted >= dailyMicroLessonGoal))
+                  }
+                >
+                  <span className="daily-book">
+                    <BookOpen />
+                  </span>
+                  <span className="daily-session-copy">
+                    <small className="daily-card-kicker">Your next session</small>
+                    <b>
+                      {dailyMicroLessonGoal}{' '}
+                      {dailyMicroLessonGoal === 1
+                        ? 'tiny lesson'
+                        : 'tiny lessons'}{' '}
+                      · 3 words each
+                    </b>
+                    <small>{dailyPlan.focusLabel}</small>
+                  </span>
+                  <span className="start-lesson">
+                    {learningContentStatus === 'error'
+                      ? 'Retry lessons'
+                      : learningContentStatus !== 'ready'
+                        ? 'Loading lessons…'
+                        : dailyPlan.ids.length &&
+                            dailyMicroLessonsCompleted < dailyMicroLessonGoal
+                          ? 'Start lesson'
+                          : 'Done for today'}{' '}
+                    {learningContentStatus === 'ready' &&
+                    dailyPlan.ids.length &&
+                    dailyMicroLessonsCompleted < dailyMicroLessonGoal ? (
+                      <ChevronRight />
+                    ) : learningContentStatus === 'ready' ? (
+                      <Check />
+                    ) : null}
+                  </span>
+                </button>
               </div>
-              <button className="basics-progress" onClick={openProgress}>
-                <span className="progress-ring">{basicsPercent}%</span>
-                <span>
-                  <b>Course progress</b>
-                  <small>
-                    {stats.completedSteps
-                      ? `${stats.completedSteps} of ${SPEAKING_STEP_COUNT} steps complete`
-                      : 'Complete your first course step'}
-                  </small>
-                  <Progress value={basicsPercent} />
-                </span>
-                <ChevronRight />
-              </button>
-              <button
-                type="button"
-                className="daily-path-button"
-                onClick={() => {
-                  setLearnSection('paths');
-                  setScreen('learn');
-                  window.scrollTo(0, 0);
-                }}
-              >
-                <Compass />
-                <span>
-                  <b>Explore the complete course</b>
-                  <small>96 guided steps across 16 practical units</small>
-                </span>
-                <ChevronRight />
-              </button>
+
+              <div className="daily-overview-grid">
+                <div className="streak-card">
+                  <div className="daily-card-heading">
+                    <div>
+                      <small>This week</small>
+                      <h3>
+                        <Flame /> {stats.streak} day streak
+                      </h3>
+                    </div>
+                    <span>{weekActivity.filter((day) => day.xp > 0).length}/7 active</span>
+                  </div>
+                  <div className="week-row">
+                    {weekActivity.map((day, i) => (
+                      <span key={`${day.label}-${i}`}>
+                        <small>{day.label}</small>
+                        <i className={day.xp > 0 ? 'done' : ''}>
+                          {day.xp > 0 ? <Check /> : null}
+                        </i>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <button className="basics-progress" onClick={openProgress}>
+                  <span className="progress-ring">{basicsPercent}%</span>
+                  <span>
+                    <b>Course progress</b>
+                    <small>
+                      {stats.completedSteps
+                        ? `${stats.completedSteps} of ${SPEAKING_STEP_COUNT} steps complete`
+                        : 'Complete your first course step'}
+                    </small>
+                    <Progress value={basicsPercent} />
+                  </span>
+                  <ChevronRight />
+                </button>
+                <button
+                  type="button"
+                  className="daily-path-button"
+                  onClick={() => {
+                    setLearnSection('paths');
+                    setScreen('learn');
+                    window.scrollTo(0, 0);
+                  }}
+                >
+                  <Compass />
+                  <span>
+                    <b>Explore the complete course</b>
+                    <small>96 steps · 16 practical units</small>
+                  </span>
+                  <ChevronRight />
+                </button>
+              </div>
             </section>
           )}
           {screen === 'lesson' && canUseLearning && (
